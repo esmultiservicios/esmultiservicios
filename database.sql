@@ -345,6 +345,7 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('seo_title','Your Company | Professional Services'),
 ('seo_description','Describe your company, services and value proposition here.'),
 ('seo_social_image',''),('seo_robots','index,follow'),
+('google_site_verification',''),
 ('developer_credit_enabled','0'),('developer_credit_text','Website by ES MULTISERVICIOS')
 ON DUPLICATE KEY UPDATE setting_value=setting_value;
 

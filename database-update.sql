@@ -620,3 +620,12 @@ INSERT INTO site_sections(section_key,label,sort_order,active) VALUES
 ('why','Por qué ES MULTISERVICIOS',100,1),
 ('contact','Contacto',110,1)
 ON DUPLICATE KEY UPDATE label=VALUES(label);
+
+-- ============================================================
+-- ES MULTISERVICIOS V7 - SEO / GOOGLE SEARCH CONSOLE
+-- Idempotent. Adds only the optional Google verification token.
+-- Existing SEO values remain untouched.
+-- ============================================================
+INSERT INTO settings(setting_key,setting_value) VALUES
+('google_site_verification','')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;

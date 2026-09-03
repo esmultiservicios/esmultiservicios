@@ -6,7 +6,7 @@ $error='';
 if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     try {
-        foreach(['seo_title','seo_description','seo_robots'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
+        foreach(['seo_title','seo_description','seo_robots','google_site_verification'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
         if(!empty($_FILES['seo_social_image']['name'])) {
             $p=upload_image($_FILES['seo_social_image'],'seo','social',8);
             save_setting('seo_social_image',$p);
@@ -30,7 +30,7 @@ require __DIR__.'/_header.php';
 <div>
 <p class="eyebrow">SEO MANAGER</p>
 <h1>Search & social appearance</h1>
-<p class="muted">Manage title, description, robots and social image.</p>
+<p class="muted">Manage search metadata, indexing, Google verification and social sharing.</p>
 </div>
 </div><?php
 if($error):
@@ -55,6 +55,10 @@ endif;
 >Hide from search engines</option>
 </select>
 </label>
+<label>Google Search Console verification
+<input name="google_site_verification" maxlength="255" value="<?=h($set['google_site_verification']??'')?>" placeholder="Paste only the verification token">
+<small class="muted">Optional. Use this for the HTML tag verification method. For a Domain property, Google normally verifies with a DNS TXT record instead.</small>
+</label>
 <div class="upload-zone" data-upload-zone tabindex="0">
 <div class="upload-icon"><?=icon('image')?>
 </div>
@@ -71,7 +75,7 @@ endif;
 </section>
 <aside class="search-preview">
 <span>Search preview</span>
-<div class="search-domain">example.com</div>
+<div class="search-domain"><?=h(preg_replace('~^https?://~i','',(string)($set['website']??'esmultiservicios.com')))?></div>
 <h3><?=h($set['seo_title']??"Your Company | Professional Services")?>
 </h3>
 <p><?=h($set['seo_description']??'Professional services tailored to your customers.')?>

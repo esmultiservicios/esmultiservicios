@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /config/
+Disallow: /core/
+Disallow: /install/
+
+Sitemap: https://esmultiservicios.com/sitemap.xml

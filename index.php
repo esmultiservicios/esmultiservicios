@@ -104,6 +104,35 @@ $whatsApp = static function (string $message) use ($whatsAppBase): string {
 };
 
 $companyName = (string) ($settings['company_name'] ?? 'ES MULTISERVICIOS');
+$siteDomain = trim((string) ($settings['website'] ?? 'esmultiservicios.com'));
+$siteDomain = preg_replace('~^https?://~i', '', $siteDomain) ?: 'esmultiservicios.com';
+$siteDomain = rtrim($siteDomain, '/');
+$siteBaseUrl = 'https://' . $siteDomain;
+$canonicalUrl = $lang === 'en' ? $siteBaseUrl . '/?lang=en' : $siteBaseUrl . '/';
+$seoTitle = trim((string) ($settings['seo_title'] ?? 'ES MULTISERVICIOS | IZZY, CAMI y Soluciones Digitales'));
+$seoDescription = trim((string) ($settings['seo_description'] ?? 'Sistemas web, facturación, soluciones para clínicas, sitios web y desarrollo a la medida.'));
+$seoRobots = trim((string) ($settings['seo_robots'] ?? 'index,follow')) ?: 'index,follow';
+$googleSiteVerification = trim((string) ($settings['google_site_verification'] ?? ''));
+$seoSocialImage = trim((string) ($settings['seo_social_image'] ?? ''));
+if ($seoSocialImage !== '' && !preg_match('~^https?://~i', $seoSocialImage)) {
+    $seoSocialImage = $siteBaseUrl . '/' . ltrim($seoSocialImage, '/');
+}
+$organizationLogo = $siteBaseUrl . '/assets/brand/es-mark.png';
+$organizationSameAs = array_values(array_filter([
+    trim((string) ($settings['facebook'] ?? '')),
+    trim((string) ($settings['tiktok'] ?? '')),
+    trim((string) ($settings['youtube'] ?? '')),
+]));
+$organizationSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Organization',
+    'name' => $companyName,
+    'url' => $siteBaseUrl . '/',
+    'logo' => $organizationLogo,
+    'email' => trim((string) ($settings['email'] ?? 'administracion@esmultiservicios.com')),
+    'telephone' => trim((string) ($settings['phone'] ?? '+504 8913-6844')),
+    'sameAs' => $organizationSameAs,
+];
 $maintenance = ($settings['maintenance_mode'] ?? '0') === '1';
 $adminPreview = !empty($_SESSION['escms_admin_id'])
     && ($_GET['preview'] ?? '') === '1';
@@ -243,15 +272,35 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title><?= h($settings['seo_title'] ?? 'ES MULTISERVICIOS') ?></title>
-    <meta
-        name="description"
-        content="<?= h($settings['seo_description'] ?? '') ?>"
-    >
+    <title><?= h($seoTitle) ?></title>
+    <meta name="description" content="<?= h($seoDescription) ?>">
+    <meta name="robots" content="<?= h($seoRobots) ?>">
     <meta name="theme-color" content="#0B2E59">
-    <?php if (!empty($settings['seo_social_image'])): ?>
-        <meta property="og:image" content="<?= h($settings['seo_social_image']) ?>">
+    <link rel="canonical" href="<?= h($canonicalUrl) ?>">
+    <link rel="alternate" hreflang="es" href="<?= h($siteBaseUrl . '/') ?>">
+    <link rel="alternate" hreflang="en" href="<?= h($siteBaseUrl . '/?lang=en') ?>">
+    <link rel="alternate" hreflang="x-default" href="<?= h($siteBaseUrl . '/') ?>">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="<?= h($companyName) ?>">
+    <meta property="og:title" content="<?= h($seoTitle) ?>">
+    <meta property="og:description" content="<?= h($seoDescription) ?>">
+    <meta property="og:url" content="<?= h($canonicalUrl) ?>">
+    <meta property="og:locale" content="<?= $lang === 'en' ? 'en_US' : 'es_HN' ?>">
+    <meta property="og:locale:alternate" content="<?= $lang === 'en' ? 'es_HN' : 'en_US' ?>">
+    <?php if ($seoSocialImage !== ''): ?>
+        <meta property="og:image" content="<?= h($seoSocialImage) ?>">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:image" content="<?= h($seoSocialImage) ?>">
+    <?php else: ?>
+        <meta name="twitter:card" content="summary">
     <?php endif; ?>
+    <meta name="twitter:title" content="<?= h($seoTitle) ?>">
+    <meta name="twitter:description" content="<?= h($seoDescription) ?>">
+    <?php if ($googleSiteVerification !== ''): ?>
+        <meta name="google-site-verification" content="<?= h($googleSiteVerification) ?>">
+    <?php endif; ?>
+    <script type="application/ld+json"><?= json_encode($organizationSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <?php $publicFavicon = trim((string) ($settings['favicon_path'] ?? '')) ?: 'assets/brand/favicon.png'; ?>
     <link rel="icon" type="image/png" href="<?= h($publicFavicon) ?>">
     <link rel="shortcut icon" href="<?= h($publicFavicon) ?>">

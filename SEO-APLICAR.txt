@@ -1,0 +1,19 @@
+ES MULTISERVICIOS - SEO / GOOGLE SEARCH CONSOLE
+
+ARCHIVOS A REEMPLAZAR O AGREGAR
+1. /index.php
+2. /admin/seo.php
+3. /robots.txt              (nuevo si no existe)
+4. /sitemap.xml             (nuevo si no existe)
+5. /database-update.sql
+6. /database.sql            (solo conservar actualizado para instalaciones nuevas)
+
+BASE DE DATOS EN EL SITIO YA INSTALADO
+- Ejecutar database-update.sql una sola vez.
+- NO importar database.sql sobre producción.
+
+GOOGLE SEARCH CONSOLE
+- Preferido: crear una propiedad de tipo Dominio para esmultiservicios.com.
+- Google mostrará un registro TXT. Agregar ese TXT en la zona DNS del dominio desde cPanel/WHM o el proveedor DNS.
+- Una vez verificado, enviar: https://esmultiservicios.com/sitemap.xml
+- También se puede usar la propiedad de prefijo URL y pegar el token HTML en Admin > SEO Manager > Google Search Console verification.
