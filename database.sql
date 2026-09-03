@@ -230,7 +230,7 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('company_name','Your Company'),
 ('phone','+1 (000) 000-0000'),
 ('phone_digits','10000000000'),
-('email','hello@example.com'),
+('email','administracion@esmultiservicios.com'),
 ('youtube','#'),('facebook','#'),('tiktok','#'),('website','example.com'),('business_hours',''),
 ('admin_brand_name','ES MULTISERVICIOS Admin'),('admin_logo_path','assets/brand/es-mark.png'),('favicon_path','assets/brand/favicon.png'),
 ('maintenance_mode','0'),('maintenance_title','We are improving our website.'),
@@ -328,7 +328,18 @@ CREATE TABLE IF NOT EXISTS site_backups (
   PRIMARY KEY (id), KEY idx_backups_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT INTO site_sections(section_key,label,sort_order,active) VALUES
-('home','Home / Hero',10,1),('intro','What We Do',20,1),('about','About Us',30,1),('services','Services',40,1),('videos','Videos',50,1),('gallery','Gallery',60,1),('areas','Service Areas',70,1),('tips','Home Tips',80,1),('estimate','Free Estimate',90,1),('contact','Contact',100,1)
+('home','Inicio / Hero',10,1),
+('solutions','Soluciones',20,1),
+('izzy','IZZY',30,1),
+('plans','Planes de IZZY',35,1),
+('cami','CAMI',40,1),
+('services','Servicios',50,1),
+('videos','Videos',60,1),
+('projects','Proyectos',70,1),
+('affiliate','Afiliados',80,1),
+('company-artwork','Material corporativo',90,1),
+('why','Por qué ES MULTISERVICIOS',100,1),
+('contact','Contacto',110,1)
 ON DUPLICATE KEY UPDATE label=VALUES(label);
 INSERT INTO settings(setting_key,setting_value) VALUES
 ('seo_title','Your Company | Professional Services'),

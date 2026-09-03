@@ -136,24 +136,50 @@
     ;if(result.isConfirmed)window.location.href=href;
   }
   )); qa('[data-sortable-list]').forEach(list=> {
-    let dragged=null;const sync=()=>qa('.section-sort-card',list).forEach((card,i)=> {
-      const value=(i+1)*10;const input=q('[data-sort-order]',card),label=q('[data-order-label]',card);if(input)input.value=value;if(label)label.textContent=value;
-    }
-    );qa('.section-sort-card',list).forEach(card=> {
+    let dragged=null;
+    const sync=()=>qa('.section-sort-card',list).forEach((card,i)=> {
+      const value=(i+1)*10;
+      const input=q('[data-sort-order]',card),label=q('[data-order-label]',card);
+      if(input)input.value=value;
+      if(label)label.textContent=value;
+      const up=q('[data-sort-move="up"]',card),down=q('[data-sort-move="down"]',card);
+      if(up)up.disabled=i===0;
+      if(down)down.disabled=i===qa('.section-sort-card',list).length-1;
+    });
+
+    qa('.section-sort-card',list).forEach(card=> {
       card.addEventListener('dragstart',()=> {
-        dragged=card;card.classList.add('dragging')
+        dragged=card;
+        card.classList.add('dragging');
+      });
+      card.addEventListener('dragend',()=> {
+        card.classList.remove('dragging');
+        dragged=null;
+        sync();
+      });
+      card.addEventListener('dragover',e=> {
+        e.preventDefault();
+        if(!dragged||dragged===card)return;
+        const r=card.getBoundingClientRect();
+        list.insertBefore(dragged,e.clientY<r.top+r.height/2?card:card.nextSibling);
+      });
+    });
+
+    qa('[data-sort-move]',list).forEach(button=>button.addEventListener('click',()=> {
+      const card=button.closest('.section-sort-card');
+      if(!card)return;
+      if(button.dataset.sortMove==='up'&&card.previousElementSibling) {
+        list.insertBefore(card,card.previousElementSibling);
       }
-      );card.addEventListener('dragend',()=> {
-        card.classList.remove('dragging');dragged=null;sync()
+      if(button.dataset.sortMove==='down'&&card.nextElementSibling) {
+        list.insertBefore(card.nextElementSibling,card);
       }
-      );card.addEventListener('dragover',e=> {
-        e.preventDefault();if(!dragged||dragged===card)return;const r=card.getBoundingClientRect();list.insertBefore(dragged,e.clientY<r.top+r.height/2?card:card.nextSibling)
-      }
-      );
-    }
-    );
-  }
-  );
+      sync();
+      card.focus?.({preventScroll:true});
+    }));
+
+    sync();
+  });
 }
 )();
 // Premium custom select UI. The original <select> remains the submitted value.

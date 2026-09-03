@@ -3403,3 +3403,1120 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================
+   ES MULTISERVICIOS — IZZY HERO PRODUCT PRESENTATION V5
+   Keeps the real project screenshots and improves hierarchy only.
+   ============================================================ */
+.hero-media {
+    position: relative;
+    min-height: 610px;
+    isolation: isolate;
+    display: block;
+}
+
+.hero-media::before {
+    content: "";
+    position: absolute;
+    inset: 5% 0 2% 5%;
+    z-index: -2;
+    border: 1px solid #dce7f2;
+    border-radius: 34px;
+    background: #f6f9fc;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.hero-media::after {
+    content: "";
+    position: absolute;
+    width: 44%;
+    height: 20%;
+    right: 6%;
+    bottom: 0;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(14,42,70,.09);
+    filter: blur(34px);
+    pointer-events: none;
+}
+
+.hero-media .product-window {
+    position: absolute;
+    margin: 0;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #d4e0eb;
+    box-shadow: 0 22px 52px rgba(14,42,70,.15);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.hero-media .product-window img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
+.hero-media .main-shot {
+    width: 91% !important;
+    height: auto !important;
+    aspect-ratio: 1919 / 1079;
+    top: 30px !important;
+    right: 1% !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 1;
+    border-radius: 20px;
+}
+
+.hero-media .main-shot img {
+    object-fit: contain;
+    object-position: center top;
+}
+
+.hero-media .login-shot {
+    width: 39% !important;
+    height: auto !important;
+    aspect-ratio: 1919 / 1079;
+    left: 1% !important;
+    bottom: 20px !important;
+    top: auto !important;
+    right: auto !important;
+    z-index: 3;
+    border-radius: 18px;
+    box-shadow: 0 24px 50px rgba(14,42,70,.18);
+}
+
+.hero-media .login-shot img {
+    object-fit: contain;
+    object-position: center;
+}
+
+.hero-media .mobile-shot {
+    width: 22% !important;
+    height: auto !important;
+    aspect-ratio: 738 / 1600;
+    right: 2% !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: 4;
+    border-radius: 26px;
+    box-shadow: 0 28px 56px rgba(14,42,70,.22);
+}
+
+.hero-media .mobile-shot img {
+    object-fit: contain;
+    object-position: center top;
+}
+
+.hero-media .shot-label {
+    top: 10px;
+    left: 10px;
+    padding: 7px 10px;
+    border: 1px solid rgba(207,220,233,.95);
+    border-radius: 999px;
+    background: rgba(255,255,255,.96);
+    box-shadow: 0 6px 14px rgba(14,42,70,.08);
+    color: #0a2a4a;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .025em;
+    backdrop-filter: blur(6px);
+}
+
+@media (hover:hover) and (pointer:fine) {
+    .hero-media .main-shot:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 28px 62px rgba(14,42,70,.18);
+    }
+
+    .hero-media .login-shot:hover,
+    .hero-media .mobile-shot:hover {
+        transform: translateY(-4px);
+    }
+}
+
+@media (max-width: 1120px) {
+    .hero-media {
+        min-height: 560px;
+    }
+
+    .hero-media .main-shot {
+        width: 94% !important;
+    }
+
+    .hero-media .login-shot {
+        width: 40% !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 23% !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-media {
+        min-height: 520px;
+        max-width: 760px;
+        width: 100%;
+        margin: 6px auto 0;
+    }
+
+    .hero-media::before {
+        inset: 4% 1% 2% 4%;
+    }
+
+    .hero-media .main-shot {
+        width: 92% !important;
+        right: 2% !important;
+        top: 24px !important;
+    }
+
+    .hero-media .login-shot {
+        width: 39% !important;
+        left: 2% !important;
+        bottom: 24px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 22% !important;
+        right: 3% !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .hero-media {
+        min-height: 430px;
+        margin-top: 12px;
+    }
+
+    .hero-media::before {
+        inset: 3% 0 1% 3%;
+        border-radius: 24px;
+    }
+
+    .hero-media::after {
+        width: 55%;
+        right: 0;
+    }
+
+    .hero-media .main-shot {
+        width: 96% !important;
+        top: 18px !important;
+        right: 0 !important;
+        border-radius: 15px;
+    }
+
+    .hero-media .login-shot {
+        width: 43% !important;
+        left: 0 !important;
+        bottom: 28px !important;
+        border-radius: 13px;
+    }
+
+    .hero-media .mobile-shot {
+        width: 25% !important;
+        right: 1% !important;
+        border-radius: 20px;
+    }
+
+    .hero-media .shot-label {
+        top: 7px;
+        left: 7px;
+        padding: 5px 7px;
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-media {
+        min-height: 345px;
+    }
+
+    .hero-media .main-shot {
+        top: 14px !important;
+    }
+
+    .hero-media .login-shot {
+        width: 44% !important;
+        bottom: 24px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 26% !important;
+    }
+
+    .hero-media .shot-label {
+        display: none;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - PRODUCT MEDIA PRESENTATION + INLINE ZOOM V2
+   Real screenshots only. Clean hierarchy, hover-only zoom control,
+   and an in-page viewer with its close action outside the image.
+   ============================================================ */
+
+/* Hero: one strong dashboard + two secondary views aligned as one composition. */
+.hero-media {
+    position: relative;
+    min-height: 590px;
+    isolation: isolate;
+    display: block;
+}
+
+.hero-media::before {
+    content: "";
+    position: absolute;
+    inset: 4% 0 2% 4%;
+    z-index: -2;
+    border: 1px solid #dce7f2;
+    border-radius: 32px;
+    background: #f6f9fc;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.hero-media::after {
+    content: "";
+    position: absolute;
+    width: 46%;
+    height: 18%;
+    right: 7%;
+    bottom: 1%;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(14, 42, 70, .08);
+    filter: blur(34px);
+    pointer-events: none;
+}
+
+.hero-media .product-window {
+    position: absolute;
+    margin: 0;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #d4e0eb;
+    box-shadow: 0 20px 48px rgba(14, 42, 70, .14);
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+
+.hero-media .product-window img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
+.hero-media .main-shot {
+    width: 91% !important;
+    height: auto !important;
+    aspect-ratio: 1919 / 1079;
+    top: 24px !important;
+    right: 2% !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 1;
+    border-radius: 19px;
+}
+
+.hero-media .main-shot img {
+    object-fit: contain;
+    object-position: center top;
+}
+
+/* Secondary views share the same visual row instead of falling apart vertically. */
+.hero-media .login-shot {
+    width: 46% !important;
+    height: auto !important;
+    aspect-ratio: 1919 / 1079;
+    top: 355px !important;
+    left: 3% !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 3;
+    border-radius: 17px;
+}
+
+.hero-media .login-shot img {
+    object-fit: cover;
+    object-position: center;
+}
+
+.hero-media .mobile-shot {
+    width: 22% !important;
+    height: auto !important;
+    aspect-ratio: 738 / 1600;
+    top: 305px !important;
+    right: 4% !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 4;
+    border-radius: 24px;
+    box-shadow: 0 24px 52px rgba(14, 42, 70, .20);
+}
+
+.hero-media .mobile-shot img {
+    object-fit: contain;
+    object-position: center top;
+}
+
+.hero-media .shot-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 6;
+    padding: 7px 10px;
+    border: 1px solid rgba(207, 220, 233, .96);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .96);
+    box-shadow: 0 6px 14px rgba(14, 42, 70, .08);
+    color: #0a2a4a;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .025em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .hero-media .product-window:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 26px 58px rgba(14, 42, 70, .18);
+    }
+}
+
+/* Images can be inspected without leaving the page. */
+.site-preview-ready {
+    cursor: zoom-in;
+}
+
+.site-preview-host {
+    position: relative !important;
+}
+
+/* The magnifier stays invisible until the customer points at the image. */
+.site-zoom-button {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 8;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 12px;
+    background: rgba(9, 43, 76, .92);
+    color: #fff;
+    box-shadow: 0 9px 22px rgba(8, 37, 68, .20);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(5px);
+    transition: opacity .18s ease, transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.site-preview-host:hover > .site-zoom-button,
+.site-preview-host:focus-within > .site-zoom-button,
+.site-zoom-button:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.site-zoom-button:hover,
+.site-zoom-button:focus-visible {
+    background: #0b63ce;
+    box-shadow: 0 12px 26px rgba(8, 37, 68, .26);
+}
+
+.site-zoom-button:focus-visible {
+    outline: 3px solid rgba(11, 99, 206, .24);
+    outline-offset: 3px;
+}
+
+.site-zoom-button svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Keep the hover control away from the permanent shot label. */
+.product-window .site-zoom-button {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+}
+
+.site-image-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 3vw, 30px);
+    background: rgba(7, 23, 39, .90);
+}
+
+.site-image-modal.open {
+    display: flex;
+}
+
+.site-image-dialog {
+    width: min(1380px, 96vw);
+    max-height: 94vh;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Toolbar is separate from the screenshot, so Close never covers the image. */
+.site-image-toolbar {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 2px;
+}
+
+.site-image-toolbar-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .02em;
+}
+
+.site-image-close {
+    position: static;
+    min-width: 104px;
+    height: 42px;
+    padding: 0 15px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 12px;
+    background: #0b2f55;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 9px 22px rgba(0, 0, 0, .20);
+}
+
+.site-image-close:hover,
+.site-image-close:focus-visible {
+    background: #0b63ce;
+}
+
+.site-image-close:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, .72);
+    outline-offset: 3px;
+}
+
+.site-image-close-symbol {
+    font-size: 23px;
+    line-height: 1;
+}
+
+.site-image-stage {
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-image-stage img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: calc(94vh - 58px);
+    object-fit: contain;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 28px 70px rgba(0, 0, 0, .34);
+}
+
+body.site-modal-open {
+    overflow: hidden;
+}
+
+@media (max-width: 1120px) {
+    .hero-media {
+        min-height: 555px;
+    }
+
+    .hero-media .main-shot {
+        width: 93% !important;
+    }
+
+    .hero-media .login-shot {
+        width: 45% !important;
+        top: 335px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 22% !important;
+        top: 292px !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-media {
+        min-height: 535px;
+        max-width: 760px;
+        width: 100%;
+        margin: 8px auto 0;
+    }
+
+    .hero-media::before {
+        inset: 4% 1% 2% 4%;
+    }
+
+    .hero-media .main-shot {
+        width: 94% !important;
+        top: 20px !important;
+        right: 1% !important;
+    }
+
+    .hero-media .login-shot {
+        width: 46% !important;
+        top: 322px !important;
+        left: 2% !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 23% !important;
+        top: 278px !important;
+        right: 2% !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .hero-media {
+        min-height: 465px;
+        margin-top: 10px;
+    }
+
+    .hero-media::before {
+        inset: 3% 0 1% 2%;
+        border-radius: 24px;
+    }
+
+    .hero-media::after {
+        width: 56%;
+        right: 0;
+    }
+
+    .hero-media .main-shot {
+        width: 97% !important;
+        top: 16px !important;
+        right: 0 !important;
+        border-radius: 14px;
+    }
+
+    .hero-media .login-shot {
+        width: 49% !important;
+        top: 275px !important;
+        left: 0 !important;
+        border-radius: 13px;
+    }
+
+    .hero-media .mobile-shot {
+        width: 26% !important;
+        top: 238px !important;
+        right: 1% !important;
+        border-radius: 19px;
+    }
+
+    .hero-media .shot-label {
+        top: 7px;
+        left: 7px;
+        padding: 5px 7px;
+        font-size: 9px;
+    }
+
+    .site-image-modal {
+        padding: 10px;
+    }
+
+    .site-image-dialog {
+        width: 100%;
+    }
+
+    .site-image-toolbar {
+        min-height: 44px;
+    }
+
+    .site-image-close {
+        min-width: 96px;
+        height: 40px;
+        padding: 0 12px;
+    }
+
+    .site-image-stage img {
+        border-radius: 11px;
+        max-height: calc(92vh - 56px);
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-media {
+        min-height: 390px;
+    }
+
+    .hero-media .main-shot {
+        top: 13px !important;
+    }
+
+    .hero-media .login-shot {
+        width: 50% !important;
+        top: 232px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 28% !important;
+        top: 205px !important;
+    }
+
+    .hero-media .shot-label {
+        display: none;
+    }
+
+    .site-image-toolbar-title {
+        font-size: 13px;
+    }
+
+    .site-image-close-text {
+        display: inline;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .site-zoom-button {
+        display: none;
+    }
+}
+
+
+/* ============================================================
+   ES MULTISERVICIOS - IZZY HERO COMPOSITION V3
+   Final override: three real screenshots kept visible and balanced.
+   ============================================================ */
+.hero-media {
+    min-height: 500px !important;
+}
+
+.hero-media::before {
+    inset: 3% 0 3% 3% !important;
+}
+
+.hero-media .main-shot {
+    width: 88% !important;
+    top: 8px !important;
+    right: 1% !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+
+.hero-media .login-shot {
+    width: 39% !important;
+    height: 155px !important;
+    aspect-ratio: auto !important;
+    top: 300px !important;
+    left: 1% !important;
+    right: auto !important;
+    bottom: auto !important;
+    border-radius: 16px !important;
+}
+
+.hero-media .login-shot img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: 50% 47% !important;
+}
+
+.hero-media .mobile-shot {
+    width: 20% !important;
+    top: 245px !important;
+    right: 5% !important;
+    left: auto !important;
+    bottom: auto !important;
+}
+
+/* Labels stay compact and never compete with the screenshots. */
+.hero-media .shot-label {
+    top: 8px !important;
+    left: 8px !important;
+}
+
+/* Zoom is discoverable only on interaction, never permanently over the artwork. */
+.site-zoom-button {
+    top: 10px !important;
+    right: 10px !important;
+    bottom: auto !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(-4px) !important;
+}
+
+.site-preview-host:hover > .site-zoom-button,
+.site-preview-host:focus-within > .site-zoom-button,
+.site-zoom-button:focus-visible {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateY(0) !important;
+}
+
+/* The modal toolbar remains outside the image and visually restrained. */
+.site-image-toolbar {
+    min-height: 40px !important;
+}
+
+.site-image-close {
+    min-width: 0 !important;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+}
+
+.site-image-close-text {
+    display: none !important;
+}
+
+@media (max-width: 1120px) {
+    .hero-media {
+        min-height: 485px !important;
+    }
+
+    .hero-media .main-shot {
+        width: 90% !important;
+    }
+
+    .hero-media .login-shot {
+        width: 40% !important;
+        height: 145px !important;
+        top: 288px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 20% !important;
+        top: 235px !important;
+        right: 4% !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-media {
+        min-height: 650px !important;
+        max-width: 760px !important;
+    }
+
+    .hero-media .main-shot {
+        width: 94% !important;
+        top: 12px !important;
+        right: 1% !important;
+    }
+
+    .hero-media .login-shot {
+        width: 42% !important;
+        height: 180px !important;
+        top: 410px !important;
+        left: 1% !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 20% !important;
+        top: 342px !important;
+        right: 4% !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .hero-media {
+        min-height: 500px !important;
+    }
+
+    .hero-media .main-shot {
+        width: 96% !important;
+        top: 10px !important;
+        right: 0 !important;
+    }
+
+    .hero-media .login-shot {
+        width: 47% !important;
+        height: 128px !important;
+        top: 292px !important;
+        left: 0 !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 23% !important;
+        top: 252px !important;
+        right: 2% !important;
+    }
+
+    .site-zoom-button {
+        display: none !important;
+    }
+}
+
+@media (max-width: 460px) {
+    .hero-media {
+        min-height: 420px !important;
+    }
+
+    .hero-media .login-shot {
+        width: 50% !important;
+        height: 105px !important;
+        top: 238px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 25% !important;
+        top: 205px !important;
+        right: 1% !important;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - HERO MEDIA FINAL LAYOUT V5
+   Keeps the three real IZZY captures close, ordered and balanced.
+   ============================================================ */
+.hero-media {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(150px, 0.34fr) !important;
+    grid-template-rows: auto auto !important;
+    gap: 18px !important;
+    align-items: start !important;
+    min-height: 0 !important;
+    max-width: 680px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 18px !important;
+    border: 1px solid #dce7f2 !important;
+    border-radius: 28px !important;
+    background: #f6f9fc !important;
+    box-shadow: 0 18px 48px rgba(14, 42, 70, .08) !important;
+}
+
+.hero-media::before,
+.hero-media::after {
+    display: none !important;
+}
+
+.hero-media .product-window {
+    position: relative !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 1px solid #d4e0eb !important;
+    background: #fff !important;
+    box-shadow: 0 12px 30px rgba(14, 42, 70, .11) !important;
+}
+
+.hero-media .main-shot {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    aspect-ratio: 1919 / 1079 !important;
+    border-radius: 18px !important;
+    z-index: 1 !important;
+}
+
+.hero-media .login-shot {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    aspect-ratio: 1919 / 1079 !important;
+    min-height: 0 !important;
+    border-radius: 16px !important;
+    z-index: 1 !important;
+}
+
+.hero-media .mobile-shot {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    width: min(100%, 168px) !important;
+    justify-self: end !important;
+    aspect-ratio: 738 / 1600 !important;
+    border-radius: 22px !important;
+    z-index: 1 !important;
+}
+
+.hero-media .product-window img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    background: #fff !important;
+}
+
+.hero-media .shot-label {
+    top: 9px !important;
+    left: 9px !important;
+    padding: 6px 9px !important;
+    font-size: 11px !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .hero-media .product-window:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 17px 36px rgba(14, 42, 70, .15) !important;
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-media {
+        max-width: 760px !important;
+        grid-template-columns: minmax(0, 1fr) minmax(138px, .30fr) !important;
+        gap: 15px !important;
+        padding: 15px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: min(100%, 156px) !important;
+    }
+}
+
+@media (max-width: 680px) {
+    .hero-media {
+        grid-template-columns: minmax(0, 1fr) 112px !important;
+        gap: 12px !important;
+        padding: 12px !important;
+        border-radius: 22px !important;
+    }
+
+    .hero-media .main-shot {
+        border-radius: 14px !important;
+    }
+
+    .hero-media .login-shot {
+        border-radius: 13px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 112px !important;
+        border-radius: 17px !important;
+    }
+
+    .hero-media .shot-label {
+        top: 6px !important;
+        left: 6px !important;
+        padding: 5px 7px !important;
+        font-size: 9px !important;
+    }
+}
+
+@media (max-width: 460px) {
+    .hero-media {
+        grid-template-columns: minmax(0, 1fr) 92px !important;
+        gap: 9px !important;
+        padding: 9px !important;
+    }
+
+    .hero-media .mobile-shot {
+        width: 92px !important;
+    }
+}
+
+/* Public projects: controlled, equal-width cards with safe wrapping and no overflow. */
+.projects-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 22px !important;
+    align-items: stretch !important;
+}
+
+.projects-grid .project-card {
+    display: grid !important;
+    grid-template-columns: minmax(190px, .78fr) minmax(0, 1.22fr) !important;
+    min-width: 0 !important;
+    min-height: 320px !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+.projects-grid .project-card > img,
+.projects-grid .project-placeholder {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    min-height: 320px !important;
+    max-height: 420px !important;
+    padding: 28px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+}
+
+.projects-grid .project-card > div:last-child {
+    min-width: 0 !important;
+    padding: 30px !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+}
+
+.projects-grid .project-card h3,
+.projects-grid .project-card p,
+.projects-grid .project-card .text-link {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 980px) {
+    .projects-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .projects-grid .project-card {
+        grid-template-columns: minmax(180px, .62fr) minmax(0, 1.38fr) !important;
+        min-height: 290px !important;
+    }
+
+    .projects-grid .project-card > img,
+    .projects-grid .project-placeholder {
+        min-height: 290px !important;
+    }
+}
+
+@media (max-width: 620px) {
+    .projects-grid .project-card {
+        grid-template-columns: 1fr !important;
+        min-height: 0 !important;
+    }
+
+    .projects-grid .project-card > img,
+    .projects-grid .project-placeholder {
+        height: 220px !important;
+        min-height: 220px !important;
+        max-height: 220px !important;
+        padding: 24px !important;
+    }
+
+    .projects-grid .project-card > div:last-child {
+        padding: 24px !important;
+    }
+}
+
+
+/* ES MULTISERVICIOS: admin-controlled landing section order */
+.site-section-stack {
+    display: flex;
+    flex-direction: column;
+}
+.site-section-stack > section {
+    width: 100%;
+}

@@ -133,3 +133,109 @@
         });
     }
 })();
+
+/* Public image preview: inspect real website images without opening another page. */
+(() => {
+    const selectors = [
+        '.hero-media .product-window img',
+        '.product-showcase-section .experience-media img',
+        '.responsive-phone-frame img',
+        '.cami-login-preview img',
+        '.projects-grid .project-card > img',
+        '.company-artwork-card > img'
+    ];
+
+    const images = [...document.querySelectorAll(selectors.join(','))];
+    if (!images.length) return;
+
+    const modal = document.createElement('div');
+    modal.className = 'site-image-modal';
+    modal.setAttribute('aria-hidden', 'true');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', document.documentElement.lang === 'es' ? 'Vista ampliada de imagen' : 'Expanded image preview');
+    modal.innerHTML = `
+        <div class="site-image-dialog">
+            <div class="site-image-toolbar">
+                <span class="site-image-toolbar-title">${document.documentElement.lang === 'es' ? 'Vista ampliada' : 'Expanded preview'}</span>
+                <button type="button" class="site-image-close" aria-label="${document.documentElement.lang === 'es' ? 'Cerrar vista ampliada' : 'Close expanded preview'}">
+                    <span class="site-image-close-symbol" aria-hidden="true">×</span>
+                    <span class="site-image-close-text">${document.documentElement.lang === 'es' ? 'Cerrar' : 'Close'}</span>
+                </button>
+            </div>
+            <div class="site-image-stage">
+                <img src="" alt="">
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+
+    const modalImage = modal.querySelector('.site-image-stage img');
+    const closeButton = modal.querySelector('.site-image-close');
+    let lastTrigger = null;
+
+    const close = () => {
+        modal.classList.remove('open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('site-modal-open');
+        modalImage.removeAttribute('src');
+        if (lastTrigger) lastTrigger.focus({ preventScroll: true });
+    };
+
+    const open = (image, trigger) => {
+        if (!image || !image.currentSrc && !image.src) return;
+        lastTrigger = trigger || image;
+        modalImage.src = image.currentSrc || image.src;
+        modalImage.alt = image.alt || (document.documentElement.lang === 'es' ? 'Vista ampliada' : 'Expanded preview');
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('site-modal-open');
+        window.requestAnimationFrame(() => closeButton.focus({ preventScroll: true }));
+    };
+
+    const zoomIcon = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="m16 16 4 4"></path>
+            <path d="M11 8v6M8 11h6"></path>
+        </svg>`;
+
+    images.forEach((image) => {
+        image.classList.add('site-preview-ready');
+        image.tabIndex = 0;
+        image.setAttribute('role', 'button');
+        image.setAttribute('aria-label', `${document.documentElement.lang === 'es' ? 'Ampliar imagen' : 'Enlarge image'}: ${image.alt || ''}`.trim());
+
+        const host = image.parentElement;
+        if (host) {
+            host.classList.add('site-preview-host');
+            if (!host.querySelector(':scope > .site-zoom-button')) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'site-zoom-button';
+                button.innerHTML = zoomIcon;
+                button.setAttribute('aria-label', `${document.documentElement.lang === 'es' ? 'Ampliar imagen' : 'Enlarge image'}: ${image.alt || ''}`.trim());
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    open(image, button);
+                });
+                host.appendChild(button);
+            }
+        }
+
+        image.addEventListener('click', () => open(image, image));
+        image.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                open(image, image);
+            }
+        });
+    });
+
+    closeButton.addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('open')) close();
+    });
+})();

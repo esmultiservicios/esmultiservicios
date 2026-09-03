@@ -238,7 +238,7 @@ require __DIR__ . '/_header.php';
         <div>
             <p class="eyebrow">LIVE PREVIEW</p>
             <h2>Preview every marketing section</h2>
-            <p class="muted">Choose a section below. The preview uses the real public landing page and keeps the administrator separate from the customer-facing website.</p>
+            <p class="muted">Choose a section below. The preview uses the real public landing page and keeps the administrator separate from the customer-facing website. Product and project images can be enlarged directly inside the preview. On desktop the zoom control appears only when you hover the image; clicking the image also opens the in-page viewer.</p>
         </div>
     </div>
 

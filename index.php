@@ -31,6 +31,13 @@ $copy = landing_content($lang);
 $products = marketing_products();
 $plans = marketing_plans();
 $projects = marketing_projects();
+$sectionRows = site_sections();
+$sectionOrder = static function (string $key, int $fallback) use ($sectionRows): int {
+    return isset($sectionRows[$key]) ? (int) $sectionRows[$key]['sort_order'] : $fallback;
+};
+$sectionVisible = static function (string $key) use ($sectionRows): bool {
+    return !isset($sectionRows[$key]) || (int) $sectionRows[$key]['active'] === 1;
+};
 
 try {
     $videos = db()->query(
@@ -142,16 +149,35 @@ if ($maintenance && !$adminPreview) {
     exit;
 }
 
-$navigation = [
-    'home' => $lang === 'es' ? 'Inicio' : 'Home',
-    'solutions' => $lang === 'es' ? 'Soluciones' : 'Solutions',
-    'izzy' => 'IZZY',
-    'cami' => 'CAMI',
-    'services' => $lang === 'es' ? 'Servicios' : 'Services',
-    'projects' => $lang === 'es' ? 'Proyectos' : 'Projects',
-    'affiliate' => $lang === 'es' ? 'Afiliados' : 'Affiliates',
-    'contact' => $lang === 'es' ? 'Contacto' : 'Contact',
+$navigationDefaults = [
+    'home' => [$lang === 'es' ? 'Inicio' : 'Home', 10],
+    'solutions' => [$lang === 'es' ? 'Soluciones' : 'Solutions', 20],
+    'izzy' => ['IZZY', 30],
+    'cami' => ['CAMI', 40],
+    'services' => [$lang === 'es' ? 'Servicios' : 'Services', 50],
+    'projects' => [$lang === 'es' ? 'Proyectos' : 'Projects', 70],
+    'affiliate' => [$lang === 'es' ? 'Afiliados' : 'Affiliates', 80],
+    'contact' => [$lang === 'es' ? 'Contacto' : 'Contact', 110],
 ];
+
+$navigation = [];
+foreach ($navigationDefaults as $id => [$label, $fallbackOrder]) {
+    if ($sectionVisible($id)) {
+        $navigation[$id] = [
+            'label' => $label,
+            'order' => $sectionOrder($id, $fallbackOrder),
+            'fallback' => $fallbackOrder,
+        ];
+    }
+}
+
+uasort(
+    $navigation,
+    static function (array $a, array $b): int {
+        return [$a['order'], $a['fallback']] <=> [$b['order'], $b['fallback']];
+    }
+);
+$brandTarget = array_key_first($navigation) ?: 'home';
 
 $servicesPublic = $lang === 'es'
     ? [
@@ -240,7 +266,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <body>
 <header class="site-header" data-header>
     <div class="shell nav-shell">
-        <a class="master-brand" href="#home" aria-label="ES MULTISERVICIOS">
+        <a class="master-brand" href="#<?= h($brandTarget) ?>" aria-label="ES MULTISERVICIOS">
             <img src="assets/brand/es-mark.png" alt="">
             <span>
                 <strong>ES MULTISERVICIOS</strong>
@@ -261,8 +287,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </button>
 
         <nav class="site-nav" data-nav>
-            <?php foreach ($navigation as $id => $label): ?>
-                <a href="#<?= h($id) ?>" data-nav-link data-section="<?= h($id) ?>"><?= h($label) ?></a>
+            <?php foreach ($navigation as $id => $item): ?>
+                <a href="#<?= h($id) ?>" data-nav-link data-section="<?= h($id) ?>"><?= h($item['label']) ?></a>
             <?php endforeach; ?>
             <span class="nav-indicator" data-nav-indicator aria-hidden="true"></span>
         </nav>
@@ -290,8 +316,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     </div>
 </header>
 
-<main>
-    <section class="hero" id="home">
+<main class="site-section-stack">
+    <?php if ($sectionVisible('home')): ?>
+    <section class="hero" id="home" style="order: <?= $sectionOrder('home', 10) ?>">
         <div class="shell hero-grid">
             <div class="hero-copy reveal">
                 <span class="eyebrow"><?= h($text('hero_kicker')) ?></span>
@@ -335,22 +362,24 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
             <div class="hero-media reveal">
                 <div class="product-window main-shot">
-                    <span class="shot-label">IZZY · Dashboard</span>
+                    <span class="shot-label">IZZY · <?= $lang === 'es' ? 'Escritorio' : 'Desktop' ?></span>
                     <img src="assets/products/izzy-dashboard.png" alt="IZZY dashboard">
                 </div>
                 <div class="product-window mobile-shot">
-                    <span class="shot-label">Responsive</span>
+                    <span class="shot-label"><?= $lang === 'es' ? 'Celular' : 'Mobile' ?></span>
                     <img src="assets/products/izzy-mobile.jpeg" alt="IZZY responsive mobile view">
                 </div>
                 <div class="product-window login-shot">
-                    <span class="shot-label">100% Web</span>
+                    <span class="shot-label"><?= $lang === 'es' ? 'Acceso web' : 'Web access' ?></span>
                     <img src="assets/products/izzy-login.png" alt="IZZY login">
                 </div>
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <section class="section section-soft" id="solutions">
+    <?php if ($sectionVisible('solutions')): ?>
+    <section class="section section-soft" id="solutions" style="order: <?= $sectionOrder('solutions', 20) ?>">
         <div class="shell">
             <div class="section-heading centered reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PRODUCTOS PROPIOS' : 'OUR PRODUCTS' ?></span>
@@ -387,8 +416,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <section class="section product-showcase-section" id="izzy">
+    <?php if ($sectionVisible('izzy')): ?>
+    <section class="section product-showcase-section" id="izzy" style="order: <?= $sectionOrder('izzy', 30) ?>">
         <div class="shell">
             <div class="product-section-head reveal">
                 <div>
@@ -470,9 +501,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </article>
         </div>
     </section>
+    <?php endif; ?>
 
-    <?php if ($plans): ?>
-        <section class="section izzy-plans-section" id="plans" aria-labelledby="izzy-plans-title">
+    <?php if ($plans && $sectionVisible('plans')): ?>
+        <section class="section izzy-plans-section" id="plans" aria-labelledby="izzy-plans-title" style="order: <?= $sectionOrder('plans', 35) ?>">
             <div class="shell">
                 <div class="section-heading centered plans-heading reveal">
                     <span class="eyebrow"><?= $lang === 'es' ? 'PLANES DE IZZY' : 'IZZY PLANS' ?></span>
@@ -534,7 +566,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     <?php endif; ?>
 
 
-    <section class="section cami-section product-showcase-section" id="cami">
+    <?php if ($sectionVisible('cami')): ?>
+    <section class="section cami-section product-showcase-section" id="cami" style="order: <?= $sectionOrder('cami', 40) ?>">
         <div class="shell">
             <div class="product-section-head reveal">
                 <div>
@@ -621,8 +654,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <section class="section section-dark" id="services">
+    <?php if ($sectionVisible('services')): ?>
+    <section class="section section-dark" id="services" style="order: <?= $sectionOrder('services', 50) ?>">
         <div class="shell">
             <div class="section-heading reveal">
                 <span class="eyebrow light"><?= $lang === 'es' ? 'SERVICIOS' : 'SERVICES' ?></span>
@@ -644,9 +679,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <?php if ($videos): ?>
-        <section class="section video-showcase-section" id="videos">
+    <?php if ($videos && $sectionVisible('videos')): ?>
+        <section class="section video-showcase-section" id="videos" style="order: <?= $sectionOrder('videos', 60) ?>">
             <div class="shell">
                 <div class="section-heading reveal">
                     <span class="eyebrow">
@@ -704,7 +740,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </section>
     <?php endif; ?>
 
-    <section class="section section-soft" id="projects">
+    <?php if ($sectionVisible('projects')): ?>
+    <section class="section section-soft" id="projects" style="order: <?= $sectionOrder('projects', 70) ?>">
         <div class="shell">
             <div class="section-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PROYECTOS' : 'PROJECTS' ?></span>
@@ -741,9 +778,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-
-    <section class="section affiliate-section" id="affiliate">
+    <?php if ($sectionVisible('affiliate')): ?>
+    <section class="section affiliate-section" id="affiliate" style="order: <?= $sectionOrder('affiliate', 80) ?>">
         <div class="shell">
             <div class="section-heading affiliate-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PROGRAMA DE AFILIADOS' : 'AFFILIATE PROGRAM' ?></span>
@@ -794,9 +832,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <?php if ($aboutArtworks): ?>
-        <section class="section company-artwork-section" id="company-artwork">
+    <?php if ($aboutArtworks && $sectionVisible('company-artwork')): ?>
+        <section class="section company-artwork-section" id="company-artwork" style="order: <?= $sectionOrder('company-artwork', 90) ?>">
             <div class="shell">
                 <div class="section-heading centered reveal">
                     <span class="eyebrow"><?= $lang === 'es' ? 'NUESTRA IDENTIDAD' : 'OUR IDENTITY' ?></span>
@@ -823,7 +862,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </section>
     <?php endif; ?>
 
-    <section class="section why-section">
+    <?php if ($sectionVisible('why')): ?>
+    <section class="section why-section" id="why" style="order: <?= $sectionOrder('why', 100) ?>">
         <div class="shell why-grid">
             <div class="section-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'NUESTRO ENFOQUE' : 'OUR APPROACH' ?></span>
@@ -845,8 +885,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 
-    <section class="section contact-section" id="contact">
+    <?php if ($sectionVisible('contact')): ?>
+    <section class="section contact-section" id="contact" style="order: <?= $sectionOrder('contact', 110) ?>">
         <div class="shell">
             <div class="contact-intro reveal">
                 <span class="eyebrow light"><?= $lang === 'es' ? 'CONTACTO' : 'CONTACT' ?></span>
@@ -933,6 +975,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?php endif; ?>
 </main>
 
 <footer class="site-footer">

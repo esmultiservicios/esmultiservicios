@@ -585,3 +585,38 @@ INSERT INTO marketing_plans(
     'Experiencia visual configurable','Configurable visual experience','',0,60,1
 );
 
+
+
+-- ============================================================
+-- ES MULTISERVICIOS V5 - PUBLIC CONTACT EMAIL
+-- Idempotent migration: replace only the old placeholder value.
+-- Existing custom email addresses are preserved.
+-- ============================================================
+INSERT INTO settings(setting_key,setting_value) VALUES
+('email','administracion@esmultiservicios.com')
+ON DUPLICATE KEY UPDATE setting_value = CASE
+    WHEN setting_value IS NULL OR TRIM(setting_value) = '' OR setting_value = 'hello@example.com'
+        THEN VALUES(setting_value)
+    ELSE setting_value
+END;
+
+
+-- ============================================================
+-- ES MULTISERVICIOS V6 - FULL LANDING SECTION ORDERING
+-- Idempotent: adds/updates the real public sections used by this site.
+-- Existing client-defined order/visibility is preserved for rows that exist.
+-- ============================================================
+INSERT INTO site_sections(section_key,label,sort_order,active) VALUES
+('home','Inicio / Hero',10,1),
+('solutions','Soluciones',20,1),
+('izzy','IZZY',30,1),
+('plans','Planes de IZZY',35,1),
+('cami','CAMI',40,1),
+('services','Servicios',50,1),
+('videos','Videos',60,1),
+('projects','Proyectos',70,1),
+('affiliate','Afiliados',80,1),
+('company-artwork','Material corporativo',90,1),
+('why','Por qué ES MULTISERVICIOS',100,1),
+('contact','Contacto',110,1)
+ON DUPLICATE KEY UPDATE label=VALUES(label);
