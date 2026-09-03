@@ -4793,3 +4793,63 @@ body.site-modal-open {
         max-height: calc(100dvh - 86px) !important;
     }
 }
+
+/* ============================================================
+   ES MULTISERVICIOS — MOBILE HEADER ALWAYS VISIBLE
+   On tablet/mobile the public header stays fixed to the viewport.
+   The body offset preserves the original document flow and anchors.
+   ============================================================ */
+@media (max-width: 980px) {
+    html {
+        scroll-padding-top: 92px;
+    }
+
+    body {
+        padding-top: 76px;
+    }
+
+    .site-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        z-index: 5000 !important;
+    }
+
+    .site-header .nav-shell {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .site-nav {
+        z-index: 5001 !important;
+    }
+
+    .nav-toggle,
+    .header-actions {
+        position: relative;
+        z-index: 5002;
+    }
+
+    .site-section-stack > section,
+    section[id] {
+        scroll-margin-top: 92px;
+    }
+}
+
+@media (max-width: 680px) {
+    html {
+        scroll-padding-top: 84px;
+    }
+
+    body {
+        padding-top: 72px;
+    }
+
+    .site-section-stack > section,
+    section[id] {
+        scroll-margin-top: 84px;
+    }
+}
