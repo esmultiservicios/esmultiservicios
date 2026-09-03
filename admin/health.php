@@ -75,8 +75,7 @@ require __DIR__.'/_header.php';
 <div class="health-grid"><?php
 foreach($checks as $c):
 ?>
-<article class="health-card <?=$c[1]?'ok':'warn'?>
-">
+<article class="health-card <?=$c[1]?'ok':'warn'?>">
 <span><?=$c[1]?'✓':'!'?>
 </span>
 <div>
@@ -87,8 +86,7 @@ foreach($checks as $c):
 </div><?php
 if($c[3]!=='#'):
 ?>
-<a href="<?=h($c[3])?>
-">Fix →</a><?php
+<a href="<?=h($c[3])?>">Fix →</a><?php
 endif;
 ?>
 </article><?php

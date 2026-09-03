@@ -1,17 +1,17 @@
 <?php
-$pageTitle = $pageTitle ?? "ES CMS Core Admin";
+$pageTitle = $pageTitle ?? "ES MULTISERVICIOS Admin";
 $active = $active ?? '';
 $flash = take_flash();
 $admin = current_admin();
 $set = settings();
-$brand = $set['admin_brand_name'] ?? "ES CMS Core Admin";
+$brand = $set['admin_brand_name'] ?? "ES MULTISERVICIOS Admin";
 $brandLogo = $set['admin_logo_path'] ?? '';
 $newEst = (int) db()->query("SELECT COUNT(*) FROM estimate_requests WHERE status='new'")->fetchColumn();
 $unreadNotes = unread_notification_count();
 $bellNotes = recent_notifications(6);
 $maintenance = ($set['maintenance_mode'] ?? '0') === '1';
 $avatar = $admin['avatar_path'] ?? '';
-$favicon = $set['favicon_path'] ?? ($set['admin_logo_path'] ?? '');
+$favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.png';
 ?>
 <!doctype html>
 <html lang="en">
@@ -255,6 +255,12 @@ $favicon = $set['favicon_path'] ?? ($set['admin_logo_path'] ?? '');
         <?php if (user_can('gallery.manage')): ?>
             <a class="<?= $active === 'gallery' ? 'active' : '' ?>" href="gallery.php">
                 <?= icon('image') ?><span>Gallery</span>
+            </a>
+        <?php endif; ?>
+
+        <?php if (user_can('videos.manage')): ?>
+            <a class="<?= $active === 'videos' ? 'active' : '' ?>" href="videos.php">
+                <?= icon('eye') ?><span>Videos</span>
             </a>
         <?php endif; ?>
 

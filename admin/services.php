@@ -45,17 +45,13 @@ require __DIR__.'/_header.php';
 </div>
 <section class="panel animate-in">
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="save">
-<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>
-">
+<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>">
 <div class="two-col">
-<label>Service title<input name="title" required value="<?=h($edit['title']??'')?>
-">
+<label>Service title<input name="title" required value="<?=h($edit['title']??'')?>">
 </label>
-<label>Display order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>
-">
+<label>Display order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>">
 </label>
 </div>
 <label>Subservices / details<textarea name="details" required><?=h($edit['details']??'')?>
@@ -85,24 +81,20 @@ foreach($rows as $r):
 <small>Order <?=$r['sort_order']?>
 </small>
 </div>
-<span class="badge <?=$r['active']?'contacted':'closed'?>
-"><?=$r['active']?'Published':'Hidden'?>
+<span class="badge <?=$r['active']?'contacted':'closed'?>"><?=$r['active']?'Published':'Hidden'?>
 </span>
 </div>
 <p><?=h($r['details'])?>
 </p>
 <div class="actions">
-<a class="button secondary small" href="?edit=<?=$r['id']?>
-">Edit</a>
+<a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a>
 <details class="action-menu">
 <summary>Actions ▾</summary>
 <nav>
 <form method="post" data-swal-confirm="Delete this service?" data-swal-text="This action cannot be undone.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['id']?>
-">
+<input type="hidden" name="id" value="<?=$r['id']?>">
 <button class="danger-text">Delete</button>
 </form>
 </nav>

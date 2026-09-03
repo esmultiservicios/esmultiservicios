@@ -122,19 +122,15 @@ endif;
 </div>
 </div>
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="profile">
 <div class="two-col">
-<label>Full name<input name="full_name" value="<?=h($row['full_name']??'')?>
-">
+<label>Full name<input name="full_name" value="<?=h($row['full_name']??'')?>">
 </label>
-<label>Username<input name="username" required value="<?=h($row['username'])?>
-">
+<label>Username<input name="username" required value="<?=h($row['username'])?>">
 </label>
 </div>
-<label>Email<input type="email" name="email" value="<?=h($row['email']??'')?>
-">
+<label>Email<input type="email" name="email" value="<?=h($row['email']??'')?>">
 </label>
 <div class="upload-zone" data-upload-zone tabindex="0">
 <div class="upload-icon"><?=icon('image')?>
@@ -162,8 +158,7 @@ endif;
 </div>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="password">
 <label>Current password<input type="password" name="current_password" required>
 </label>
@@ -189,8 +184,7 @@ $twoFactor=(int)($row['two_factor_enabled']??0)===1;
 $pendingSecret=(string)($_SESSION['escms_pending_totp_secret']??'');
 ?>
 <div class="two-factor-status">
-<span class="badge <?=$twoFactor?'success':'closed'?>
-"><?=$twoFactor?'Enabled':'Not enabled'?>
+<span class="badge <?=$twoFactor?'success':'closed'?>"><?=$twoFactor?'Enabled':'Not enabled'?>
 </span>
 <p class="muted"><?=$twoFactor?'Your account requires an authenticator code at sign-in.':'Recommended for Owner and Administrator accounts.'?>
 </p>
@@ -198,8 +192,7 @@ $pendingSecret=(string)($_SESSION['escms_pending_totp_secret']??'');
 if(!$twoFactor&&!$pendingSecret):
 ?>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="prepare_2fa">
 <label>Current password<input type="password" name="current_password" required autocomplete="current-password">
 </label>
@@ -220,13 +213,11 @@ $uri='otpauth://totp/'.$issuer.':'.$account.'?secret='.rawurlencode($pendingSecr
 <code><?=h($pendingSecret)?>
 </code>
 <p>Add this key to Google Authenticator, Microsoft Authenticator, 1Password or another TOTP app.</p>
-<a class="button secondary small" href="<?=h($uri)?>
-">Open authenticator app</a>
+<a class="button secondary small" href="<?=h($uri)?>">Open authenticator app</a>
 </div>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="enable_2fa">
 <label>Current password<input type="password" name="current_password" required>
 </label>
@@ -239,8 +230,7 @@ $uri='otpauth://totp/'.$issuer.':'.$account.'?secret='.rawurlencode($pendingSecr
 else:
 ?>
 <form method="post" data-swal-confirm="Disable two-factor authentication?" data-swal-text="Your account will return to password-only sign-in.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="disable_2fa">
 <label>Current password<input type="password" name="current_password" required>
 </label>
@@ -264,8 +254,7 @@ if(role_is_owner()):
 </div>
 <p class="muted">This removes administrator accounts and signs you out. It does <strong>not</strong> delete website content, gallery images, services, settings, email configuration or estimate requests.</p>
 <form method="post" data-confirm-text="RESET ADMIN" data-swal-confirm="Reset administrator ownership?" data-swal-text="All administrator accounts will be removed and you will be signed out. Website content will remain intact.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="reset_admin">
 <div class="two-col">
 <label>Current password<input type="password" name="current_password" required>

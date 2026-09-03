@@ -34,13 +34,11 @@ require __DIR__.'/_header.php';
 .</p>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <button class="button secondary small" name="action" value="read_all">Mark all read</button>
 </form>
 </div>
-<div class="activity-layout <?=user_can('activity.view')?'':'single'?>
-">
+<div class="activity-layout <?=user_can('activity.view')?'':'single'?>">
 <section class="panel">
 <div class="section-heading">
 <div>
@@ -58,11 +56,8 @@ if(!$notes):
 endif;
 foreach($notes as $n):
 ?>
-<a class="notification-item <?=$n['read_by_me']?'read':''?>
-" href="notifications.php?open=<?=$n['id']?>
-">
-<span class="notification-dot <?=h($n['notification_type'])?>
-">
+<a class="notification-item <?=$n['read_by_me']?'read':''?>" href="notifications.php?open=<?=$n['id']?>">
+<span class="notification-dot <?=h($n['notification_type'])?>">
 </span>
 <div>
 <strong><?=h($n['title'])?>

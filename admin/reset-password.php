@@ -6,7 +6,7 @@ if(admin_count()===0) {
 }
 $error='';
 $set=settings();
-$favicon=$set['favicon_path']??($set['admin_logo_path']??'');
+$favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
 $logo=$set['admin_logo_path']??'';
 $token=trim((string)($_GET['token']??$_POST['token']??''));

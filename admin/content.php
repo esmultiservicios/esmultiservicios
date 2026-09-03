@@ -86,6 +86,15 @@ $sectionNavigator = [
         'manage_url' => 'services.php',
         'manage_label' => 'Manage services',
     ],
+    'videos' => [
+        'title' => 'Videos',
+        'description' => 'Project videos and approved media.',
+        'icon' => '🎬',
+        'anchor' => 'videos',
+        'type' => 'module',
+        'manage_url' => 'videos.php',
+        'manage_label' => 'Manage videos',
+    ],
     'gallery' => [
         'title' => 'Gallery',
         'description' => 'Project images and categories.',
@@ -154,6 +163,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? 'draft';
 
     try {
+        if ($action === 'save_about_artworks') {
+            if (!user_can('content.edit')) {
+                throw new RuntimeException('Your role cannot update About artwork.');
+            }
+
+            $existingIds = array_map('intval', array_keys($_POST['artwork_order'] ?? []));
+            foreach ($existingIds as $artworkId) {
+                $sortOrder = (int)($_POST['artwork_order'][$artworkId] ?? 0);
+                $activeArtwork = isset($_POST['artwork_active'][$artworkId]) ? 1 : 0;
+                $title = trim((string)($_POST['artwork_title'][$artworkId] ?? ''));
+                $pdo->prepare('UPDATE about_artworks SET title=?,sort_order=?,active=? WHERE id=?')
+                    ->execute([$title,$sortOrder,$activeArtwork,$artworkId]);
+            }
+
+            if (!empty($_FILES['about_artworks']['name']) && is_array($_FILES['about_artworks']['name'])) {
+                $count = count($_FILES['about_artworks']['name']);
+                $nextOrder = (int)$pdo->query('SELECT COALESCE(MAX(sort_order),0)+10 FROM about_artworks')->fetchColumn();
+                for ($i = 0; $i < $count; $i++) {
+                    if (empty($_FILES['about_artworks']['name'][$i])) continue;
+                    $file = [
+                        'name' => $_FILES['about_artworks']['name'][$i],
+                        'type' => $_FILES['about_artworks']['type'][$i],
+                        'tmp_name' => $_FILES['about_artworks']['tmp_name'][$i],
+                        'error' => $_FILES['about_artworks']['error'][$i],
+                        'size' => $_FILES['about_artworks']['size'][$i],
+                    ];
+                    $path = upload_image($file, 'about', 'about-artwork', 10);
+                    $title = pathinfo((string)$file['name'], PATHINFO_FILENAME);
+                    $title = trim(str_replace(['_','-'], ' ', $title));
+                    $pdo->prepare('INSERT INTO about_artworks(title,image_path,sort_order,active) VALUES(?,?,?,1)')
+                        ->execute([$title,$path,$nextOrder]);
+                    $nextOrder += 10;
+                }
+            }
+
+            log_activity('about_artwork', 'Updated About / Mission / Vision artwork gallery');
+            flash('success', 'About artwork updated. If no artwork is published, the Mission and Vision text is shown automatically.');
+            header('Location: content.php?section=about');
+            exit;
+        }
+
+        if ($action === 'delete_about_artwork') {
+            if (!user_can('content.edit')) {
+                throw new RuntimeException('Your role cannot delete About artwork.');
+            }
+            $artworkId = (int)($_POST['artwork_id'] ?? 0);
+            if ($artworkId > 0) {
+                $pdo->prepare('DELETE FROM about_artworks WHERE id=?')->execute([$artworkId]);
+                log_activity('about_artwork_delete', 'Deleted About artwork', ['artwork_id'=>$artworkId]);
+                flash('success', 'Artwork removed.');
+            }
+            header('Location: content.php?section=about');
+            exit;
+        }
         if ($action === 'draft') {
             $statement = $pdo->prepare(
                 'INSERT INTO content_drafts(content_key, content_value, updated_by)
@@ -303,6 +366,13 @@ foreach ($sectionNavigator as $sectionKey => $section) {
     $sectionStates[$sectionKey] = $hasSectionDraft
         ? ['label' => 'Draft', 'class' => 'draft']
         : ['label' => 'Published', 'class' => 'published'];
+}
+
+$aboutArtworks = [];
+try {
+    $aboutArtworks = $pdo->query('SELECT * FROM about_artworks ORDER BY sort_order,id')->fetchAll();
+} catch (Throwable $ignored) {
+    $aboutArtworks = [];
 }
 
 $selectedSection = $returnSection;
@@ -473,6 +543,71 @@ require __DIR__ . '/_header.php';
                 <?php endif; ?>
             </div>
         </form>
+
+        <section class="panel about-artwork-panel" data-about-artwork-panel <?= $selectedSection === 'about' ? '' : 'hidden' ?>>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MISSION · VISION · COMPANY ARTWORK</p>
+                    <h3>Flexible About artwork</h3>
+                    <p class="muted">Upload one combined poster, two separate Mission/Vision posters, or several approved graphics. If no artwork is published, the website automatically shows the editable Mission and Vision text.</p>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="about-artwork-manager">
+                <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+                <input type="hidden" name="action" value="save_about_artworks">
+                <input type="hidden" name="return_section" value="about">
+
+                <div class="field-heading">
+                    <div>
+                        <strong>Add artwork</strong>
+                        <small>JPG, PNG or WEBP · Select one or several files. Drag & drop, paste from clipboard or use the file chooser.</small>
+                    </div>
+                </div>
+                <div class="upload-zone premium-media-zone about-artwork-upload" data-upload-zone>
+                    <input type="file" name="about_artworks[]" accept="image/jpeg,image/png,image/webp" multiple data-empty-label="Drop, paste or choose Mission / Vision artwork">
+                    <div class="upload-icon" aria-hidden="true">▣</div>
+                    <strong>Drop approved artwork here</strong>
+                    <small>One combined poster or multiple images are supported.</small>
+                    <span class="upload-zone-action">Choose artwork</span>
+                    <div class="upload-selection-name" data-upload-name>Drop, paste or choose Mission / Vision artwork</div>
+                    <div class="upload-preview premium-upload-preview" data-upload-preview></div>
+                </div>
+
+                <?php if($aboutArtworks): ?>
+                    <div class="about-artwork-current-grid">
+                        <?php foreach($aboutArtworks as $artwork): ?>
+                            <article class="about-artwork-current-card">
+                                <div class="about-artwork-image">
+                                    <img src="../<?=h($artwork['image_path'])?>" alt="<?=h($artwork['title'] ?: 'About artwork')?>">
+                                </div>
+                                <label>Label
+                                    <input name="artwork_title[<?=$artwork['id']?>]" value="<?=h($artwork['title']??'')?>" placeholder="Mission, Vision, Company values...">
+                                </label>
+                                <div class="two-col compact-fields">
+                                    <label>Order<input type="number" name="artwork_order[<?=$artwork['id']?>]" value="<?=h((string)$artwork['sort_order'])?>"></label>
+                                    <label class="check-row artwork-visible-check"><input type="checkbox" name="artwork_active[<?=$artwork['id']?>]" <?=!empty($artwork['active'])?'checked':''?>> Visible</label>
+                                </div>
+                                <button class="button danger-lite small" type="submit" name="delete_artwork_request" value="<?=$artwork['id']?>" form="delete-about-artwork-<?=$artwork['id']?>">Delete artwork</button>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-state compact-empty-state"><strong>No artwork uploaded</strong><span>The public website will show the Mission and Vision text automatically.</span></div>
+                <?php endif; ?>
+
+                <div class="form-actions artwork-actions"><button>Save artwork settings</button></div>
+            </form>
+
+            <?php foreach($aboutArtworks as $artwork): ?>
+                <form id="delete-about-artwork-<?=$artwork['id']?>" method="post" data-swal-confirm="Delete this artwork?" data-swal-text="The image will stop appearing on the public website. Mission/Vision text remains available as fallback.">
+                    <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+                    <input type="hidden" name="action" value="delete_about_artwork">
+                    <input type="hidden" name="artwork_id" value="<?=$artwork['id']?>">
+                    <input type="hidden" name="return_section" value="about">
+                </form>
+            <?php endforeach; ?>
+        </section>
 
         <?php if ($draft && !user_can('content.publish') && user_can('content.edit')): ?>
             <section class="panel approval-submit-panel is-collapsed" id="approval-submit">

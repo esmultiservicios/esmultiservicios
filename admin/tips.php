@@ -44,20 +44,15 @@ require __DIR__.'/_header.php';
 </div>
 <section class="panel">
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="save">
-<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>
-">
-<label>Title<input name="title" required value="<?=h($edit['title']??'')?>
-">
+<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>">
+<label>Title<input name="title" required value="<?=h($edit['title']??'')?>">
 </label>
 <div class="two-col">
-<label>URL<input name="url" value="<?=h($edit['url']??'#')?>
-">
+<label>URL<input name="url" value="<?=h($edit['url']??'#')?>">
 </label>
-<label>Order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>
-">
+<label>Order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>">
 </label>
 </div>
 <label class="check-row status-switch">
@@ -84,19 +79,15 @@ foreach($rows as $r):
 <small><?=h($r['url'])?>
 </small>
 </div>
-<span class="badge <?=$r['active']?'contacted':'closed'?>
-"><?=$r['active']?'Published':'Hidden'?>
+<span class="badge <?=$r['active']?'contacted':'closed'?>"><?=$r['active']?'Published':'Hidden'?>
 </span>
 </div>
 <div class="actions">
-<a class="button secondary small" href="?edit=<?=$r['id']?>
-">Edit</a>
+<a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a>
 <form method="post" data-swal-confirm="Delete this tip?" data-swal-text="This educational item will be removed.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['id']?>
-">
+<input type="hidden" name="id" value="<?=$r['id']?>">
 <button class="button danger small">Delete</button>
 </form>
 </div>

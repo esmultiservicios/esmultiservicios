@@ -11,7 +11,7 @@ if(!$id) {
 }
 $error='';
 $set=settings();
-$favicon=$set['favicon_path']??($set['admin_logo_path']??'');
+$favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
 $logo=$set['admin_logo_path']??'';
 $st=db()->prepare('SELECT id,username,two_factor_secret_enc,two_factor_enabled,active FROM admin_users WHERE id=?');
@@ -50,8 +50,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" href="../<?=h($favicon)?>
-">
+<link rel="icon" href="../<?=h($favicon)?>">
 <title>Two-factor verification</title>
 <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
 <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
@@ -74,8 +73,7 @@ if($error):
 endif;
 ?>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <label>Authentication code<input class="totp-input" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus>
 </label>
 <button>Verify & continue</button>

@@ -42,10 +42,8 @@ endif;
 <div class="seo-layout">
 <section class="panel">
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
-<label>Browser / search title<input name="seo_title" maxlength="70" value="<?=h($set['seo_title']??'')?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
+<label>Browser / search title<input name="seo_title" maxlength="70" value="<?=h($set['seo_title']??'')?>">
 </label>
 <label>Meta description<textarea name="seo_description" maxlength="180"><?=h($set['seo_description']??'')?>
 </textarea>

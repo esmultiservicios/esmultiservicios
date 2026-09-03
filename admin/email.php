@@ -99,17 +99,14 @@ endif;
 </div>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="save">
-<input type="hidden" name="id" value="<?=h((string)($edit['correo_id']??0))?>
-">
+<input type="hidden" name="id" value="<?=h((string)($edit['correo_id']??0))?>">
 <div class="three-col">
 <label>Email purpose<select name="correo_tipo_id"><?php
 foreach($types as $t):
 ?>
-<option value="<?=$t['correo_tipo_id']?>
-" <?=($edit['correo_tipo_id']??1)==$t['correo_tipo_id']?'selected':''?>
+<option value="<?=$t['correo_tipo_id']?>" <?=($edit['correo_tipo_id']??1)==$t['correo_tipo_id']?'selected':''?>
 ><?=h($t['nombre'])?>
 </option><?php
 endforeach;
@@ -134,16 +131,13 @@ endforeach;
 </span>
 </label>
 </div>
-<label>Sender email<input type="email" name="correo" required value="<?=h($edit['correo']??'')?>
-">
+<label>Sender email<input type="email" name="correo" required value="<?=h($edit['correo']??'')?>">
 </label>
 <div data-method="SMTP">
 <div class="three-col">
-<label>SMTP server<input name="server" value="<?=h(($edit['metodo_envio']??'SMTP')==='SMTP'?($edit['server']??''):'')?>
-">
+<label>SMTP server<input name="server" value="<?=h(($edit['metodo_envio']??'SMTP')==='SMTP'?($edit['server']??''):'')?>">
 </label>
-<label>Port<input type="number" name="port" value="<?=h((string)($edit['port']??587))?>
-">
+<label>Port<input type="number" name="port" value="<?=h((string)($edit['port']??587))?>">
 </label>
 <label>Security<select name="smtp_secure">
 <option value="tls" <?=($edit['smtp_secure']??'tls')==='tls'?'selected':''?>
@@ -153,24 +147,19 @@ endforeach;
 </select>
 </label>
 </div>
-<label>SMTP password<input type="password" name="password" autocomplete="new-password" placeholder="<?=$edit?'Leave blank to keep saved password':'SMTP password'?>
-">
+<label>SMTP password<input type="password" name="password" autocomplete="new-password" placeholder="<?=$edit?'Leave blank to keep saved password':'SMTP password'?>">
 </label>
 </div>
 <div data-method="GRAPH">
 <div class="two-col">
-<label>Tenant ID<input name="tenant_id" value="<?=h($edit['tenant_id']??'')?>
-">
+<label>Tenant ID<input name="tenant_id" value="<?=h($edit['tenant_id']??'')?>">
 </label>
-<label>Client ID<input name="client_id" value="<?=h($edit['client_id']??'')?>
-">
+<label>Client ID<input name="client_id" value="<?=h($edit['client_id']??'')?>">
 </label>
 </div>
-<label>Client Secret VALUE<input type="password" name="client_secret" placeholder="<?=$edit?'Leave blank to keep saved secret':'Microsoft Entra client secret'?>
-">
+<label>Client Secret VALUE<input type="password" name="client_secret" placeholder="<?=$edit?'Leave blank to keep saved secret':'Microsoft Entra client secret'?>">
 </label>
-<label>Graph User / mailbox<input type="email" name="graph_user" value="<?=h($edit['graph_user']??'')?>
-">
+<label>Graph User / mailbox<input type="email" name="graph_user" value="<?=h($edit['graph_user']??'')?>">
 </label>
 <label class="premium-switch">
 <input type="checkbox" name="save_to_sent_items" <?=!$edit||!empty($edit['save_to_sent_items'])?'checked':''?>
@@ -206,13 +195,10 @@ if($edit):
 </div>
 </div>
 <form method="post" class="test-email-form">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="test">
-<input type="hidden" name="id" value="<?=$edit['correo_id']?>
-">
-<label>Test destination email<input type="email" name="test_to" required placeholder="you@example.com" value="<?=h($edit['correo']??'')?>
-">
+<input type="hidden" name="id" value="<?=$edit['correo_id']?>">
+<label>Test destination email<input type="email" name="test_to" required placeholder="you@example.com" value="<?=h($edit['correo']??'')?>">
 </label>
 <div class="form-actions">
 <button class="button">Send test email</button>
@@ -255,42 +241,34 @@ foreach($rows as $r):
 <small><?=h($r['correo'])?>
 </small>
 </div>
-<span class="badge <?=$r['estado']==1?'contacted':'closed'?>
-"><?=$r['estado']==1?'Active':'Inactive'?>
+<span class="badge <?=$r['estado']==1?'contacted':'closed'?>"><?=$r['estado']==1?'Active':'Inactive'?>
 </span>
 </div>
 <p class="muted"><?=$r['metodo_envio']==='GRAPH'?'Microsoft 365 / Graph mailbox: '.h($r['graph_user']?:$r['correo']):'SMTP: '.h($r['server']).':'.(int)$r['port']?>
 </p>
 <div class="actions">
 <form method="post" class="actions">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="test">
-<input type="hidden" name="id" value="<?=$r['correo_id']?>
-">
+<input type="hidden" name="id" value="<?=$r['correo_id']?>">
 <input style="max-width:230px" type="email" name="test_to" placeholder="Test destination">
 <button class="button small">Send test</button>
 </form>
 <details class="action-menu">
 <summary>Actions ▾</summary>
 <nav>
-<a href="?edit=<?=$r['correo_id']?>
-">Edit</a>
+<a href="?edit=<?=$r['correo_id']?>">Edit</a>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="toggle">
-<input type="hidden" name="id" value="<?=$r['correo_id']?>
-">
+<input type="hidden" name="id" value="<?=$r['correo_id']?>">
 <button><?=$r['estado']==1?'Deactivate':'Activate'?>
 </button>
 </form>
 <form method="post" data-swal-confirm="Delete this email configuration?" data-swal-text="Email delivery using this configuration will stop.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['correo_id']?>
-">
+<input type="hidden" name="id" value="<?=$r['correo_id']?>">
 <button class="danger-text">Delete</button>
 </form>
 </nav>

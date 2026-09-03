@@ -28,17 +28,14 @@ require __DIR__.'/_header.php';
 <a class="button secondary" href="../?preview=1" target="_blank">Preview website</a>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <div class="section-sort-list" data-sortable-list><?php
 foreach($rows as $r):
 ?>
 <article class="section-sort-card" draggable="true">
 <span class="drag-handle">⋮⋮</span>
-<input type="hidden" name="section_key[]" value="<?=h($r['section_key'])?>
-">
-<input type="hidden" name="sort_order[]" value="<?=$r['sort_order']?>
-" data-sort-order>
+<input type="hidden" name="section_key[]" value="<?=h($r['section_key'])?>">
+<input type="hidden" name="sort_order[]" value="<?=$r['sort_order']?>" data-sort-order>
 <div>
 <strong><?=h($r['label'])?>
 </strong>

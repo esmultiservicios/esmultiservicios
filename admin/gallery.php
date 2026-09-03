@@ -60,27 +60,21 @@ endif;
 ?>
 <section class="panel">
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="save">
-<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>
-">
-<input type="hidden" name="existing_image" value="<?=h($edit['image_path']??'')?>
-">
+<input type="hidden" name="id" value="<?=h((string)($edit['id']??0))?>">
+<input type="hidden" name="existing_image" value="<?=h($edit['image_path']??'')?>">
 <div class="two-col">
-<label>Title<input name="title" required value="<?=h($edit['title']??'')?>
-">
+<label>Title<input name="title" required value="<?=h($edit['title']??'')?>">
 </label>
-<label>Order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>
-">
+<label>Order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>">
 </label>
 </div>
 <label>Or reuse image from Media Library<select name="media_path">
 <option value="">Keep current / upload new</option><?php
 foreach($pdo->query("SELECT file_path,title FROM media_library ORDER BY id DESC LIMIT 100")->fetchAll() as $m):
 ?>
-<option value="<?=h($m['file_path'])?>
-"><?=h($m['title']?:basename($m['file_path']))?>
+<option value="<?=h($m['file_path'])?>"><?=h($m['title']?:basename($m['file_path']))?>
 </option><?php
 endforeach;
 ?>
@@ -97,9 +91,7 @@ endforeach;
 </div><?php
 if($edit&&$edit['image_path']):
 ?>
-<button type="button" class="button secondary small" data-preview-src="../<?=h($edit['image_path'])?>
-" data-preview-caption="<?=h($edit['title'])?>
-">Preview current image</button><?php
+<button type="button" class="button secondary small" data-preview-src="../<?=h($edit['image_path'])?>" data-preview-caption="<?=h($edit['title'])?>">Preview current image</button><?php
 endif;
 ?>
 <label class="premium-switch">
@@ -127,12 +119,8 @@ foreach($rows as $i=>$r):$displayImage=$r['image_path']?'../'.$r['image_path']:g
 ?>
 <article class="gallery-item animate-in">
 <div class="gallery-media">
-<img src="<?=h($displayImage)?>
-" alt="<?=h($r['title'])?>
-">
-<button type="button" class="zoom-btn" data-preview-src="<?=h($displayImage)?>
-" data-preview-caption="<?=h($r['title'])?>
-" aria-label="View large"><?=icon('eye')?>
+<img src="<?=h($displayImage)?>" alt="<?=h($r['title'])?>">
+<button type="button" class="zoom-btn" data-preview-src="<?=h($displayImage)?>" data-preview-caption="<?=h($r['title'])?>" aria-label="View large"><?=icon('eye')?>
 </button><?php
 if(!$r['image_path']):
 ?>
@@ -155,14 +143,11 @@ endif;
 <details class="action-menu">
 <summary>Actions ▾</summary>
 <nav>
-<a href="?edit=<?=$r['id']?>
-">Edit</a>
+<a href="?edit=<?=$r['id']?>">Edit</a>
 <form method="post" data-swal-confirm="Delete this image?" data-swal-text="The gallery record will be removed.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['id']?>
-">
+<input type="hidden" name="id" value="<?=$r['id']?>">
 <button class="danger-text">Delete</button>
 </form>
 </nav>

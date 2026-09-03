@@ -1,0 +1,25 @@
+ES CMS CORE — LOCAL UI LIBRARIES
+
+The project already references local files from:
+
+assets/vendor/show-notify/showNotify.css
+assets/vendor/show-notify/showNotify.js
+assets/vendor/sweetalert2/sweetalert2.min.css
+assets/vendor/sweetalert2/sweetalert2.all.min.js
+
+showNotify is part of this project and supports:
+showNotify("Saved successfully", "success")
+showNotify("Something failed", "error")
+showNotify("Please review this", "warning")
+showNotify("Useful information", "info")
+
+Swal confirmations use:
+Swal.fire({
+  icon: "warning",
+  title: "Delete item?",
+  text: "This action cannot be undone.",
+  showCancelButton: true
+})
+
+If you want to replace the bundled local Swal-compatible files with the official SweetAlert2 distribution, download the two dist files from the SweetAlert2 package on jsDelivr and keep the SAME local filenames above.
+Recommended major version: SweetAlert2 11.

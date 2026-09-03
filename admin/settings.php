@@ -9,7 +9,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
     $action=$_POST['action']??'';
     try {
         if($action==='identity') {
-            foreach(['admin_brand_name','company_name','phone','phone_digits','email','youtube','facebook','tiktok','website','business_hours','developer_credit_text'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
+            foreach(['admin_brand_name','company_name','phone','phone_digits','email','youtube','facebook','tiktok','website','business_hours','contact_map_query','developer_credit_text'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
             if(!empty($_FILES['admin_logo']['name']))save_setting('admin_logo_path',upload_image($_FILES['admin_logo'],'branding','admin-logo',5));
             if(!empty($_FILES['favicon']['name']))save_setting('favicon_path',upload_image($_FILES['favicon'],'branding','favicon',3));
             if(isset($_POST['remove_favicon']))save_setting('favicon_path','');
@@ -65,14 +65,11 @@ endif;
 </div>
 </div>
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="identity">
-<label>Admin name<input name="admin_brand_name" value="<?=h($set['admin_brand_name']??"ES CMS Core Admin")?>
-">
+<label>Admin name<input name="admin_brand_name" value="<?=h($set['admin_brand_name']??"ES CMS Core Admin")?>">
 </label>
-<label>Company / website name<input name="company_name" value="<?=h($set['company_name']??'Your Company')?>
-">
+<label>Company / website name<input name="company_name" value="<?=h($set['company_name']??'Your Company')?>">
 </label>
 <div class="branding-upload-grid">
 <div class="upload-zone" data-upload-zone tabindex="0">
@@ -97,8 +94,7 @@ endif;
 if(!empty($set['favicon_path'])):
 ?>
 <div class="saved-favicon">
-<img src="../<?=h($set['favicon_path'])?>
-" alt="Current favicon">
+<img src="../<?=h($set['favicon_path'])?>" alt="Current favicon">
 <div>
 <strong>Current browser tab icon</strong>
 <small><?=h($set['favicon_path'])?>
@@ -112,34 +108,31 @@ if(!empty($set['favicon_path'])):
 endif;
 ?>
 <div class="two-col">
-<label>Phone<input name="phone" value="<?=h($set['phone']??'')?>
-">
+<label>Phone<input name="phone" value="<?=h($set['phone']??'')?>">
 </label>
-<label>Phone digits<input name="phone_digits" value="<?=h($set['phone_digits']??'')?>
-">
+<label>Phone digits<input name="phone_digits" value="<?=h($set['phone_digits']??'')?>">
 </label>
 </div>
-<label>Public email<input type="email" name="email" value="<?=h($set['email']??'')?>
-">
+<label>Public email<input type="email" name="email" value="<?=h($set['email']??'')?>">
 </label>
 <div class="two-col">
-<label>YouTube<input name="youtube" value="<?=h($set['youtube']??'')?>
-">
+<label>YouTube<input name="youtube" value="<?=h($set['youtube']??'')?>">
 </label>
-<label>Facebook<input name="facebook" value="<?=h($set['facebook']??'')?>
-">
+<label>Facebook<input name="facebook" value="<?=h($set['facebook']??'')?>">
 </label>
 </div>
 <div class="two-col">
-<label>TikTok<input name="tiktok" value="<?=h($set['tiktok']??'')?>
-">
+<label>TikTok<input name="tiktok" value="<?=h($set['tiktok']??'')?>">
 </label>
-<label>Website<input name="website" value="<?=h($set['website']??'')?>
-">
+<label>Website<input name="website" value="<?=h($set['website']??'')?>">
 </label>
 </div>
 <label>Business hours<textarea name="business_hours"><?=h($set['business_hours']??'')?>
 </textarea>
+</label>
+<label>Contact map location / search
+<input name="contact_map_query" value="<?=h($set['contact_map_query']??'')?>" placeholder="Example: Company name, city, country">
+<small class="field-help">Optional. When filled, the public Contact section shows an embedded map for this search/location.</small>
 </label>
 <label class="premium-switch">
 <input type="checkbox" name="developer_credit_enabled" <?=($set['developer_credit_enabled']??'0')==='1'?'checked':''?>
@@ -151,8 +144,7 @@ endif;
 <small>Optional. Enable only if the client agrees to show a discreet ES MULTISERVICIOS credit.</small>
 </span>
 </label>
-<label>Developer credit text<input name="developer_credit_text" value="<?=h($set['developer_credit_text']??'Website by ES MULTISERVICIOS')?>
-">
+<label>Developer credit text<input name="developer_credit_text" value="<?=h($set['developer_credit_text']??'Website by ES MULTISERVICIOS')?>">
 </label>
 <div class="form-actions">
 <button>Save identity & contact</button>
@@ -169,8 +161,7 @@ endif;
 </div>
 </div>
 <form method="post" enctype="multipart/form-data">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="maintenance">
 <label class="status-switch premium-switch">
 <input type="checkbox" name="maintenance_mode" <?=($set['maintenance_mode']??'0')==='1'?'checked':''?>
@@ -182,8 +173,7 @@ endif;
 <small>Visitors will see the maintenance screen when enabled.</small>
 </span>
 </label>
-<label>Maintenance title<input name="maintenance_title" value="<?=h($set['maintenance_title']??'')?>
-">
+<label>Maintenance title<input name="maintenance_title" value="<?=h($set['maintenance_title']??'')?>">
 </label>
 <label>Maintenance message<textarea name="maintenance_text"><?=h($set['maintenance_text']??'')?>
 </textarea>
@@ -200,8 +190,7 @@ endif;
 if(!empty($set['maintenance_image_path'])):
 ?>
 <div class="saved-image-row">
-<img src="../<?=h($set['maintenance_image_path'])?>
-" alt="Maintenance preview">
+<img src="../<?=h($set['maintenance_image_path'])?>" alt="Maintenance preview">
 <div>
 <strong>Current maintenance image</strong>
 <small><?=h($set['maintenance_image_path'])?>
@@ -229,8 +218,7 @@ endif;
 </div>
 </div>
 <form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>
-">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="whatsapp">
 <label class="premium-switch">
 <input type="checkbox" name="whatsapp_enabled" <?=($set['whatsapp_enabled']??'1')==='1'?'checked':''?>

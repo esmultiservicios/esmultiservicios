@@ -353,6 +353,7 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
   const previousButton = document.querySelector('[data-section-previous]');
   const nextButton = document.querySelector('[data-section-next]');
   const savebar = document.querySelector('[data-content-savebar]');
+  const aboutArtworkPanel = document.querySelector('[data-about-artwork-panel]');
   const deviceButtons = Array.from(document.querySelectorAll('[data-preview-device]'));
   const previewStage = document.querySelector('[data-preview-stage]');
 
@@ -398,6 +399,7 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
 
     const isEditableContent = contentEditors.some(editor => editor.dataset.contentEditor === key);
     if (savebar) savebar.hidden = !isEditableContent;
+    if (aboutArtworkPanel) aboutArtworkPanel.hidden = key !== 'about';
 
     const sectionTitle = tab.dataset.sectionTitle || '';
     const sectionDescription = tab.dataset.sectionDescription || '';

@@ -72,6 +72,8 @@ $cards=[['content.view','content.php','edit','Visual content editor','Draft, pre
 ['media.manage','media.php','image','Media Library','Upload, search, preview and reuse images.'],
 ['services.manage','services.php','tools','Services','Add, edit, order or hide services.'],
 ['gallery.manage','gallery.php','image','Gallery','Manage project images and public gallery.'],
+['videos.manage','videos.php','eye','Videos','Manage YouTube, Vimeo and uploaded website videos with real preview.'],
+['marketing.manage','marketing.php','eye','Marketing site ES/EN','Manage bilingual ES MULTISERVICIOS landing content, plans, products and projects.'],
 ['areas.manage','areas.php','pin','Service areas','Manage cities, ZIP codes and coverage.'],
 ['seo.manage','seo.php','eye','SEO Manager','Search title, description and social image.'],
 ['health.view','health.php','gear','Website Health','Automatic readiness and configuration checks.'],
@@ -108,12 +110,10 @@ Preview site</a>
 <div class="stat-grid"><?php
 foreach($stats as $s):
 ?>
-<a class="stat animate-in" href="<?=$s[3]?>
-">
+<a class="stat animate-in" href="<?=$s[3]?>">
 <span><?=h($s[0])?>
 </span>
-<strong data-stat="<?=$s[1]?>
-"><?=$s[1]?>
+<strong data-stat="<?=$s[1]?>"><?=$s[1]?>
 </strong>
 <small><?=h($s[2])?>
 </small>
@@ -139,8 +139,7 @@ endif;
 <div class="attention-grid"><?php
 foreach($attention as $a):
 ?>
-<a class="attention-card" href="<?=$a[3]?>
-">
+<a class="attention-card" href="<?=$a[3]?>">
 <span class="manage-icon"><?=icon($a[4])?>
 </span>
 <div>
@@ -171,8 +170,7 @@ endif;
 <div class="manage-grid"><?php
 foreach($cards as $c):if(!user_can($c[0]))continue;
 ?>
-<a class="manage-card animate-in" href="<?=$c[1]?>
-">
+<a class="manage-card animate-in" href="<?=$c[1]?>">
 <span class="manage-icon"><?=icon($c[2])?>
 </span>
 <div>
@@ -210,8 +208,7 @@ else:
 <div class="request-grid"><?php
 foreach($recent as $r):
 ?>
-<article class="request-card animate-in priority-<?=h($r['priority']??'normal')?>
-">
+<article class="request-card animate-in priority-<?=h($r['priority']??'normal')?>">
 <div class="request-top">
 <div>
 <strong><?=h($r['full_name']?:'Website visitor')?>
@@ -219,14 +216,12 @@ foreach($recent as $r):
 <small><?=h($r['created_at'])?>
 </small>
 </div>
-<span class="badge <?=h($r['status'])?>
-"><?=h(str_replace('_',' ',$r['status']))?>
+<span class="badge <?=h($r['status'])?>"><?=h(str_replace('_',' ',$r['status']))?>
 </span>
 </div>
 <p><?=h($r['service_needed']?:'General project')?>
 </p>
-<a href="estimates.php?view=<?=$r['id']?>
-">Open request →</a>
+<a href="estimates.php?view=<?=$r['id']?>">Open request →</a>
 </article><?php
 endforeach;
 ?>

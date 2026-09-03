@@ -1,0 +1,50 @@
+ES MULTISERVICIOS — PREMIUM LANDING / CMS UPDATE
+================================================
+
+Public website
+--------------
+- Enlarged and improved the header logo.
+- Increased navigation readability and spacing.
+- Improved desktop/tablet/mobile navigation behavior.
+- Reworked the IZZY presentation so screenshots are large and easy to inspect.
+- Kept the two main IZZY desktop experiences uniform when displayed together.
+- Presented the responsive/mobile IZZY experience as a separate wide showcase.
+- Added real CAMI screenshots supplied by the project owner.
+- CAMI uses two uniform large product cards plus a separate access/login presentation.
+- Project cards now support a real logo or cover image.
+- Castro's Ready project seed now uses its real project logo instead of the ES placeholder.
+- Added responsive video showcase support with uniform 16:9 cards.
+- Added optional corporate artwork display.
+- Maintained bilingual ES / EN behavior.
+- Kept the site free of decorative gradients.
+
+Administrator
+-------------
+- Changed the administrator visual identity to an ES MULTISERVICIOS navy/blue/orange palette.
+- Added Videos to the administrator navigation.
+- Added real video preview inside the administrator.
+- Added YouTube, Vimeo, MP4 and WEBM support.
+- Added premium drag & drop / paste / file chooser upload zones for video files and posters.
+- Added flexible corporate artwork manager to Page Content / About.
+- Added a live public preview workspace to Marketing site ES/EN.
+- Marketing preview can focus Home, Solutions, IZZY, CAMI, Services, Plans, Affiliates, Projects and Contact.
+- Projects can upload a logo or cover image with preview.
+- Preserved existing CMS security, users, roles, approvals, backups, email, integrations, SEO and health tools.
+
+Database / installer
+--------------------
+- database.sql contains the complete new-install schema and current ES MULTISERVICIOS data.
+- database-update.sql is cumulative for compatible existing installations.
+- Added videos table.
+- Added about_artworks table.
+- Added videos.manage permission and role assignment.
+- Added Videos to section metadata.
+- Existing Castro's Ready portfolio record receives its project logo when the image is empty.
+- Installer updated to the professional 3-step assistant.
+- Installation controls use pointer cursor and responsive layout.
+
+Validation
+----------
+- PHP syntax checked across the complete project.
+- Public layout uses DIV/Grid/Flex based responsive structures.
+- No new public HTML tables were introduced.

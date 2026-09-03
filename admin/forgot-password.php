@@ -12,7 +12,7 @@ require_once __DIR__.'/../core/EmailService.php';
 $error='';
 $success='';
 $set=settings();
-$favicon=$set['favicon_path']??($set['admin_logo_path']??'');
+$favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
 $logo=$set['admin_logo_path']??'';
 if($_SERVER['REQUEST_METHOD']==='POST') {
@@ -35,7 +35,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             $dir=rtrim(str_replace('\\','/',dirname($_SERVER['SCRIPT_NAME']??'/admin/')),'/');
             $url=$scheme.'://'.$host.$dir.'/reset-password.php?token='.rawurlencode($token);
             $mailer=new EmailService();
-            $result=$mailer->sendWithFallback([2,1],$email,'Reset your Castro\'s Ready administrator password',EmailTemplates::passwordReset($admin['full_name']?:$admin['username'],$url,$set));
+            $result=$mailer->sendWithFallback([2,1],$email,'Reset your ES MULTISERVICIOS administrator password',EmailTemplates::passwordReset($admin['full_name']?:$admin['username'],$url,$set));
             if(!$result['success']) {
                 $error='The reset link could not be emailed. Configure an active “Admin Security” or “Website Notifications” sender first. '.$result['message'];
             } else {

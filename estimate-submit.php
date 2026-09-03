@@ -40,16 +40,17 @@ try {
     'desired_date'=>$date,
     'message'=>$message];
     $set=settings();
+    $companyName=trim((string)($set['company_name']??'ES MULTISERVICIOS'))?:'ES MULTISERVICIOS';
     try {
         $mailer=new EmailService();
         $adminTo=$set['email']??'';
-        if(filter_var($adminTo,FILTER_VALIDATE_EMAIL))$mailer->sendWithFallback([3,1],$adminTo,"New Your Company estimate request",EmailTemplates::estimateAdmin($request,$set));
+        if(filter_var($adminTo,FILTER_VALIDATE_EMAIL))$mailer->sendWithFallback([3,1],$adminTo,"New {$companyName} website inquiry",EmailTemplates::estimateAdmin($request,$set));
         if(filter_var($email,FILTER_VALIDATE_EMAIL)) {
-            $mailer->sendWithFallback([4,1],$email,"We received your Your Company request",EmailTemplates::estimateCustomer($request,$set));
+            $mailer->sendWithFallback([4,1],$email,"We received your {$companyName} request",EmailTemplates::estimateCustomer($request,$set));
         }
     } catch(Throwable $mailError) {
     }
-    echo json_encode(['ok'=>true,'message'=>'Thank you. Your free estimate request has been received.','request_id'=>$id]);
+    echo json_encode(['ok'=>true,'message'=>'Thank you. Your request has been received.','request_id'=>$id]);
 } catch(Throwable $e) {
     if(isset($pdo)&&$pdo instanceof PDO&&$pdo->inTransaction())$pdo->rollBack();
     http_response_code(422);

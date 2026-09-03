@@ -71,6 +71,34 @@ CREATE TABLE IF NOT EXISTS services (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS videos (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(180) NOT NULL,
+  description TEXT NULL,
+  video_type ENUM('youtube','vimeo','upload') NOT NULL DEFAULT 'youtube',
+  video_url VARCHAR(700) NULL,
+  file_path VARCHAR(500) NULL,
+  poster_path VARCHAR(500) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_videos_active_order (active,sort_order,id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS about_artworks (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  title VARCHAR(180) NULL,
+  image_path VARCHAR(500) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_about_artworks_active_order (active,sort_order,id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS gallery (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   title VARCHAR(150) NOT NULL,
@@ -204,7 +232,7 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('phone_digits','10000000000'),
 ('email','hello@example.com'),
 ('youtube','#'),('facebook','#'),('tiktok','#'),('website','example.com'),('business_hours',''),
-('admin_brand_name','ES CMS Core Admin'),('admin_logo_path',''),('favicon_path',''),
+('admin_brand_name','ES MULTISERVICIOS Admin'),('admin_logo_path','assets/brand/es-mark.png'),('favicon_path','assets/brand/favicon.png'),
 ('maintenance_mode','0'),('maintenance_title','We are improving our website.'),
 ('maintenance_text','We will be back shortly. For immediate assistance, use the contact information provided by the company.'),
 ('maintenance_image_path',''),
@@ -300,7 +328,7 @@ CREATE TABLE IF NOT EXISTS site_backups (
   PRIMARY KEY (id), KEY idx_backups_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 INSERT INTO site_sections(section_key,label,sort_order,active) VALUES
-('home','Home / Hero',10,1),('intro','What We Do',20,1),('about','About Us',30,1),('services','Services',40,1),('gallery','Gallery',50,1),('areas','Service Areas',60,1),('tips','Home Tips',70,1),('estimate','Free Estimate',80,1),('contact','Contact',90,1)
+('home','Home / Hero',10,1),('intro','What We Do',20,1),('about','About Us',30,1),('services','Services',40,1),('videos','Videos',50,1),('gallery','Gallery',60,1),('areas','Service Areas',70,1),('tips','Home Tips',80,1),('estimate','Free Estimate',90,1),('contact','Contact',100,1)
 ON DUPLICATE KEY UPDATE label=VALUES(label);
 INSERT INTO settings(setting_key,setting_value) VALUES
 ('seo_title','Your Company | Professional Services'),
@@ -406,6 +434,7 @@ INSERT INTO admin_permissions(permission_key,permission_name,permission_group) V
 ('media.manage','Manage Media Library','Content'),
 ('services.manage','Manage services','Content'),
 ('gallery.manage','Manage gallery','Content'),
+('videos.manage','Manage website videos','Content'),
 ('areas.manage','Manage service areas','Content'),
 ('tips.manage','Manage home tips','Content'),
 ('estimates.view','View estimate requests','Business'),
@@ -433,6 +462,7 @@ INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.i
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='media.manage' WHERE r.role_key='administrator';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='services.manage' WHERE r.role_key='administrator';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='gallery.manage' WHERE r.role_key='administrator';
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='videos.manage' WHERE r.role_key='administrator';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='areas.manage' WHERE r.role_key='administrator';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='tips.manage' WHERE r.role_key='administrator';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='estimates.view' WHERE r.role_key='administrator';
@@ -455,6 +485,7 @@ INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.i
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='media.manage' WHERE r.role_key='editor';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='services.manage' WHERE r.role_key='editor';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='gallery.manage' WHERE r.role_key='editor';
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='videos.manage' WHERE r.role_key='editor';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='areas.manage' WHERE r.role_key='editor';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='tips.manage' WHERE r.role_key='editor';
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.id FROM admin_roles r JOIN admin_permissions p ON p.permission_key='seo.manage' WHERE r.role_key='editor';
@@ -580,24 +611,29 @@ INSERT INTO marketing_products(product_key,name,logo_path,accent_color,descripti
 'Facturación y ventas\nInventario, compras y reportes\nFacturación clásica\nExperiencia visual configurable\nModo restaurante según plan\nAcceso responsive desde navegador',
 'Billing and sales\nInventory, purchases and reports\nClassic billing\nConfigurable visual experience\nRestaurant mode depending on plan\nResponsive browser access',
 '#izzy',10,1),
-('cami','CAMI','assets/brand/cami.png','#16CDB7',
+('cami','CAMI','assets/brand/cami-display.png','#16CDB7',
 'Sistema web para clínicas y consultorios que centraliza la información y el seguimiento del paciente.','Web system for clinics and practices that centralizes patient information and follow-up.',
 'Pacientes\nAtenciones\nExpedientes e historial\nSeguimiento clínico\nDocumentos y reportes\nGestión administrativa',
 'Patients\nVisits\nRecords and history\nClinical follow-up\nDocuments and reports\nAdministrative management',
 '#cami',20,1)
 ON DUPLICATE KEY UPDATE name=VALUES(name),logo_path=VALUES(logo_path),accent_color=VALUES(accent_color),description_es=VALUES(description_es),description_en=VALUES(description_en),features_es=VALUES(features_es),features_en=VALUES(features_en),cta_url=VALUES(cta_url),sort_order=VALUES(sort_order),active=VALUES(active);
 
-INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,project_url,sort_order,active)
+INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
 SELECT 'Castro''s Ready','Sitio corporativo + CMS personalizado','Corporate website + custom CMS',
 'Sitio corporativo responsive con administrador propio para contenido, servicios, multimedia, SEO, usuarios, seguridad, respaldos y configuración visual.',
 'Responsive corporate website with a custom administrator for content, services, media, SEO, users, security, backups and visual configuration.',
-'https://castroready.esmultiservicios.com/',10,1
+'assets/projects/castros-ready-logo.jpg','https://castroready.esmultiservicios.com/',10,1
 WHERE NOT EXISTS (SELECT 1 FROM marketing_projects WHERE title='Castro''s Ready');
+
+UPDATE marketing_projects
+SET image_path='assets/projects/castros-ready-logo.jpg'
+WHERE title='Castro''s Ready' AND (image_path IS NULL OR image_path='');
 
 INSERT INTO settings(setting_key,setting_value) VALUES
 ('company_name','ES MULTISERVICIOS'),
 ('admin_brand_name','ES MULTISERVICIOS Admin'),
-('admin_logo_path','assets/brand/es-multiservicios.png'),
+('admin_logo_path','assets/brand/es-mark.png'),
+('favicon_path','assets/brand/favicon.png'),
 ('phone','+504 8913-6844'),
 ('phone_digits','50489136844'),
 ('website','esmultiservicios.com'),
@@ -619,4 +655,103 @@ INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
 SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
 WHERE r.role_key IN ('owner','administrator','editor') AND p.permission_key='marketing.manage';
 
+
+-- ============================================================
+-- ES MULTISERVICIOS V4 - IZZY PLANS + AFFILIATE PROGRAM
+-- Idempotent content update. No schema changes are required.
+-- ============================================================
+
+INSERT INTO landing_content(content_key,lang,content_value) VALUES
+('affiliate_title','es','Convierte tus contactos en una oportunidad de ingresos'),
+('affiliate_title','en','Turn your contacts into an income opportunity'),
+('affiliate_text','es','Personas y empresas pueden recomendar IZZY y CAMI. Cuando el cliente se incorpora, ES MULTISERVICIOS se encarga de la implementación, soporte y capacitación según el servicio contratado.'),
+('affiliate_text','en','Individuals and companies can recommend IZZY and CAMI. When the customer joins, ES MULTISERVICIOS handles implementation, support and training according to the contracted service.'),
+('affiliate_cta','es','Quiero ser afiliado'),
+('affiliate_cta','en','I want to become an affiliate'),
+('affiliate_single_title','es','1 cliente en el mes'),
+('affiliate_single_title','en','1 client in the month'),
+('affiliate_single_text','es','Ganas el 100% del valor del primer mes de ese cliente.'),
+('affiliate_single_text','en','Earn 100% of that client''s first-month value.'),
+('affiliate_team_title','es','3 clientes o más en el mismo mes'),
+('affiliate_team_title','en','3 or more clients in the same month'),
+('affiliate_team_text','es','Ganas el 200% del valor del primer mes, conforme a las condiciones vigentes del programa.'),
+('affiliate_team_text','en','Earn 200% of the first-month value, subject to the current program terms.'),
+('affiliate_support_text','es','Tú te enfocas en recomendar y conectar. Nuestro equipo se encarga de la instalación, acompañamiento, soporte y capacitación del cliente.'),
+('affiliate_support_text','en','You focus on recommending and connecting. Our team handles installation, onboarding, support and customer training.'),
+('affiliate_disclaimer','es','El beneficio aplica únicamente al primer mes de cada cliente y está sujeto a validación y a las condiciones vigentes del programa de afiliados.'),
+('affiliate_disclaimer','en','The benefit applies only to each client''s first month and is subject to validation and the current affiliate program terms.')
+ON DUPLICATE KEY UPDATE content_value=VALUES(content_value);
+
+-- Keep the official IZZY plan catalog deterministic when this update is run again.
+DELETE FROM marketing_plans
+WHERE product_key='izzy'
+  AND name_es IN ('Emprendedor','Básico','Regular','Estándar','Premium','Restaurantes');
+
+UPDATE marketing_plans SET featured=0 WHERE product_key='izzy';
+
+INSERT INTO marketing_plans(
+    product_key,name_es,name_en,description_es,description_en,
+    price_label_es,price_label_en,features_es,features_en,
+    badge_es,badge_en,cta_url,featured,sort_order,active
+) VALUES
+(
+    'izzy','Emprendedor','Entrepreneur',
+    'Todo lo esencial para comenzar a facturar y controlar tu operación desde la web.',
+    'Everything you need to start billing and controlling your operation from the web.',
+    'L. 599 / mes','L. 599 / month',
+    'Facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nReporte de ventas\nRegistro de productos\n1 punto de venta\n1 usuario administrador\n2 usuarios adicionales\nSoporte técnico',
+    'Electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nSales report\nProduct registry\n1 point of sale\n1 administrator user\n2 additional users\nTechnical support',
+    'Ideal para comenzar','Ideal to start','',0,10,1
+),
+(
+    'izzy','Básico','Basic',
+    'Más control para inventario, clientes y facturación en una operación que comienza a crecer.',
+    'More control for inventory, customers and billing as your operation starts to grow.',
+    'L. 1,099 / mes','L. 1,099 / month',
+    'Facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nReportes de ventas\nRegistro de productos e inventario\nCuentas por cobrar a clientes\n1 punto de venta\n1 usuario administrador\n2 usuarios adicionales\nSoporte técnico',
+    'Electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nSales reports\nProducts and inventory\nAccounts receivable\n1 point of sale\n1 administrator user\n2 additional users\nTechnical support',
+    'Más control','More control','',0,20,1
+),
+(
+    'izzy','Regular','Regular',
+    'Más capacidad para crecer, con compras, control financiero y más usuarios.',
+    'More capacity to grow with purchases, financial control and additional users.',
+    'L. 1,610 / mes','L. 1,610 / month',
+    'Facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nReportes de ventas\nProductos, inventario y compras\nCuentas por cobrar a clientes\nCuentas por pagar a proveedores\n2 puntos de venta\n1 usuario administrador\n3 usuarios adicionales\nFacturas recurrentes automáticas\nSoporte técnico',
+    'Electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nSales reports\nProducts, inventory and purchases\nAccounts receivable\nAccounts payable\n2 points of sale\n1 administrator user\n3 additional users\nAutomatic recurring invoices\nTechnical support',
+    'Más capacidad para crecer','More room to grow','',0,30,1
+),
+(
+    'izzy','Estándar','Standard',
+    'Operación integral con más puntos de venta, compras, cotizaciones y control financiero.',
+    'An integrated operation with more points of sale, purchases, quotations and financial control.',
+    'L. 2,499 / mes','L. 2,499 / month',
+    'Facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nReportes de ventas\nRegistro de productos e inventario\nRegistro de compras y cotizaciones\nCuentas por cobrar a clientes\nCuentas por pagar a proveedores\n3 puntos de venta\n1 usuario administrador\n4 usuarios adicionales\nFacturas recurrentes automáticas\nSoporte técnico',
+    'Electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nSales reports\nProducts and inventory\nPurchases and quotations\nAccounts receivable\nAccounts payable\n3 points of sale\n1 administrator user\n4 additional users\nAutomatic recurring invoices\nTechnical support',
+    'Operación integral','Integrated operation','',0,40,1
+),
+(
+    'izzy','Premium','Premium',
+    'Gestión avanzada para operaciones en crecimiento que necesitan mayor capacidad, control y herramientas administrativas.',
+    'Advanced management for growing operations that need more capacity, control and administrative tools.',
+    'L. 3,499 / mes','L. 3,499 / month',
+    'Facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nProductos e inventario en múltiples bodegas\nTransferencias entre bodegas\nRegistro de compras\nReportes de ventas, compras y cotizaciones\nNómina y contratos de empleados\nCuentas por cobrar a clientes\nCuentas por pagar a proveedores\n4 puntos de venta\n1 usuario administrador\n10 usuarios adicionales\nControl de asistencia de empleados\nFacturas recurrentes automáticas\nSoporte técnico',
+    'Electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nProducts and inventory across multiple warehouses\nWarehouse transfers\nPurchase registry\nSales, purchases and quotation reports\nPayroll and employee contracts\nAccounts receivable\nAccounts payable\n4 points of sale\n1 administrator user\n10 additional users\nEmployee attendance control\nAutomatic recurring invoices\nTechnical support',
+    'Recomendado para mayor control','Recommended for maximum control','',1,50,1
+),
+(
+    'izzy','Restaurantes','Restaurants & Visual Sales',
+    'Una experiencia visual ágil para restaurantes y también para otros negocios que prefieren vender mediante productos con imágenes. Puede configurarse con mesas o sin mesas.',
+    'A fast visual experience for restaurants and other businesses that prefer selling through image-based products. It can be configured with or without tables.',
+    'L. 2,499 / mes','L. 2,499 / month',
+    'Venta visual por productos con imágenes\nConfigurable con mesas o sin mesas\nMesas, reservas y pedidos para llevar\nComandas y pantalla de cocina\nCobro y facturación electrónica con el SAR\nControl de caja\nFormato de factura ticket y carta\nCuentas abiertas\nProductos e inventario\nCreación y gestión de promociones y combos\n1 punto de venta\n1 usuario administrador\n4 usuarios adicionales\nFacturas recurrentes automáticas\nSoporte técnico',
+    'Visual sales with image-based products\nConfigurable with or without tables\nTables, reservations and takeout orders\nKitchen tickets and kitchen screen\nPayment and electronic invoicing with SAR\nCash control\nTicket and letter invoice formats\nOpen accounts\nProducts and inventory\nPromotion and combo management\n1 point of sale\n1 administrator user\n4 additional users\nAutomatic recurring invoices\nTechnical support',
+    'Experiencia visual configurable','Configurable visual experience','',0,60,1
+);
+
 SET FOREIGN_KEY_CHECKS=1;
+
+-- ES MULTISERVICIOS premium contact defaults
+INSERT INTO settings(setting_key,setting_value) VALUES
+('contact_map_query','')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;

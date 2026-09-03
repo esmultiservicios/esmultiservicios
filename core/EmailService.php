@@ -36,7 +36,7 @@ class EmailService {
         if(!$cfg)return ['success'=>false,
         'message'=>'Email configuration not found.'];
         $dest=$to!==''?$to:$cfg['correo'];
-        return $this->send($cfg,$dest,'Castro\'s Ready email test',EmailTemplates::test($cfg['metodo_envio'],settings()));
+        return $this->send($cfg,$dest,'ES MULTISERVICIOS email test',EmailTemplates::test($cfg['metodo_envio'],settings()));
     }
     public function send(array $cfg,string $to,string $subject,string $html):array {
         if(!filter_var($to,FILTER_VALIDATE_EMAIL))return ['success'=>false,
@@ -101,7 +101,7 @@ class EmailService {
             $this->cmd($fp,'RCPT TO:<'.$to.'>',[250,251]);
             $this->cmd($fp,'DATA',[354]);
             $boundary='b'.bin2hex(random_bytes(8));
-            $headers=['From: Castro\'s Ready <'.$user.'>',
+            $headers=['From: ES MULTISERVICIOS <'.$user.'>',
             'To: <'.$to.'>',
             'Subject: =?UTF-8?B?'.base64_encode($subject).'?=',
             'MIME-Version: 1.0',

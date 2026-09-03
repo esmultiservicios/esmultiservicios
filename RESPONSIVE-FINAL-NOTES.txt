@@ -1,0 +1,18 @@
+ES CMS CORE - FINAL MOBILE RESPONSIVE POLISH
+
+Changes in this package:
+- Admin login/setup/forgot/reset screens are compact on phones and no longer vertically centered with excessive empty space.
+- Authentication cards align near the top on mobile and reduce logo, title, spacing and field heights without sacrificing touch accessibility.
+- Very small phones receive tighter spacing without horizontal overflow.
+- Landscape phones use a compact two-column authentication form where space allows.
+- Sticky Save bars become normal-flow buttons on phones so they never cover fields or the browser bottom controls.
+- Admin panels, forms, galleries and cards are constrained to the viewport and cannot force page-level horizontal scrolling.
+- Existing desktop/tablet styles and public landing-page appearance are preserved.
+
+Database:
+- No database changes are required for this responsive update.
+
+After deployment:
+- Replace the project files.
+- Keep your local config/database.php and config/app.key.
+- Reload with Ctrl+F5 / clear browser cache if an older stylesheet remains cached.
