@@ -238,7 +238,7 @@ require __DIR__ . '/_header.php';
         <div>
             <p class="eyebrow">LIVE PREVIEW</p>
             <h2>Preview every marketing section</h2>
-            <p class="muted">Choose a section below. The preview uses the real public landing page and keeps the administrator separate from the customer-facing website. Product and project images can be enlarged directly inside the preview. On desktop the zoom control appears only when you hover the image; clicking the image also opens the in-page viewer.</p>
+            <p class="muted">Choose a section below. The preview uses the real public landing page and keeps the administrator separate from the customer-facing website. Product and project images can also be enlarged directly inside the preview without opening another page.</p>
         </div>
     </div>
 
@@ -500,6 +500,57 @@ require __DIR__ . '/_header.php';
             <h2>Projects & case studies</h2>
             <p>Each project can have its own logo or cover image. Uploading an image is optional, but recommended for a professional project card.</p>
         </div>
+    </div>
+
+    <div class="project-editor-shell">
+        <form class="marketing-card project-editor-card" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+            <input type="hidden" name="action" value="project_save">
+            <input type="hidden" name="id" value="0">
+            <input type="hidden" name="current_image_path" value="">
+
+            <div class="marketing-plan-admin-head">
+                <div>
+                    <span class="eyebrow">NEW PROJECT</span>
+                    <h3>Add project or case study</h3>
+                    <p>Create a new public project without replacing the projects that are already published.</p>
+                </div>
+            </div>
+
+            <label>Project<input name="title" value="" required placeholder="Project name"></label>
+
+            <div class="form-grid">
+                <label>Category ES<input name="category_es" value="" placeholder="Ej. Sitio corporativo + CMS"></label>
+                <label>Category EN<input name="category_en" value="" placeholder="E.g. Corporate website + CMS"></label>
+            </div>
+
+            <label>Description ES<textarea name="description_es" rows="4" placeholder="Describe el proyecto en español"></textarea></label>
+            <label>Description EN<textarea name="description_en" rows="4" placeholder="Describe the project in English"></textarea></label>
+
+            <div class="upload-zone premium-media-zone project-image-upload" data-upload-zone>
+                <input type="file" name="project_image" accept="image/jpeg,image/png,image/webp" data-empty-label="Drop, paste or choose a project image">
+                <div class="upload-icon" aria-hidden="true">▣</div>
+                <strong>Drop project logo or cover here</strong>
+                <small>Drag & drop, paste from clipboard, or click to choose JPG, PNG or WEBP.</small>
+                <span class="upload-zone-action">Choose image</span>
+                <div class="upload-selection-name" data-upload-name>Drop, paste or choose a project image</div>
+                <div class="upload-preview premium-upload-preview" data-upload-preview></div>
+            </div>
+
+            <div class="form-grid">
+                <label>Project URL<input name="project_url" value="" placeholder="https://"></label>
+                <label>Order<input type="number" name="sort_order" value="<?= count($projects) ? ((int) max(array_column($projects, 'sort_order')) + 10) : 10 ?>"></label>
+            </div>
+
+            <label class="toggle-line">
+                <input type="checkbox" name="active" checked>
+                <span>Published</span>
+            </label>
+
+            <div class="form-actions">
+                <button class="button" type="submit">Add project</button>
+            </div>
+        </form>
     </div>
 
     <div class="marketing-card-grid">
