@@ -1,5 +1,36 @@
 Options -Indexes
 DirectoryIndex index.php
+
 <FilesMatch "^(database\.sql|database-update\.sql|README\.txt|\.gitignore)$">
   Require all denied
 </FilesMatch>
+
+# ============================================================
+# ES MULTISERVICIOS - Cache freshness / automatic revalidation
+# Prevents visitors and administrators from needing Ctrl+F5
+# after CSS, JS, images or PHP output is updated.
+# ============================================================
+<IfModule mod_headers.c>
+  # Dynamic pages must always be generated from the current version.
+  <FilesMatch "\.(?:php|html?|htm)$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+  </FilesMatch>
+
+  # Static assets may remain cached locally, but the browser MUST
+  # validate them with the server before reusing them. If the file
+  # changed, the new version is downloaded automatically.
+  <FilesMatch "\.(?:css|js|mjs|json|map|svg|png|jpe?g|gif|webp|ico|avif|woff2?|ttf|otf)$">
+    Header set Cache-Control "no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 0 seconds"
+</IfModule>
+
+# Keep validators enabled so unchanged static files can return 304
+# instead of being downloaded again in full.
+FileETag MTime Size
