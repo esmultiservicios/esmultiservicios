@@ -9213,3 +9213,209 @@ select:focus {
         grid-column: auto;
     }
 }
+
+/* ==========================================================
+   FINAL GLOBAL CONTROL NORMALIZATION — SELECTS + SPACING
+   This block intentionally lives at the end of admin.css so
+   generic button rules can never repaint custom selects.
+   ========================================================== */
+
+/* Native select fallback: neutral control surface everywhere. */
+.admin-main select:not(.cr-native-select),
+.auth-card select:not(.cr-native-select),
+.panel select:not(.cr-native-select),
+form select:not(.cr-native-select) {
+    background:#fff !important;
+    color:var(--deep, #0b2e59) !important;
+    border:1px solid #c8d7e5 !important;
+    box-shadow:none !important;
+}
+
+.admin-main select:not(.cr-native-select):focus,
+.auth-card select:not(.cr-native-select):focus,
+.panel select:not(.cr-native-select):focus,
+form select:not(.cr-native-select):focus {
+    background:#fff !important;
+    color:var(--deep, #0b2e59) !important;
+    border-color:#0b63ce !important;
+    box-shadow:0 0 0 4px rgba(11,99,206,.10) !important;
+}
+
+/* Custom select closed state: NEVER paint the complete control blue. */
+.cr-select > .cr-select-button,
+button.cr-select-button,
+.cr-select-button {
+    min-height:48px !important;
+    padding:11px 48px 11px 14px !important;
+    background:#fff !important;
+    color:var(--deep, #0b2e59) !important;
+    border:1px solid #c8d7e5 !important;
+    border-radius:13px !important;
+    box-shadow:none !important;
+    transform:none !important;
+    text-align:left !important;
+}
+
+.cr-select.open > .cr-select-button,
+.cr-select > .cr-select-button:focus-visible,
+button.cr-select-button:focus-visible {
+    background:#fff !important;
+    color:var(--deep, #0b2e59) !important;
+    border-color:#0b63ce !important;
+    box-shadow:0 0 0 4px rgba(11,99,206,.10) !important;
+    outline:none !important;
+}
+
+.cr-select > .cr-select-button:hover,
+button.cr-select-button:hover {
+    background:#f8fbfe !important;
+    color:var(--deep, #0b2e59) !important;
+    border-color:#9ebbd6 !important;
+    box-shadow:none !important;
+    transform:none !important;
+}
+
+/* Chevron box: fixed square with an SVG chevron centered by the background engine.
+   Do not use a text glyph here: glyph baselines vary by browser/font and make the icon
+   look vertically displaced even when flex centering is technically correct. */
+.cr-select > .cr-select-button::after,
+button.cr-select-button::after,
+.cr-select-button::after {
+    content:'' !important;
+    position:absolute !important;
+    right:11px !important;
+    top:50% !important;
+    transform:translateY(-50%) !important;
+    width:28px !important;
+    height:28px !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:1px solid #bfd3e8 !important;
+    border-radius:9px !important;
+    background-color:#eef6fd !important;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M2 2.25 6 6l4-3.75' fill='none' stroke='%230b4f88' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat:no-repeat !important;
+    background-position:50% 50% !important;
+    background-size:12px 8px !important;
+    box-sizing:border-box !important;
+}
+
+/* Dropdown options: neutral by default; blue only for focus/hover/selection. */
+.cr-select-list {
+    background:#fff !important;
+    border:1px solid #c8d7e5 !important;
+    box-shadow:0 18px 45px rgba(11,46,89,.16) !important;
+}
+
+.cr-select-list > .cr-select-option,
+button.cr-select-option,
+.cr-select-option {
+    background:#fff !important;
+    color:var(--deep, #0b2e59) !important;
+    border:0 !important;
+    box-shadow:none !important;
+    transform:none !important;
+}
+
+.cr-select-list > .cr-select-option:hover,
+.cr-select-list > .cr-select-option:focus-visible,
+button.cr-select-option:hover,
+button.cr-select-option:focus-visible {
+    background:#0b63ce !important;
+    color:#fff !important;
+    box-shadow:none !important;
+    transform:none !important;
+    outline:none !important;
+}
+
+.cr-select-list > .cr-select-option[aria-selected="true"],
+button.cr-select-option[aria-selected="true"] {
+    background:#eaf3ff !important;
+    color:#0b2e59 !important;
+    font-weight:850 !important;
+}
+
+.cr-select-list > .cr-select-option[aria-selected="true"]:hover,
+.cr-select-list > .cr-select-option[aria-selected="true"]:focus-visible,
+button.cr-select-option[aria-selected="true"]:hover,
+button.cr-select-option[aria-selected="true"]:focus-visible {
+    background:#0b63ce !important;
+    color:#fff !important;
+}
+
+.cr-select-option[aria-selected="true"]::after {
+    color:currentColor !important;
+}
+
+/* Forms and compact action rows must always keep visual breathing room. */
+.form-actions,
+.actions,
+.email-card-actions,
+.email-card-test,
+.test-email-form,
+.inline-actions,
+.compact-actions {
+    gap:14px !important;
+}
+
+.email-card-test {
+    display:flex !important;
+    align-items:center !important;
+    flex-wrap:wrap !important;
+    row-gap:12px !important;
+    column-gap:14px !important;
+    margin:0 !important;
+}
+
+.email-card-test > input[type="email"] {
+    flex:1 1 210px !important;
+    min-width:190px !important;
+    margin:0 !important;
+}
+
+.email-card-test > button,
+.email-card-test > .button {
+    flex:0 0 auto !important;
+    margin:0 !important;
+    white-space:nowrap !important;
+}
+
+.email-card-actions {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    flex-wrap:wrap !important;
+    row-gap:14px !important;
+    column-gap:18px !important;
+}
+
+/* Keep adjacent controls from visually touching in generic inline layouts. */
+form > .actions,
+form > .form-actions,
+.panel .actions,
+.card .actions,
+.list-card .actions,
+.email-card .actions,
+.integration-card .actions,
+.request-card .actions {
+    gap:14px !important;
+}
+
+@media(max-width:620px) {
+    .email-card-test,
+    .email-card-actions {
+        width:100% !important;
+        display:grid !important;
+        grid-template-columns:1fr !important;
+        gap:10px !important;
+    }
+
+    .email-card-test > input,
+    .email-card-test > button,
+    .email-card-test > .button,
+    .email-card-actions > .action-menu,
+    .email-card-actions > .action-menu > summary {
+        width:100% !important;
+        min-width:0 !important;
+    }
+}
