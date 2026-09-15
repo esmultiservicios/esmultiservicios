@@ -2,6 +2,11 @@
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../config/bootstrap.php';
+if (!headers_sent()) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+}
 if (!config_ready()) {
     header('Location: ../install/');
     exit;

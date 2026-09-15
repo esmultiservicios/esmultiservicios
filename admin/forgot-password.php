@@ -58,9 +58,9 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <link rel="shortcut icon" href="../<?=h($favicon)?>">
 <?php endif; ?>
 <title>Forgot Password</title>
-<link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
-<link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
+<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
+<link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
 </head>
 <body>
 <main class="auth-wrap">
@@ -98,9 +98,9 @@ endif;
 <a class="auth-back-link" href="login.php">← Back to login</a>
 </div>
 </main>
-<script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js">
+<script src="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.all.min.js', 'assets/vendor/sweetalert2/sweetalert2.all.min.js'))?>">
 </script>
-<script src="../assets/vendor/show-notify/showNotify.js">
+<script src="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>">
 </script>
 <script>document.querySelectorAll(".alert.success,.alert.error,.alert.info,.alert.warning").forEach(function(el){var t=el.classList.contains("error")?"error":el.classList.contains("warning")?"warning":el.classList.contains("success")?"success":"info";if(window.showNotify){showNotify(el.textContent.trim(),t);el.hidden=true;}});</script>
 </body>

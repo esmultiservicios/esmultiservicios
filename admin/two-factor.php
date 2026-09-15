@@ -57,9 +57,9 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="../<?=h($favicon)?>">
 <title>Two-factor verification</title>
-<link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
-<link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
+<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
+<link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
 </head>
 <body>
 <main class="auth-wrap">
@@ -86,7 +86,7 @@ endif;
 <div class="auth-footer-note">Protected administrator access · two-factor verification</div>
 </div>
 </main>
-<script src="../assets/vendor/show-notify/showNotify.js">
+<script src="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>">
 </script>
 </body>
 </html>

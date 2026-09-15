@@ -24,9 +24,9 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
     <link rel="icon" href="../<?= h($favicon) ?>">
     <link rel="shortcut icon" href="../<?= h($favicon) ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
-    <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
-    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
 </head>
 <body>
 <header class="admin-header">

@@ -143,7 +143,7 @@ if ($maintenance && !$adminPreview) {
         <?php $maintenanceFavicon = trim((string) ($settings['favicon_path'] ?? '')) ?: 'assets/brand/favicon.png'; ?>
         <link rel="icon" type="image/png" href="<?= h($maintenanceFavicon) ?>">
         <link rel="shortcut icon" href="<?= h($maintenanceFavicon) ?>">
-        <link rel="stylesheet" href="assets/es-site.css">
+        <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
     </head>
     <body class="maintenance-page">
         <main class="maintenance-card">
@@ -258,7 +258,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
         rel="stylesheet"
     >
-    <link rel="stylesheet" href="assets/es-site.css">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
 </head>
 <body>
 <header class="site-header" data-header>
@@ -1069,6 +1069,6 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     aria-label="WhatsApp"
 >WA</a>
 
-<script src="assets/es-site.js"></script>
+<script src="<?=h(versioned_asset('assets/es-site.js', 'assets/es-site.js'))?>"></script>
 </body>
 </html>

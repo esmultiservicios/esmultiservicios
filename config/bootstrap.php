@@ -2,6 +2,25 @@
 declare(strict_types=1);
 const ROOT_DIR = __DIR__ . '/..';
 const UPLOAD_DIR = ROOT_DIR . '/uploads';
+
+
+function versioned_asset(string $url, string $relativePath): string
+{
+    $relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
+    $fullPath = ROOT_DIR . '/' . $relativePath;
+    if (!is_file($fullPath)) return $url;
+
+    static $versions = [];
+    if (!isset($versions[$fullPath])) {
+        $hash = @sha1_file($fullPath);
+        $versions[$fullPath] = $hash !== false
+            ? substr($hash, 0, 12)
+            : (string) (@filemtime($fullPath) ?: 1);
+    }
+
+    $separator = str_contains($url, '?') ? '&' : '?';
+    return $url . $separator . 'v=' . rawurlencode($versions[$fullPath]);
+}
 function h($value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');

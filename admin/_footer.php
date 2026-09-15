@@ -28,8 +28,8 @@
     </div>
 </div>
 
-<script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js"></script>
-<script src="../assets/vendor/show-notify/showNotify.js"></script>
-<script src="admin.js"></script>
+<script src="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.all.min.js', 'assets/vendor/sweetalert2/sweetalert2.all.min.js'))?>"></script>
+<script src="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>"></script>
+<script src="<?=h(versioned_asset('admin.js', 'admin/admin.js'))?>"></script>
 </body>
 </html>
