@@ -40,11 +40,49 @@ function save_setting(string $key, string $value): void {
     $st=db()->prepare('INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
     $st->execute([$key,$value]);
 }
+
+function php_requirement_enable_hint(string $extension): string {
+    $phpSeries = PHP_MAJOR_VERSION . PHP_MINOR_VERSION;
+    return 'WHM → Software → EasyApache 4 → Customize → PHP Extensions → search ea-php' . $phpSeries . '-php-' . $extension . ' → Review → Provision.';
+}
+function fileinfo_requirement_message(): string {
+    return 'Secure file validation is unavailable because PHP Fileinfo is not enabled. Enable it in WHM → Software → EasyApache 4 → Customize → PHP Extensions → search ea-php' . PHP_MAJOR_VERSION . PHP_MINOR_VERSION . '-php-fileinfo → Review → Provision, then try again.';
+}
+function detect_mime_type(string $path, bool $required = true): string {
+    if (!extension_loaded('fileinfo') || !class_exists('finfo')) {
+        if ($required) {
+            throw new RuntimeException(fileinfo_requirement_message());
+        }
+        return '';
+    }
+    if ($path === '' || !is_file($path)) {
+        if ($required) {
+            throw new RuntimeException('The uploaded file could not be inspected. Please try again.');
+        }
+        return '';
+    }
+    try {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($path);
+    } catch (Throwable $e) {
+        if ($required) {
+            throw new RuntimeException('The server could not validate the uploaded file type. Please contact the website administrator.');
+        }
+        return '';
+    }
+    if (!is_string($mime) || trim($mime) === '') {
+        if ($required) {
+            throw new RuntimeException('The server could not validate the uploaded file type. Please try another file.');
+        }
+        return '';
+    }
+    return strtolower(trim($mime));
+}
+
 function upload_image(array $file, string $subdir, string $prefix, int $maxMb = 8): string {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException('Image upload failed.');
     if (($file['size'] ?? 0) > $maxMb * 1024 * 1024) throw new RuntimeException("Image exceeds {$maxMb} MB.");
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime=$finfo->file($file['tmp_name']);
+    $mime = detect_mime_type((string)($file['tmp_name'] ?? ''), true);
     $allowed=['image/jpeg'=>'jpg',
     'image/png'=>'png',
     'image/webp'=>'webp'];
@@ -59,8 +97,7 @@ function upload_image(array $file, string $subdir, string $prefix, int $maxMb = 
 function upload_media_file(array $file, string $subdir='media', string $prefix='media', int $maxMb = 60): string {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException('Media upload failed.');
     if (($file['size'] ?? 0) > $maxMb * 1024 * 1024) throw new RuntimeException("Media file exceeds {$maxMb} MB.");
-    $finfo=new finfo(FILEINFO_MIME_TYPE);
-    $mime=$finfo->file($file['tmp_name']);
+    $mime = detect_mime_type((string)($file['tmp_name'] ?? ''), true);
     $allowed=[ 'image/jpeg'=>'jpg',
     'image/png'=>'png',
     'image/webp'=>'webp',
@@ -175,7 +212,7 @@ function admin_notify(string $type,string $title,string $message,string $url='')
 function media_add(string $path,string $title=''): void {
     try {
         $full=ROOT_DIR.'/'.$path;
-        $mime=is_file($full)?(mime_content_type($full)?:''):'';
+        $mime = is_file($full) ? detect_mime_type($full, false) : '';
         $size=is_file($full)?filesize($full):0;
         $adminId=!empty($_SESSION['escms_admin_id'])?(int)$_SESSION['escms_admin_id']:null;
         $st=db()->prepare('INSERT INTO media_library(title,file_path,mime_type,file_size,uploaded_by) VALUES(?,?,?,?,?)');

@@ -9093,3 +9093,789 @@ select:focus {
         grid-column: 2 / 3;
     }
 }
+
+/* ============================================================
+   ES MULTISERVICIOS - Email configuration workspace
+   SMTP / Microsoft Graph + reusable connection copying
+   ============================================================ */
+.email-config-form {
+    display: grid;
+    gap: 18px;
+}
+
+.email-config-topline {
+    align-items: end;
+}
+
+/* Address fields must align by their labels/controls, not by helper-text height. */
+.email-address-grid {
+    align-items: start;
+}
+
+.email-active-switch,
+.sent-items-switch {
+    min-height: 74px;
+    align-self: stretch;
+}
+
+.email-method-panel {
+    border: 1px solid var(--border, #d9e2ec);
+    border-radius: 18px;
+    padding: 20px;
+    background: var(--surface, #ffffff);
+    display: grid;
+    gap: 16px;
+}
+
+.email-method-panel[hidden] {
+    display: none !important;
+}
+
+.method-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border, #d9e2ec);
+}
+
+.method-heading strong {
+    display: block;
+    color: var(--text, #14263d);
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.method-heading small,
+.email-config-form label small,
+.email-copy-types small {
+    display: block;
+    color: var(--muted, #68798b);
+    line-height: 1.5;
+    margin-top: 5px;
+}
+
+.email-copy-panel {
+    overflow: visible;
+}
+
+.email-copy-form {
+    display: grid;
+    gap: 16px;
+}
+
+.email-copy-types {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.email-copy-types .check-row {
+    min-width: 0;
+    align-items: flex-start;
+    border: 1px solid var(--border, #d9e2ec);
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--surface, #ffffff);
+}
+
+.email-copy-types .check-row span {
+    min-width: 0;
+}
+
+.email-copy-types b {
+    color: var(--text, #14263d);
+}
+
+.copy-warning {
+    border-left: 4px solid var(--admin-primary, #1769aa);
+    background: #eef5fb;
+    color: #23415e;
+    border-radius: 10px;
+    padding: 12px 14px;
+    line-height: 1.5;
+}
+
+.email-card-meta {
+    margin: 5px 0;
+    color: var(--muted, #68798b);
+    overflow-wrap: anywhere;
+}
+
+.email-card-actions {
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.email-card-test {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1 1 320px;
+}
+
+.email-card-test input {
+    min-width: 0;
+    max-width: 260px;
+    flex: 1 1 220px;
+}
+
+@media (max-width: 900px) {
+    .email-copy-types {
+        grid-template-columns: 1fr;
+    }
+
+    .email-card-actions,
+    .email-card-test {
+        align-items: stretch;
+    }
+
+    .email-card-test {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .email-card-test input {
+        max-width: none;
+        width: 100%;
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .email-method-panel {
+        padding: 15px;
+        border-radius: 14px;
+    }
+
+    .email-active-switch,
+    .sent-items-switch {
+        min-height: auto;
+    }
+
+    .email-copy-types .check-row {
+        padding: 12px;
+    }
+
+    .email-card-test button,
+    .email-copy-form .form-actions button,
+    .email-test-panel .form-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - Website Health / PHP requirements
+   ============================================================ */
+.health-page-heading {
+    align-items: center;
+    gap: 18px;
+}
+.health-recheck-form {
+    margin: 0;
+    flex: 0 0 auto;
+}
+.health-recheck-button {
+    min-height: 44px;
+    white-space: nowrap;
+}
+.health-global-alert,
+.health-global-ready {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin: 0 0 22px;
+    padding: 16px 18px;
+    border: 1px solid #efc9c9;
+    border-left: 4px solid #b42318;
+    border-radius: 16px;
+    background: #fff7f7;
+    color: #61201d;
+}
+.health-global-ready {
+    border-color: #b9ddcf;
+    border-left-color: #167a5a;
+    background: #f4fbf8;
+    color: #165b47;
+}
+.health-global-alert-icon,
+.health-global-ready > span {
+    display: grid;
+    place-items: center;
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #b42318;
+    color: #fff;
+    font-weight: 900;
+}
+.health-global-ready > span {
+    background: #167a5a;
+}
+.health-global-alert strong,
+.health-global-ready strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 15px;
+}
+.health-global-alert p,
+.health-global-ready p {
+    margin: 0;
+    line-height: 1.55;
+}
+.health-requirements-panel {
+    margin-bottom: 28px;
+}
+.health-requirements-head {
+    align-items: center;
+}
+.health-requirements-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid var(--border, #d9e2ec);
+    border-radius: 12px;
+    background: #f7fafc;
+    color: var(--text, #14263d);
+}
+.health-requirements-summary strong {
+    font-size: 18px;
+}
+.health-requirements-summary span {
+    color: var(--muted, #68798b);
+    font-size: 13px;
+}
+.health-requirements-list {
+    display: grid;
+    gap: 12px;
+}
+.health-requirement {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
+    gap: 18px;
+    align-items: stretch;
+    padding: 17px;
+    border: 1px solid var(--border, #d9e2ec);
+    border-left: 4px solid #167a5a;
+    border-radius: 15px;
+    background: var(--surface, #fff);
+}
+.health-requirement.missing {
+    border-left-color: #b42318;
+    background: #fffafa;
+}
+.health-requirement-main,
+.health-enable-instructions {
+    min-width: 0;
+}
+.health-requirement-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 7px;
+}
+.health-requirement h3 {
+    margin: 0;
+    color: var(--text, #14263d);
+    font-size: 16px;
+}
+.health-requirement p {
+    margin: 0;
+    color: var(--muted, #68798b);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+.health-requirement small {
+    display: block;
+    margin-top: 7px;
+    color: #66778a;
+    line-height: 1.45;
+}
+.health-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .01em;
+}
+.health-status.available {
+    background: #e8f6f0;
+    color: #136548;
+}
+.health-status.missing {
+    background: #fdecec;
+    color: #9f241b;
+}
+.health-enable-instructions {
+    padding: 13px 14px;
+    border: 1px solid #dce7f1;
+    border-radius: 12px;
+    background: #f7fafc;
+}
+.health-enable-instructions strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #173a5e;
+    font-size: 13px;
+}
+.health-enable-instructions p {
+    color: #456079;
+    font-size: 13px;
+}
+.health-section-heading {
+    margin: 0 0 12px;
+}
+.health-section-heading h2 {
+    margin: 3px 0 0;
+}
+@media (max-width: 900px) {
+    .health-page-heading,
+    .health-requirements-head {
+        align-items: stretch;
+    }
+    .health-recheck-form,
+    .health-recheck-button {
+        width: 100%;
+    }
+    .health-recheck-button {
+        justify-content: center;
+    }
+    .health-requirements-summary {
+        width: max-content;
+        max-width: 100%;
+    }
+    .health-requirement {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 560px) {
+    .health-global-alert,
+    .health-global-ready {
+        padding: 14px;
+        border-radius: 14px;
+    }
+    .health-requirement {
+        padding: 14px;
+        border-radius: 13px;
+    }
+    .health-requirement-title-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .health-status {
+        align-self: flex-start;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - Form controls polish
+   Neutral selects + uniform Email configuration spacing
+   ============================================================ */
+
+/* Custom select: keep the closed field neutral. Blue is reserved
+   for the currently selected / hovered option inside the dropdown. */
+.cr-select-button,
+button.cr-select-button {
+    background: #f8fbfe !important;
+    color: var(--deep, #0b2e59) !important;
+    border: 1px solid #c8d7e5 !important;
+    box-shadow: none !important;
+    font-weight: 750 !important;
+    transform: none !important;
+}
+
+.cr-select-button:hover,
+button.cr-select-button:hover {
+    background: #f3f8fc !important;
+    color: var(--deep, #0b2e59) !important;
+    border-color: #9fb9d2 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.cr-select.open .cr-select-button,
+.cr-select-button:focus-visible,
+button.cr-select-button:focus-visible {
+    background: #ffffff !important;
+    color: var(--deep, #0b2e59) !important;
+    border-color: var(--teal, #0b63ce) !important;
+    box-shadow: 0 0 0 3px rgba(11, 99, 206, .10) !important;
+    outline: none !important;
+}
+
+.cr-select-button::after {
+    background: #e8f1fa !important;
+    color: var(--deep, #0b2e59) !important;
+    border: 1px solid #c7d9e9;
+}
+
+.cr-select-list {
+    padding: 6px !important;
+    background: #ffffff !important;
+    border: 1px solid #c8d7e5 !important;
+    box-shadow: 0 14px 34px rgba(11, 46, 89, .14) !important;
+}
+
+.cr-select-option,
+button.cr-select-option {
+    background: #ffffff !important;
+    color: var(--deep, #0b2e59) !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.cr-select-option:hover,
+.cr-select-option:focus-visible,
+button.cr-select-option:hover,
+button.cr-select-option:focus-visible {
+    background: #eaf3ff !important;
+    color: var(--deep, #0b2e59) !important;
+    border-color: #c5d9ed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.cr-select-option[aria-selected="true"],
+button.cr-select-option[aria-selected="true"] {
+    background: var(--teal, #0b63ce) !important;
+    color: #ffffff !important;
+    border-color: var(--teal, #0b63ce) !important;
+}
+
+/* Email form: keep each group visually separated and aligned. */
+.email-config-form label {
+    min-width: 0;
+}
+
+.email-method-panel .three-col,
+.email-method-panel .two-col {
+    align-items: start;
+    row-gap: 18px;
+}
+
+.email-method-panel > label,
+.email-method-panel > .premium-switch {
+    margin-top: 2px;
+}
+
+/* The Sent Items control must not touch Graph User / mailbox. */
+.email-method-panel [name="graph_user"] {
+    margin-bottom: 0;
+}
+
+.sent-items-switch {
+    margin-top: 8px !important;
+}
+
+/* Keep SMTP password aligned and separated from server/port/security. */
+.email-method-panel [name="password"] {
+    margin-top: 0;
+}
+
+.email-method-panel .three-col + label {
+    margin-top: 4px;
+}
+
+.email-method-panel label:has(> input[name="password"]) {
+    display: grid;
+    gap: 8px;
+}
+
+/* Uniform vertical rhythm for labels and controls in Email configuration. */
+.email-config-form label:not(.premium-switch) {
+    display: grid;
+    gap: 8px;
+}
+
+.email-config-form label:not(.premium-switch) > small {
+    margin-top: -2px;
+}
+
+.email-config-form input,
+.email-config-form textarea,
+.email-config-form select,
+.email-config-form .cr-select-button {
+    min-height: 50px;
+}
+
+.email-config-form .premium-switch {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+@media (max-width: 900px) {
+    .email-config-form .three-col,
+    .email-config-form .two-col {
+        row-gap: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .sent-items-switch {
+        margin-top: 6px !important;
+    }
+
+    .email-method-panel .three-col + label {
+        margin-top: 2px;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - Email configuration layout final polish
+   Explicit field rhythm so labels, inputs and switches never touch.
+   ============================================================ */
+.email-config-form .email-method-panel {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 24px !important;
+    margin-top: 22px !important;
+}
+
+.email-config-form .email-method-panel > * {
+    min-width: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.email-config-form .email-method-panel .method-heading {
+    margin: 0 !important;
+}
+
+.email-config-form .email-method-grid {
+    display: grid !important;
+    gap: 20px !important;
+    margin: 0 !important;
+    align-items: start !important;
+}
+
+.email-config-form .email-field {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 9px !important;
+    margin: 0 !important;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.email-config-form .email-field > input,
+.email-config-form .email-field > select,
+.email-config-form .email-field > .cr-select {
+    margin: 0 !important;
+}
+
+.email-config-form .email-secret-field,
+.email-config-form .graph-user-field,
+.email-config-form .smtp-password-field {
+    padding: 0 !important;
+}
+
+/* Keep Graph credentials aligned as one clean row on wide screens. */
+.email-config-form .graph-credentials-grid {
+    row-gap: 20px !important;
+}
+
+/* Sent Items is its own block and must never touch Graph User. */
+.email-config-form .sent-items-switch {
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    min-height: 72px;
+    align-items: center !important;
+}
+
+/* Ensure a visible breathing space even if an older rule changes panel gap. */
+.email-config-form .graph-credentials-grid + .sent-items-switch {
+    margin-top: 2px !important;
+}
+
+/* SMTP password is deliberately separated from server / port / security. */
+.email-config-form .email-method-grid + .smtp-password-field {
+    margin-top: 0 !important;
+}
+
+/* Top-level email fields use the same label-to-control distance. */
+.email-config-form > label:not(.premium-switch),
+.email-config-form .email-address-grid > label,
+.email-config-form .email-config-topline > label:not(.premium-switch) {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 9px !important;
+}
+
+/* Do not allow generic label/input rules to collapse the rhythm. */
+.email-config-form label > input,
+.email-config-form label > textarea,
+.email-config-form label > select,
+.email-config-form label > .cr-select {
+    margin-top: 0 !important;
+}
+
+@media (min-width: 901px) {
+    .email-config-form .email-method-grid.two-col,
+    .email-config-form .two-col.email-method-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .email-config-form .email-method-grid.three-col,
+    .email-config-form .three-col.email-method-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .email-config-form .email-method-panel {
+        gap: 20px !important;
+    }
+
+    .email-config-form .email-method-grid {
+        grid-template-columns: 1fr !important;
+        gap: 18px !important;
+    }
+
+    .email-config-form .sent-items-switch {
+        min-height: 68px;
+    }
+}
+
+@media (max-width: 560px) {
+    .email-config-form .email-method-panel {
+        gap: 18px !important;
+    }
+
+    .email-config-form .email-field,
+    .email-config-form > label:not(.premium-switch),
+    .email-config-form .email-address-grid > label,
+    .email-config-form .email-config-topline > label:not(.premium-switch) {
+        gap: 8px !important;
+    }
+
+    .email-config-form .sent-items-switch {
+        padding: 14px !important;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS ADMIN - Select controls final alignment
+   Applies consistently to every select in the administrator.
+   ============================================================ */
+
+/* Custom select trigger used throughout the admin. */
+.cr-select-button,
+button.cr-select-button {
+    padding-right: 52px !important;
+}
+
+.cr-select-button::after,
+button.cr-select-button::after {
+    content: '▾' !important;
+    position: absolute !important;
+    right: 14px !important;
+    top: 50% !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    line-height: 1 !important;
+    font-size: 11px !important;
+    font-family: Arial, sans-serif !important;
+    font-weight: 900 !important;
+    border-radius: 9px !important;
+    box-sizing: border-box !important;
+}
+
+/* Native selects that are not replaced by the custom component receive
+   the same centered chevron treatment, so the rule is admin-wide. */
+select:not(.cr-native-select) {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    padding-right: 48px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%230b2e59' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+    background-size: 12px 12px !important;
+}
+
+@media (max-width: 620px) {
+    .cr-select-button::after,
+    button.cr-select-button::after {
+        right: 12px !important;
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    select:not(.cr-native-select) {
+        background-position: right 17px center !important;
+    }
+}
+
+/* ============================================================
+   ES MULTISERVICIOS - Email method visibility regression fix
+   Keep progressive disclosure working even after layout polish.
+   ============================================================ */
+.email-config-form .email-method-panel[hidden] {
+    display: none !important;
+}
+
+
+/* ============================================================
+   ES MULTISERVICIOS - Email address alignment + optional CC final fix
+   Sender/Internal destination start at exactly the same vertical line.
+   ============================================================ */
+.email-config-form .email-address-grid {
+    align-items: start !important;
+}
+
+.email-config-form .email-address-grid > label {
+    align-self: start !important;
+    display: grid !important;
+    grid-template-rows: auto 50px auto !important;
+    gap: 9px !important;
+    margin: 0 !important;
+}
+
+.email-config-form .email-address-grid > label > input {
+    width: 100% !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    margin: 0 !important;
+}
+
+.email-config-form .email-address-grid > label > small {
+    margin: 0 !important;
+    align-self: start !important;
+}
+
+.email-config-form .email-cc-field {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    margin: 0 !important;
+}
+
+.email-config-form .email-cc-field > input {
+    margin: 0 !important;
+}
+
+@media (max-width: 900px) {
+    .email-config-form .email-address-grid > label {
+        grid-template-rows: auto 50px auto !important;
+    }
+}

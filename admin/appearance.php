@@ -261,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!empty($_FILES['banner_video']['name'])) {
                 $path = upload_media_file($_FILES['banner_video'], 'appearance', 'banner-video', 60);
-                $mime = mime_content_type(ROOT_DIR . '/' . $path) ?: '';
+                $mime = detect_mime_type(ROOT_DIR . '/' . $path, true);
 
                 if (!str_starts_with($mime, 'video/')) {
                     throw new RuntimeException('Banner video must be MP4 or WEBM.');

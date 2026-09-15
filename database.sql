@@ -170,6 +170,8 @@ CREATE TABLE IF NOT EXISTS correo (
   metodo_envio ENUM('SMTP','GRAPH') NOT NULL DEFAULT 'SMTP' COMMENT 'SMTP o Microsoft Graph',
   server VARCHAR(150) NOT NULL DEFAULT '' COMMENT 'Servidor SMTP o graph.microsoft.com',
   correo VARCHAR(180) NOT NULL COMMENT 'Correo emisor',
+  destinatario VARCHAR(180) DEFAULT NULL COMMENT 'Correo interno destinatario para tipos que lo requieran',
+  copia VARCHAR(500) DEFAULT NULL COMMENT 'Correos CC opcionales separados por coma o punto y coma',
   password TEXT NULL COMMENT 'Contrasena SMTP cifrada',
   port INT NOT NULL DEFAULT 587 COMMENT 'Puerto SMTP; Graph usa 0',
   smtp_secure VARCHAR(10) NOT NULL DEFAULT 'tls' COMMENT 'tls o ssl',
@@ -345,7 +347,6 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('seo_title','Your Company | Professional Services'),
 ('seo_description','Describe your company, services and value proposition here.'),
 ('seo_social_image',''),('seo_robots','index,follow'),
-('google_site_verification',''),
 ('developer_credit_enabled','0'),('developer_credit_text','Website by ES MULTISERVICIOS')
 ON DUPLICATE KEY UPDATE setting_value=setting_value;
 
