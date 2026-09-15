@@ -132,6 +132,20 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   PRIMARY KEY(id), UNIQUE KEY uq_admin_session_hash(session_hash), KEY idx_admin_sessions_user(admin_id,last_seen_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS admin_remember_tokens (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  admin_id INT UNSIGNED NOT NULL,
+  selector CHAR(18) NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(id),
+  UNIQUE KEY uq_admin_remember_selector(selector),
+  KEY idx_admin_remember_user(admin_id),
+  KEY idx_admin_remember_expiry(expires_at),
+  CONSTRAINT fk_admin_remember_user FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS admin_login_events (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   admin_id INT UNSIGNED NULL,
@@ -235,7 +249,8 @@ INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.i
 
 -- The ES MULTISERVICIOS base database already contains the current
 -- admin_users and estimate_requests columns. No ALTER TABLE is required here.
--- No compatibility ALTER is needed in this earlier block, keeping shared-host requirements minimal.
+-- This intentionally avoids ADD COLUMN IF NOT EXISTS, INFORMATION_SCHEMA,
+-- and CREATE ROUTINE dependencies for maximum shared-host compatibility.
 
 UPDATE admin_users
 SET role_id=(SELECT id FROM admin_roles WHERE role_key='owner' LIMIT 1)
@@ -584,116 +599,3 @@ INSERT INTO marketing_plans(
     'Experiencia visual configurable','Configurable visual experience','',0,60,1
 );
 
-
-
--- ============================================================
--- ES MULTISERVICIOS V5 - PUBLIC CONTACT EMAIL
--- Idempotent migration: replace only the old placeholder value.
--- Existing custom email addresses are preserved.
--- ============================================================
-INSERT INTO settings(setting_key,setting_value) VALUES
-('email','administracion@esmultiservicios.com')
-ON DUPLICATE KEY UPDATE setting_value = CASE
-    WHEN setting_value IS NULL OR TRIM(setting_value) = '' OR setting_value = 'hello@example.com'
-        THEN VALUES(setting_value)
-    ELSE setting_value
-END;
-
-
--- ============================================================
--- ES MULTISERVICIOS V6 - FULL LANDING SECTION ORDERING
--- Idempotent: adds/updates the real public sections used by this site.
--- Existing client-defined order/visibility is preserved for rows that exist.
--- ============================================================
-INSERT INTO site_sections(section_key,label,sort_order,active) VALUES
-('home','Inicio / Hero',10,1),
-('solutions','Soluciones',20,1),
-('izzy','IZZY',30,1),
-('plans','Planes de IZZY',35,1),
-('cami','CAMI',40,1),
-('services','Servicios',50,1),
-('videos','Videos',60,1),
-('projects','Proyectos',70,1),
-('affiliate','Afiliados',80,1),
-('company-artwork','Material corporativo',90,1),
-('why','Por qué ES MULTISERVICIOS',100,1),
-('contact','Contacto',110,1)
-ON DUPLICATE KEY UPDATE label=VALUES(label);
-
-
--- ============================================================
--- ES MULTISERVICIOS - EMAIL DELIVERY SMTP / MICROSOFT GRAPH
--- Cumulative/idempotent migration for existing installations.
--- Uses INFORMATION_SCHEMA + prepared ALTER statements for hosting compatibility.
--- ============================================================
-CREATE TABLE IF NOT EXISTS correo_tipo (
-  correo_tipo_id INT NOT NULL,
-  nombre VARCHAR(30) NOT NULL,
-  PRIMARY KEY (correo_tipo_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS correo (
-  correo_id INT NOT NULL AUTO_INCREMENT COMMENT 'Identificador unico de la configuracion de correo',
-  correo_tipo_id INT NOT NULL COMMENT 'Tipo de correo',
-  metodo_envio ENUM('SMTP','GRAPH') NOT NULL DEFAULT 'SMTP' COMMENT 'SMTP o Microsoft Graph',
-  server VARCHAR(150) NOT NULL DEFAULT '' COMMENT 'Servidor SMTP o graph.microsoft.com',
-  correo VARCHAR(180) NOT NULL COMMENT 'Correo emisor',
-  destinatario VARCHAR(180) DEFAULT NULL COMMENT 'Correo interno destinatario para tipos que lo requieran',
-  copia VARCHAR(500) DEFAULT NULL COMMENT 'Correos CC opcionales separados por coma o punto y coma',
-  password TEXT NULL COMMENT 'Contrasena SMTP cifrada',
-  port INT NOT NULL DEFAULT 587 COMMENT 'Puerto SMTP; Graph usa 0',
-  smtp_secure VARCHAR(10) NOT NULL DEFAULT 'tls' COMMENT 'tls o ssl',
-  tenant_id VARCHAR(150) DEFAULT NULL,
-  client_id VARCHAR(150) DEFAULT NULL,
-  client_secret TEXT NULL COMMENT 'Client secret cifrado',
-  graph_user VARCHAR(180) DEFAULT NULL,
-  save_to_sent_items TINYINT(1) NOT NULL DEFAULT 1,
-  estado TINYINT NOT NULL DEFAULT 1 COMMENT '1 Activo, 2 Inactivo',
-  fecha_registro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (correo_id),
-  KEY idx_correo_tipo_estado (correo_tipo_id,estado),
-  CONSTRAINT fk_correo_tipo FOREIGN KEY (correo_tipo_id) REFERENCES correo_tipo(correo_tipo_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-SET @esm_db := DATABASE();
-
-SET @esm_sql := IF(
-    (SELECT COUNT(*) FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA=@esm_db AND TABLE_NAME='correo' AND COLUMN_NAME='destinatario') = 0,
-    'ALTER TABLE correo ADD COLUMN destinatario VARCHAR(180) NULL COMMENT ''Correo interno destinatario para tipos que lo requieran'' AFTER correo',
-    'SELECT 1'
-);
-PREPARE esm_stmt FROM @esm_sql;
-EXECUTE esm_stmt;
-DEALLOCATE PREPARE esm_stmt;
-
-SET @esm_sql := IF(
-    (SELECT COUNT(*) FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA=@esm_db AND TABLE_NAME='correo' AND COLUMN_NAME='copia') = 0,
-    'ALTER TABLE correo ADD COLUMN copia VARCHAR(500) NULL COMMENT ''Correos CC opcionales separados por coma o punto y coma'' AFTER destinatario',
-    'SELECT 1'
-);
-PREPARE esm_stmt FROM @esm_sql;
-EXECUTE esm_stmt;
-DEALLOCATE PREPARE esm_stmt;
-
-INSERT INTO correo_tipo (correo_tipo_id,nombre) VALUES
-(1,'Website Alerts'),
-(2,'Admin Security'),
-(3,'Estimate Requests'),
-(4,'Auto Replies')
-ON DUPLICATE KEY UPDATE nombre=VALUES(nombre);
-
--- Normalize legacy data so only the newest active configuration remains active per email purpose.
-UPDATE correo c
-JOIN (
-    SELECT correo_tipo_id, MAX(correo_id) AS keep_id
-    FROM correo
-    WHERE estado=1
-    GROUP BY correo_tipo_id
-) keep_cfg ON keep_cfg.correo_tipo_id=c.correo_tipo_id
-SET c.estado=2
-WHERE c.estado=1 AND c.correo_id<>keep_cfg.keep_id;
-
--- Internal destination intentionally remains nullable. When blank, runtime delivery falls back to the SMTP user or Graph mailbox.

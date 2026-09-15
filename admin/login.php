@@ -13,6 +13,8 @@ $set=settings();
 $favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
 $logo=$set['admin_logo_path']??'';
+$rememberedUsername=remember_username();
+$rememberedEnabled=$rememberedUsername!=='';
 if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $u=trim((string)($_POST['username']??''));
@@ -36,8 +38,13 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         record_login_event((int)$row['id'],$u,true);
         log_activity('login','Administrator signed in');
         admin_notify('info','Administrator login',($row['username']??'Administrator').' signed in to the CMS.','security.php');
-        if(isset($_POST['remember_me'])) create_remember_token((int)$row['id']);
-        else clear_remember_cookie();
+        if(isset($_POST['remember_me'])) {
+            create_remember_token((int)$row['id']);
+            save_remember_username((string)$row['username']);
+        } else {
+            clear_remember_cookie();
+            clear_remember_username();
+        }
         sync_admin_session();
         header('Location: dashboard.php');
         exit;
@@ -111,13 +118,13 @@ endif;
 
 <form method="post">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<label>Username<input name="username" required autocomplete="username" autofocus>
+<label>Username<input name="username" value="<?=h((string)($_POST['username']??$rememberedUsername))?>" required autocomplete="username" autofocus>
 </label>
 <label>Password<input type="password" name="password" required autocomplete="current-password">
 </label>
 <div class="auth-options">
 <label class="remember-check cr-check">
-<input type="checkbox" name="remember_me" value="1">
+<input type="checkbox" name="remember_me" value="1"<?=isset($_POST['remember_me'])||($_SERVER['REQUEST_METHOD']!=='POST'&&$rememberedEnabled)?' checked':''?>>
 <span class="cr-check-box" aria-hidden="true">
 </span>
 <span class="cr-check-text">Remember me</span>

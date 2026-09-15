@@ -9,6 +9,35 @@ if (!config_ready()) {
 function remember_cookie_name(): string {
     return 'escms_admin_remember';
 }
+function remember_username_cookie_name(): string {
+    return 'escms_admin_remember_user';
+}
+function remember_cookie_options(int $expires): array {
+    return [
+        'expires'=>$expires,
+        'path'=>'/',
+        'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off',
+        'httponly'=>true,
+        'samesite'=>'Lax',
+    ];
+}
+function remember_username(): string {
+    return trim((string)($_COOKIE[remember_username_cookie_name()]??''));
+}
+function remember_username_enabled(): bool {
+    return remember_username()!=='';
+}
+function save_remember_username(string $username): void {
+    $username=trim($username);
+    if($username==='')return;
+    $expires=time()+60*60*24*30;
+    setcookie(remember_username_cookie_name(),$username,remember_cookie_options($expires));
+    $_COOKIE[remember_username_cookie_name()]=$username;
+}
+function clear_remember_username(): void {
+    setcookie(remember_username_cookie_name(),'',remember_cookie_options(time()-3600));
+    unset($_COOKIE[remember_username_cookie_name()]);
+}
 function clear_remember_cookie(): void {
     $name=remember_cookie_name();
     if(!empty($_COOKIE[$name])) {
@@ -20,10 +49,10 @@ function clear_remember_cookie(): void {
             }
         }
     }
-    setcookie($name,'',[ 'expires'=>time()-3600,'path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax' ]);
+    setcookie($name,'',remember_cookie_options(time()-3600));
     unset($_COOKIE[$name]);
 }
-function create_remember_token(int $adminId): void {
+function create_remember_token(int $adminId): bool {
     try {
         $selector=bin2hex(random_bytes(9));
         $validator=bin2hex(random_bytes(32));
@@ -32,9 +61,11 @@ function create_remember_token(int $adminId): void {
         db()->prepare('DELETE FROM admin_remember_tokens WHERE admin_id=? OR expires_at<NOW()')->execute([$adminId]);
         db()->prepare('INSERT INTO admin_remember_tokens(admin_id,selector,token_hash,expires_at) VALUES(?,?,?,?)')->execute([$adminId,$selector,$hash,date('Y-m-d H:i:s',$expires)]);
         $value=$selector.':'.$validator;
-        setcookie(remember_cookie_name(),$value,['expires'=>$expires,'path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax']);
+        setcookie(remember_cookie_name(),$value,remember_cookie_options($expires));
         $_COOKIE[remember_cookie_name()]=$value;
+        return true;
     } catch(Throwable $e) {
+        return false;
     }
 }
 function try_remember_login(): void {
@@ -44,8 +75,7 @@ function try_remember_login(): void {
         clear_remember_cookie();
         return;
     }
-    [$selector,
-    $validator]=$parts;
+    [$selector,$validator]=$parts;
     if(!preg_match('/^[a-f0-9]{18}$/',$selector)||!preg_match('/^[a-f0-9]{64}$/',$validator)) {
         clear_remember_cookie();
         return;
@@ -58,10 +88,19 @@ function try_remember_login(): void {
             clear_remember_cookie();
             return;
         }
+
         session_regenerate_id(true);
         $_SESSION['escms_admin_id']=(int)$row['admin_id'];
         $_SESSION['escms_admin_user']=$row['username'];
+
+        try {
+            db()->prepare('DELETE FROM admin_remember_tokens WHERE selector=?')->execute([$selector]);
+        } catch(Throwable $e) {
+        }
+        create_remember_token((int)$row['admin_id']);
+        save_remember_username((string)$row['username']);
     } catch(Throwable $e) {
+        // Keep the cookie on transient DB errors; normal login remains available.
     }
 }
 function request_ip(): string {

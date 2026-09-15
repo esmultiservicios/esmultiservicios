@@ -36,8 +36,13 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         record_login_event((int)$row['id'],$row['username'],true);
         log_activity('login_2fa','Administrator signed in with two-factor authentication');
         admin_notify('info','Secure administrator login',$row['username'].' signed in with two-factor authentication.','security.php');
-        if($remember)create_remember_token((int)$row['id']);
-        else clear_remember_cookie();
+        if($remember) {
+            create_remember_token((int)$row['id']);
+            save_remember_username((string)$row['username']);
+        } else {
+            clear_remember_cookie();
+            clear_remember_username();
+        }
         sync_admin_session();
         header('Location: dashboard.php');
         exit;
