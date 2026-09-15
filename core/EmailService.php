@@ -44,7 +44,7 @@ class EmailService
 
         foreach ($this->normalizeEmails($cfg['copia'] ?? '') as $copy) {
             if (!filter_var($copy, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'One of the copy email addresses is invalid.';
+                $errors[] = 'One of the hidden copy (BCC) email addresses is invalid.';
                 break;
             }
         }
@@ -128,15 +128,20 @@ class EmailService
             return ['success' => false, 'message' => 'Invalid destination email.'];
         }
 
-        // CC configured in the admin is truly optional. When empty, no copy is sent.
-        // When present, reuse the exact same SMTP/Graph transport as the main message.
-        $configuredCc = $this->normalizeEmails($cfg['copia'] ?? '');
-        $runtimeCc = $this->normalizeEmails($options['cc'] ?? []);
-        $cc = array_values(array_unique(array_merge($configuredCc, $runtimeCc)));
+        // The admin's optional copy is intentionally BCC so recipients never see
+        // the hidden copy addresses. Empty means no hidden copy is sent.
+        $configuredBcc = $this->normalizeEmails($cfg['copia'] ?? '');
+        $runtimeBcc = $this->normalizeEmails($options['bcc'] ?? []);
+        $bcc = array_values(array_unique(array_merge($configuredBcc, $runtimeBcc)));
+
+        // Keep explicit runtime CC support for callers that intentionally need a visible CC.
+        // The Email Configuration UI does not use this for its optional copy field.
+        $cc = $this->normalizeEmails($options['cc'] ?? []);
 
         $replyTo = trim((string)($options['reply_to'] ?? ''));
         if ($replyTo !== '' && !filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $replyTo = '';
 
+        $options['bcc'] = $bcc;
         $options['cc'] = $cc;
         $options['reply_to'] = $replyTo;
 
@@ -209,6 +214,13 @@ class EmailService
             );
         }
 
+        if (!empty($options['bcc'])) {
+            $message['bccRecipients'] = array_map(
+                static fn(string $email): array => ['emailAddress' => ['address' => $email]],
+                $options['bcc']
+            );
+        }
+
         if (!empty($options['reply_to'])) {
             $message['replyTo'] = [['emailAddress' => ['address' => $options['reply_to']]]];
         }
@@ -273,6 +285,11 @@ class EmailService
             $this->cmd($fp, 'RCPT TO:<'.$to.'>', [250, 251]);
             foreach ($options['cc'] ?? [] as $cc) {
                 $this->cmd($fp, 'RCPT TO:<'.$cc.'>', [250, 251]);
+            }
+            // BCC recipients are added only to the SMTP envelope. They are deliberately
+            // omitted from message headers so other recipients cannot see them.
+            foreach ($options['bcc'] ?? [] as $bcc) {
+                $this->cmd($fp, 'RCPT TO:<'.$bcc.'>', [250, 251]);
             }
             $this->cmd($fp, 'DATA', [354]);
 

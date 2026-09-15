@@ -287,9 +287,9 @@ require __DIR__.'/_header.php';
                 <input type="email" name="destinatario" value="<?= h($edit['destinatario'] ?? '') ?>" placeholder="Optional — leave blank to use the sender mailbox">
                 <small>Optional. If you enter an address, messages use it as the internal destination. If left blank, the selected SMTP user or Microsoft Graph mailbox is used automatically.</small>
             </label>
-            <label class="email-cc-field">Optional copy (CC)
-                <input name="copia" value="<?= h($edit['copia'] ?? '') ?>" placeholder="Optional — leave blank for no CC">
-                <small>Optional. Leave blank to send no copy. If you add one or more addresses, they are sent as CC through the same selected SMTP or Microsoft Graph connection. Separate multiple addresses with commas or semicolons.</small>
+            <label class="email-cc-field">Optional hidden copy (BCC / CCO)
+                <input name="copia" value="<?= h($edit['copia'] ?? '') ?>" placeholder="Optional — leave blank for no hidden copy">
+                <small>Optional. Leave blank to send no hidden copy. If you add one or more addresses, they are sent as BCC/CCO through the same selected SMTP or Microsoft Graph connection and are not visible to other recipients. Separate multiple addresses with commas or semicolons.</small>
             </label>
         </div>
 
@@ -389,7 +389,7 @@ require __DIR__.'/_header.php';
             <?php foreach ($types as $t): if ((int)$t['correo_tipo_id'] === (int)$edit['correo_tipo_id']) continue; ?>
                 <label class="check-row">
                     <input type="checkbox" name="target_types[]" value="<?= (int)$t['correo_tipo_id'] ?>">
-                    <span><b><?= h($t['nombre']) ?></b><small>Copy sender, method, encrypted credentials, destination and CC.</small></span>
+                    <span><b><?= h($t['nombre']) ?></b><small>Copy sender, method, encrypted credentials, destination and hidden copy (BCC/CCO).</small></span>
                 </label>
             <?php endforeach; ?>
         </div>
@@ -421,7 +421,7 @@ require __DIR__.'/_header.php';
         </div>
         <p class="muted"><?= $r['metodo_envio'] === 'GRAPH' ? 'Microsoft 365 / Graph mailbox: '.h($r['graph_user'] ?: $r['correo']) : 'SMTP: '.h($r['server']).':'.(int)$r['port'] ?></p>
         <?php if (!empty($r['destinatario'])): ?><p class="email-card-meta"><b>Destination:</b> <?= h($r['destinatario']) ?></p><?php endif; ?>
-        <?php if (!empty($r['copia'])): ?><p class="email-card-meta"><b>CC:</b> <?= h($r['copia']) ?></p><?php endif; ?>
+        <?php if (!empty($r['copia'])): ?><p class="email-card-meta"><b>BCC / CCO:</b> <?= h($r['copia']) ?></p><?php endif; ?>
         <div class="actions email-card-actions">
             <form method="post" class="email-card-test">
                 <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">

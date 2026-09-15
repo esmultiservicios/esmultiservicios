@@ -91,7 +91,6 @@ try {
                     EmailTemplates::estimateAdmin($request, $set),
                     [
                         'reply_to' => filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : '',
-                        'cc' => $internalCfg['copia'] ?? '',
                     ]
                 );
                 if (!$internalResult['success']) {
