@@ -11,7 +11,9 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $action=(string)($_POST['action']??'');
     $current=(string)($_POST['current_password']??'');
-    if(!password_verify($current,$row['password_hash']))$error='Current password is incorrect.';
+    $passwordActions=['profile','password','prepare_2fa','disable_2fa','reset_admin'];
+    $requiresCurrentPassword=in_array($action,$passwordActions,true);
+    if($requiresCurrentPassword&&!password_verify($current,$row['password_hash']))$error='Current password is incorrect.';
     elseif($action==='profile') {
         $username=trim((string)($_POST['username']??''));
         $full=trim((string)($_POST['full_name']??''));
@@ -44,16 +46,22 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         }
     } elseif($action==='prepare_2fa') {
         $_SESSION['escms_pending_totp_secret']=new_totp_secret();
-        flash('success','Authenticator setup key generated. Add it to your authenticator app, then verify a code.');
+        $_SESSION['escms_pending_totp_created_at']=time();
+        flash('success','Authenticator setup ready. Scan the QR code or use the manual key, then verify the current 6-digit code.');
         header('Location: profile.php#two-factor');
         exit;
     } elseif($action==='enable_2fa') {
         $secret=(string)($_SESSION['escms_pending_totp_secret']??'');
+        $createdAt=(int)($_SESSION['escms_pending_totp_created_at']??0);
         $code=trim((string)($_POST['totp_code']??''));
-        if($secret===''||!verify_totp($secret,$code))$error='The authenticator code is not valid. Generate a setup key and enter the current 6-digit code.';
-        else {
+        if($secret===''||$createdAt<=0||(time()-$createdAt)>900) {
+            unset($_SESSION['escms_pending_totp_secret'],$_SESSION['escms_pending_totp_created_at']);
+            $error='The authenticator setup expired. Start the setup again to generate a new QR code.';
+        } elseif(!verify_totp($secret,$code)) {
+            $error='The authenticator code is not valid. Enter the current 6-digit code shown in your authenticator app.';
+        } else {
             $pdo->prepare('UPDATE admin_users SET two_factor_secret_enc=?,two_factor_enabled=1 WHERE id=?')->execute([secret_encrypt($secret),$row['id']]);
-            unset($_SESSION['escms_pending_totp_secret']);
+            unset($_SESSION['escms_pending_totp_secret'],$_SESSION['escms_pending_totp_created_at']);
             log_activity('2fa_enable','Enabled two-factor authentication');
             admin_notify('success','Two-factor authentication enabled','Two-factor authentication was enabled for '.$row['username'].'.','profile.php');
             flash('success','Two-factor authentication is now enabled.');
@@ -62,7 +70,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         }
     } elseif($action==='disable_2fa') {
         $pdo->prepare('UPDATE admin_users SET two_factor_secret_enc=NULL,two_factor_enabled=0 WHERE id=?')->execute([$row['id']]);
-        unset($_SESSION['escms_pending_totp_secret']);
+        unset($_SESSION['escms_pending_totp_secret'],$_SESSION['escms_pending_totp_created_at']);
         log_activity('2fa_disable','Disabled two-factor authentication');
         admin_notify('warning','Two-factor authentication disabled','Two-factor authentication was disabled for '.$row['username'].'.','profile.php');
         flash('success','Two-factor authentication disabled.');
@@ -208,25 +216,44 @@ $account=rawurlencode($row['email']?:$row['username']);
 $uri='otpauth://totp/'.$issuer.':'.$account.'?secret='.rawurlencode($pendingSecret).'&issuer='.$issuer.'&digits=6&period=30';
 ?>
 <div class="totp-setup">
-<div>
+<div class="totp-setup-grid">
+<div class="totp-qr-card">
+<small>SCAN QR CODE</small>
+<div class="totp-qr" id="totpQr" data-totp-uri="<?=h($uri)?>" aria-label="Authenticator QR code"></div>
+<p>Scan this QR code with Google Authenticator, Microsoft Authenticator, 1Password or another TOTP-compatible app.</p>
+</div>
+<div class="totp-manual-card">
 <small>MANUAL SETUP KEY</small>
 <code><?=h($pendingSecret)?>
 </code>
-<p>Add this key to Google Authenticator, Microsoft Authenticator, 1Password or another TOTP app.</p>
+<p>If you cannot scan the QR code, add this key manually in your authenticator app.</p>
 <a class="button secondary small" href="<?=h($uri)?>">Open authenticator app</a>
 </div>
 </div>
-<form method="post">
+</div>
+<form method="post" class="totp-verify-form">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="enable_2fa">
-<label>Current password<input type="password" name="current_password" required>
-</label>
-<label>6-digit code<input class="totp-input" name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+<p class="muted totp-password-note">Your password was already verified when this setup started. Enter only the current code from your authenticator app.</p>
+<label>6-digit code<input class="totp-input" name="totp_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required autofocus>
 </label>
 <div class="form-actions">
 <button>Verify & enable 2FA</button>
 </div>
-</form><?php
+</form>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.js" integrity="sha512-is1ls2rgwpFZyixqKFEExPHVUUL+pPkBEPw47s/6NDQ4n1m6T/ySeDW3p54jp45z2EJ0RSOgilqee1WhtelXfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    var target=document.getElementById('totpQr');
+    if(!target)return;
+    var uri=target.getAttribute('data-totp-uri')||'';
+    if(uri===''||typeof QRCode==='undefined'){
+        target.innerHTML='<span class="totp-qr-fallback">QR unavailable. Use the manual setup key.</span>';
+        return;
+    }
+    new QRCode(target,{text:uri,width:220,height:220,colorDark:'#0b2948',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+});
+</script><?php
 else:
 ?>
 <form method="post" data-swal-confirm="Disable two-factor authentication?" data-swal-text="Your account will return to password-only sign-in.">

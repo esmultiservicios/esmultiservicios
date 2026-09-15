@@ -31,13 +31,29 @@ $copy = landing_content($lang);
 $products = marketing_products();
 $plans = marketing_plans();
 $projects = marketing_projects();
-$sectionRows = site_sections();
-$sectionOrder = static function (string $key, int $fallback) use ($sectionRows): int {
-    return isset($sectionRows[$key]) ? (int) $sectionRows[$key]['sort_order'] : $fallback;
-};
-$sectionVisible = static function (string $key) use ($sectionRows): bool {
-    return !isset($sectionRows[$key]) || (int) $sectionRows[$key]['active'] === 1;
-};
+
+
+try {
+    $serviceAreasPublic = db()->query(
+        'SELECT area_name FROM service_areas WHERE active=1 ORDER BY sort_order,id'
+    )->fetchAll();
+} catch (Throwable $ignored) {
+    $serviceAreasPublic = [];
+}
+
+$serviceMapEnabled = (string)($settings['service_map_enabled'] ?? '1') === '1';
+$serviceMapQuery = trim((string)($settings['service_map_query'] ?? ''));
+$legacyServiceMapLabel = trim((string)($settings['service_map_label'] ?? ''));
+$serviceMapLabelEs = trim((string)($settings['service_map_label_es'] ?? ($legacyServiceMapLabel !== '' ? $legacyServiceMapLabel : 'Área de cobertura')));
+$serviceMapLabelEn = trim((string)($settings['service_map_label_en'] ?? 'Service coverage'));
+$serviceMapLabel = $lang === 'es' ? $serviceMapLabelEs : $serviceMapLabelEn;
+if ($serviceMapLabel === '') {
+    $serviceMapLabel = $lang === 'es' ? 'Área de cobertura' : 'Service coverage';
+}
+if ($serviceMapQuery === '' && !empty($serviceAreasPublic)) {
+    $serviceMapQuery = trim((string)($serviceAreasPublic[0]['area_name'] ?? ''));
+}
+$showPublicServiceMap = $serviceMapEnabled && $serviceMapQuery !== '';
 
 try {
     $videos = db()->query(
@@ -104,35 +120,6 @@ $whatsApp = static function (string $message) use ($whatsAppBase): string {
 };
 
 $companyName = (string) ($settings['company_name'] ?? 'ES MULTISERVICIOS');
-$siteDomain = trim((string) ($settings['website'] ?? 'esmultiservicios.com'));
-$siteDomain = preg_replace('~^https?://~i', '', $siteDomain) ?: 'esmultiservicios.com';
-$siteDomain = rtrim($siteDomain, '/');
-$siteBaseUrl = 'https://' . $siteDomain;
-$canonicalUrl = $lang === 'en' ? $siteBaseUrl . '/?lang=en' : $siteBaseUrl . '/';
-$seoTitle = trim((string) ($settings['seo_title'] ?? 'ES MULTISERVICIOS | IZZY, CAMI y Soluciones Digitales'));
-$seoDescription = trim((string) ($settings['seo_description'] ?? 'Sistemas web, facturación, soluciones para clínicas, sitios web y desarrollo a la medida.'));
-$seoRobots = trim((string) ($settings['seo_robots'] ?? 'index,follow')) ?: 'index,follow';
-$googleSiteVerification = trim((string) ($settings['google_site_verification'] ?? ''));
-$seoSocialImage = trim((string) ($settings['seo_social_image'] ?? ''));
-if ($seoSocialImage !== '' && !preg_match('~^https?://~i', $seoSocialImage)) {
-    $seoSocialImage = $siteBaseUrl . '/' . ltrim($seoSocialImage, '/');
-}
-$organizationLogo = $siteBaseUrl . '/assets/brand/es-mark.png';
-$organizationSameAs = array_values(array_filter([
-    trim((string) ($settings['facebook'] ?? '')),
-    trim((string) ($settings['tiktok'] ?? '')),
-    trim((string) ($settings['youtube'] ?? '')),
-]));
-$organizationSchema = [
-    '@context' => 'https://schema.org',
-    '@type' => 'Organization',
-    'name' => $companyName,
-    'url' => $siteBaseUrl . '/',
-    'logo' => $organizationLogo,
-    'email' => trim((string) ($settings['email'] ?? 'administracion@esmultiservicios.com')),
-    'telephone' => trim((string) ($settings['phone'] ?? '+504 8913-6844')),
-    'sameAs' => $organizationSameAs,
-];
 $maintenance = ($settings['maintenance_mode'] ?? '0') === '1';
 $adminPreview = !empty($_SESSION['escms_admin_id'])
     && ($_GET['preview'] ?? '') === '1';
@@ -178,35 +165,16 @@ if ($maintenance && !$adminPreview) {
     exit;
 }
 
-$navigationDefaults = [
-    'home' => [$lang === 'es' ? 'Inicio' : 'Home', 10],
-    'solutions' => [$lang === 'es' ? 'Soluciones' : 'Solutions', 20],
-    'izzy' => ['IZZY', 30],
-    'cami' => ['CAMI', 40],
-    'services' => [$lang === 'es' ? 'Servicios' : 'Services', 50],
-    'projects' => [$lang === 'es' ? 'Proyectos' : 'Projects', 70],
-    'affiliate' => [$lang === 'es' ? 'Afiliados' : 'Affiliates', 80],
-    'contact' => [$lang === 'es' ? 'Contacto' : 'Contact', 110],
+$navigation = [
+    'home' => $lang === 'es' ? 'Inicio' : 'Home',
+    'solutions' => $lang === 'es' ? 'Soluciones' : 'Solutions',
+    'izzy' => 'IZZY',
+    'cami' => 'CAMI',
+    'services' => $lang === 'es' ? 'Servicios' : 'Services',
+    'projects' => $lang === 'es' ? 'Proyectos' : 'Projects',
+    'affiliate' => $lang === 'es' ? 'Afiliados' : 'Affiliates',
+    'contact' => $lang === 'es' ? 'Contacto' : 'Contact',
 ];
-
-$navigation = [];
-foreach ($navigationDefaults as $id => [$label, $fallbackOrder]) {
-    if ($sectionVisible($id)) {
-        $navigation[$id] = [
-            'label' => $label,
-            'order' => $sectionOrder($id, $fallbackOrder),
-            'fallback' => $fallbackOrder,
-        ];
-    }
-}
-
-uasort(
-    $navigation,
-    static function (array $a, array $b): int {
-        return [$a['order'], $a['fallback']] <=> [$b['order'], $b['fallback']];
-    }
-);
-$brandTarget = array_key_first($navigation) ?: 'home';
 
 $servicesPublic = $lang === 'es'
     ? [
@@ -272,35 +240,15 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title><?= h($seoTitle) ?></title>
-    <meta name="description" content="<?= h($seoDescription) ?>">
-    <meta name="robots" content="<?= h($seoRobots) ?>">
+    <title><?= h($settings['seo_title'] ?? 'ES MULTISERVICIOS') ?></title>
+    <meta
+        name="description"
+        content="<?= h($settings['seo_description'] ?? '') ?>"
+    >
     <meta name="theme-color" content="#0B2E59">
-    <link rel="canonical" href="<?= h($canonicalUrl) ?>">
-    <link rel="alternate" hreflang="es" href="<?= h($siteBaseUrl . '/') ?>">
-    <link rel="alternate" hreflang="en" href="<?= h($siteBaseUrl . '/?lang=en') ?>">
-    <link rel="alternate" hreflang="x-default" href="<?= h($siteBaseUrl . '/') ?>">
-
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="<?= h($companyName) ?>">
-    <meta property="og:title" content="<?= h($seoTitle) ?>">
-    <meta property="og:description" content="<?= h($seoDescription) ?>">
-    <meta property="og:url" content="<?= h($canonicalUrl) ?>">
-    <meta property="og:locale" content="<?= $lang === 'en' ? 'en_US' : 'es_HN' ?>">
-    <meta property="og:locale:alternate" content="<?= $lang === 'en' ? 'es_HN' : 'en_US' ?>">
-    <?php if ($seoSocialImage !== ''): ?>
-        <meta property="og:image" content="<?= h($seoSocialImage) ?>">
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:image" content="<?= h($seoSocialImage) ?>">
-    <?php else: ?>
-        <meta name="twitter:card" content="summary">
+    <?php if (!empty($settings['seo_social_image'])): ?>
+        <meta property="og:image" content="<?= h($settings['seo_social_image']) ?>">
     <?php endif; ?>
-    <meta name="twitter:title" content="<?= h($seoTitle) ?>">
-    <meta name="twitter:description" content="<?= h($seoDescription) ?>">
-    <?php if ($googleSiteVerification !== ''): ?>
-        <meta name="google-site-verification" content="<?= h($googleSiteVerification) ?>">
-    <?php endif; ?>
-    <script type="application/ld+json"><?= json_encode($organizationSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
     <?php $publicFavicon = trim((string) ($settings['favicon_path'] ?? '')) ?: 'assets/brand/favicon.png'; ?>
     <link rel="icon" type="image/png" href="<?= h($publicFavicon) ?>">
     <link rel="shortcut icon" href="<?= h($publicFavicon) ?>">
@@ -315,7 +263,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <body>
 <header class="site-header" data-header>
     <div class="shell nav-shell">
-        <a class="master-brand" href="#<?= h($brandTarget) ?>" aria-label="ES MULTISERVICIOS">
+        <a class="master-brand" href="#home" aria-label="ES MULTISERVICIOS">
             <img src="assets/brand/es-mark.png" alt="">
             <span>
                 <strong>ES MULTISERVICIOS</strong>
@@ -336,8 +284,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </button>
 
         <nav class="site-nav" data-nav>
-            <?php foreach ($navigation as $id => $item): ?>
-                <a href="#<?= h($id) ?>" data-nav-link data-section="<?= h($id) ?>"><?= h($item['label']) ?></a>
+            <?php foreach ($navigation as $id => $label): ?>
+                <a href="#<?= h($id) ?>" data-nav-link data-section="<?= h($id) ?>"><?= h($label) ?></a>
             <?php endforeach; ?>
             <span class="nav-indicator" data-nav-indicator aria-hidden="true"></span>
         </nav>
@@ -365,9 +313,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     </div>
 </header>
 
-<main class="site-section-stack">
-    <?php if ($sectionVisible('home')): ?>
-    <section class="hero" id="home" style="order: <?= $sectionOrder('home', 10) ?>">
+<main>
+    <section class="hero" id="home">
         <div class="shell hero-grid">
             <div class="hero-copy reveal">
                 <span class="eyebrow"><?= h($text('hero_kicker')) ?></span>
@@ -411,24 +358,22 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
             <div class="hero-media reveal">
                 <div class="product-window main-shot">
-                    <span class="shot-label">IZZY · <?= $lang === 'es' ? 'Escritorio' : 'Desktop' ?></span>
+                    <span class="shot-label">IZZY · Dashboard</span>
                     <img src="assets/products/izzy-dashboard.png" alt="IZZY dashboard">
                 </div>
                 <div class="product-window mobile-shot">
-                    <span class="shot-label"><?= $lang === 'es' ? 'Celular' : 'Mobile' ?></span>
+                    <span class="shot-label">Responsive</span>
                     <img src="assets/products/izzy-mobile.jpeg" alt="IZZY responsive mobile view">
                 </div>
                 <div class="product-window login-shot">
-                    <span class="shot-label"><?= $lang === 'es' ? 'Acceso web' : 'Web access' ?></span>
+                    <span class="shot-label">100% Web</span>
                     <img src="assets/products/izzy-login.png" alt="IZZY login">
                 </div>
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($sectionVisible('solutions')): ?>
-    <section class="section section-soft" id="solutions" style="order: <?= $sectionOrder('solutions', 20) ?>">
+    <section class="section section-soft" id="solutions">
         <div class="shell">
             <div class="section-heading centered reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PRODUCTOS PROPIOS' : 'OUR PRODUCTS' ?></span>
@@ -465,10 +410,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($sectionVisible('izzy')): ?>
-    <section class="section product-showcase-section" id="izzy" style="order: <?= $sectionOrder('izzy', 30) ?>">
+    <section class="section product-showcase-section" id="izzy">
         <div class="shell">
             <div class="product-section-head reveal">
                 <div>
@@ -550,10 +493,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </article>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($plans && $sectionVisible('plans')): ?>
-        <section class="section izzy-plans-section" id="plans" aria-labelledby="izzy-plans-title" style="order: <?= $sectionOrder('plans', 35) ?>">
+    <?php if ($plans): ?>
+        <section class="section izzy-plans-section" id="plans" aria-labelledby="izzy-plans-title">
             <div class="shell">
                 <div class="section-heading centered plans-heading reveal">
                     <span class="eyebrow"><?= $lang === 'es' ? 'PLANES DE IZZY' : 'IZZY PLANS' ?></span>
@@ -615,8 +557,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     <?php endif; ?>
 
 
-    <?php if ($sectionVisible('cami')): ?>
-    <section class="section cami-section product-showcase-section" id="cami" style="order: <?= $sectionOrder('cami', 40) ?>">
+    <section class="section cami-section product-showcase-section" id="cami">
         <div class="shell">
             <div class="product-section-head reveal">
                 <div>
@@ -703,10 +644,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($sectionVisible('services')): ?>
-    <section class="section section-dark" id="services" style="order: <?= $sectionOrder('services', 50) ?>">
+    <section class="section section-dark" id="services">
         <div class="shell">
             <div class="section-heading reveal">
                 <span class="eyebrow light"><?= $lang === 'es' ? 'SERVICIOS' : 'SERVICES' ?></span>
@@ -728,10 +667,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($videos && $sectionVisible('videos')): ?>
-        <section class="section video-showcase-section" id="videos" style="order: <?= $sectionOrder('videos', 60) ?>">
+    <?php if ($videos): ?>
+        <section class="section video-showcase-section" id="videos">
             <div class="shell">
                 <div class="section-heading reveal">
                     <span class="eyebrow">
@@ -789,8 +727,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </section>
     <?php endif; ?>
 
-    <?php if ($sectionVisible('projects')): ?>
-    <section class="section section-soft" id="projects" style="order: <?= $sectionOrder('projects', 70) ?>">
+    <section class="section section-soft" id="projects">
         <div class="shell">
             <div class="section-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PROYECTOS' : 'PROJECTS' ?></span>
@@ -827,10 +764,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($sectionVisible('affiliate')): ?>
-    <section class="section affiliate-section" id="affiliate" style="order: <?= $sectionOrder('affiliate', 80) ?>">
+
+    <section class="section affiliate-section" id="affiliate">
         <div class="shell">
             <div class="section-heading affiliate-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'PROGRAMA DE AFILIADOS' : 'AFFILIATE PROGRAM' ?></span>
@@ -881,10 +817,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 
-    <?php if ($aboutArtworks && $sectionVisible('company-artwork')): ?>
-        <section class="section company-artwork-section" id="company-artwork" style="order: <?= $sectionOrder('company-artwork', 90) ?>">
+    <?php if ($aboutArtworks): ?>
+        <section class="section company-artwork-section" id="company-artwork">
             <div class="shell">
                 <div class="section-heading centered reveal">
                     <span class="eyebrow"><?= $lang === 'es' ? 'NUESTRA IDENTIDAD' : 'OUR IDENTITY' ?></span>
@@ -911,8 +846,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </section>
     <?php endif; ?>
 
-    <?php if ($sectionVisible('why')): ?>
-    <section class="section why-section" id="why" style="order: <?= $sectionOrder('why', 100) ?>">
+    <section class="section why-section">
         <div class="shell why-grid">
             <div class="section-heading reveal">
                 <span class="eyebrow"><?= $lang === 'es' ? 'NUESTRO ENFOQUE' : 'OUR APPROACH' ?></span>
@@ -934,10 +868,62 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+
+
+
+    <?php if ($showPublicServiceMap): ?>
+        <?php $serviceMapGoogleUrl = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($serviceMapQuery); ?>
+        <section class="section coverage-map-section" aria-labelledby="coverage-map-title">
+            <div class="shell">
+                <div class="coverage-map-card reveal">
+                    <div class="coverage-map-header">
+                        <div class="coverage-map-copy">
+                            <span class="eyebrow"><?= $lang === 'es' ? 'COBERTURA' : 'COVERAGE' ?></span>
+                            <h2 id="coverage-map-title"><?= h($serviceMapLabel) ?></h2>
+                            <p>
+                                <?= $lang === 'es'
+                                    ? 'Explora nuestra ubicación de cobertura de referencia. Contáctanos para confirmar disponibilidad en tu zona.'
+                                    : 'Explore our reference coverage location. Contact us to confirm availability in your area.' ?>
+                            </p>
+                        </div>
+
+                        <a
+                            class="coverage-map-open"
+                            href="<?= h($serviceMapGoogleUrl) ?>"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <span><?= $lang === 'es' ? 'Abrir en Google Maps' : 'Open in Google Maps' ?></span>
+                            <span aria-hidden="true">↗</span>
+                        </a>
+                    </div>
+
+                    <?php if (!empty($serviceAreasPublic)): ?>
+                        <div class="coverage-area-chips" aria-label="<?= $lang === 'es' ? 'Áreas de servicio' : 'Service areas' ?>">
+                            <?php foreach ($serviceAreasPublic as $area): ?>
+                                <?php $areaName = trim((string)($area['area_name'] ?? '')); ?>
+                                <?php if ($areaName !== ''): ?>
+                                    <span><?= h($areaName) ?></span>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="coverage-map-frame">
+                        <iframe
+                            title="<?= h($serviceMapLabel) ?>"
+                            src="https://www.google.com/maps?q=<?= rawurlencode($serviceMapQuery) ?>&output=embed&hl=<?= $lang === 'es' ? 'es' : 'en' ?>"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            allowfullscreen
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
     <?php endif; ?>
 
-    <?php if ($sectionVisible('contact')): ?>
-    <section class="section contact-section" id="contact" style="order: <?= $sectionOrder('contact', 110) ?>">
+    <section class="section contact-section" id="contact">
         <div class="shell">
             <div class="contact-intro reveal">
                 <span class="eyebrow light"><?= $lang === 'es' ? 'CONTACTO' : 'CONTACT' ?></span>
@@ -1024,7 +1010,6 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
-    <?php endif; ?>
 </main>
 
 <footer class="site-footer">

@@ -1,20 +1,19 @@
-/* ES MULTISERVICIOS Admin Theme — Navy + Corporate Blue. Green reserved for success/live states. */
 :root {
-    --teal:#0b6fa4;
-    --teal-dark:#084f78;
-    --deep:#0a2944;
-    --deep-2:#123a5a;
+    --teal:#0f7777;
+    --teal-dark:#0b5f60;
+    --deep:#103c39;
+    --deep-2:#173f3d;
     --yellow:#f2d45c;
-    --ink:#132a3a;
-    --muted:#637586;
-    --line:#d8e3ec;
-    --line2:#c4d3df;
-    --paper:#f3f7fa;
+    --ink:#1c2a2a;
+    --muted:#687574;
+    --line:#dce4df;
+    --line2:#cbd7d1;
+    --paper:#f3f5f3;
     --white:#fff;
     --danger:#992f34;
     --success:#236849;
-    --shadow:0 18px 50px rgba(10,41,68,.10);
-    --shadow-sm:0 8px 24px rgba(10,41,68,.07)
+    --shadow:0 18px 50px rgba(16,60,57,.10);
+    --shadow-sm:0 8px 24px rgba(16,60,57,.07)
 }
 
 * {
@@ -115,7 +114,7 @@ label {
     gap:8px;
     font-weight:760;
     font-size:13px;
-    color:#294052
+    color:#2b3c3a
 }
 
 input,textarea,select {
@@ -133,7 +132,7 @@ input,textarea,select {
 
 input:focus,textarea:focus,select:focus {
     border-color:var(--teal);
-    box-shadow:0 0 0 4px rgba(11,111,164,.12)
+    box-shadow:0 0 0 4px rgba(15,119,119,.1)
 }
 
 textarea {
@@ -162,11 +161,11 @@ button,.button {
 button:hover,.button:hover {
     background:var(--teal-dark);
     transform:translateY(-1px);
-    box-shadow:0 7px 18px rgba(11,111,164,.18)
+    box-shadow:0 7px 18px rgba(15,119,119,.16)
 }
 
 button:focus-visible,.button:focus-visible,a:focus-visible,summary:focus-visible {
-    outline:3px solid rgba(11,111,164,.24);
+    outline:3px solid rgba(15,119,119,.22);
     outline-offset:2px
 }
 
@@ -178,7 +177,7 @@ button:focus-visible,.button:focus-visible,a:focus-visible,summary:focus-visible
 
 .button.secondary:hover {
     background:#f9fbfa;
-    border-color:#bfd0dc
+    border-color:#c6d3cd
 }
 
 .button.danger {
@@ -1493,7 +1492,7 @@ button:focus-visible,.button:focus-visible,a:focus-visible,summary:focus-visible
 }
 
 .admin-sidebar {
-    background:#0a2944;
+    background:#103c39;
     border-right:1px solid #234f4b
 }
 
@@ -1558,7 +1557,7 @@ button:focus-visible,.button:focus-visible,a:focus-visible,summary:focus-visible
 .status-switch:has(input:checked) {
     background:#edf8f4;
     border-color:#b8ddce;
-    color:#155a82
+    color:#175b44
 }
 
 .status-switch:focus-within {
@@ -1573,7 +1572,7 @@ button,.button {
 }
 
 .button.secondary {
-    color:#183f5c;
+    color:#183d39;
     background:#fff;
     border:1px solid #bfcfca;
     box-shadow:none
@@ -1581,8 +1580,8 @@ button,.button {
 
 .button.secondary:hover {
     color:#fff;
-    background:#123a5a;
-    border-color:#123a5a
+    background:#173f3d;
+    border-color:#173f3d
 }
 
 .action-menu summary {
@@ -1594,7 +1593,7 @@ button,.button {
     border:1px solid #bfcfca;
     border-radius:11px;
     background:#fff;
-    color:#123a5a;
+    color:#173f3d;
     font-weight:850;
     font-size:12px;
     cursor:pointer;
@@ -1602,9 +1601,9 @@ button,.button {
 }
 
 .action-menu[open] summary,.action-menu summary:hover {
-    background:#123a5a;
+    background:#173f3d;
     color:#fff;
-    border-color:#123a5a
+    border-color:#173f3d
 }
 
 .action-menu {
@@ -1643,7 +1642,7 @@ button,.button {
 .action-menu nav a:hover,.action-menu nav button:hover {
     background:#f0f5f2;
     transform:none;
-    color:#123a5a
+    color:#173f3d
 }
 
 .action-menu nav .danger-text {
@@ -1979,14 +1978,14 @@ button,.button {
 
 .list-card .button.secondary.small,.request-card .button.secondary.small,.gallery-item .button.secondary.small {
     border-color:#7fb1a7;
-    color:#09618f;
+    color:#0d6666;
     background:#f7fbfa
 }
 
 .list-card .button.secondary.small:hover,.request-card .button.secondary.small:hover,.gallery-item .button.secondary.small:hover {
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
-    border-color:#0b6fa4
+    border-color:#0f7777
 }
 
 /* ===== Premium polish update 2026-08-27 ===== */
@@ -2288,7 +2287,7 @@ button,.button {
 /* Header - cleaner desktop and mobile hierarchy */
 .admin-header {
     border-top:3px solid var(--yellow);
-    box-shadow:0 8px 30px rgba(10,41,68,.07)
+    box-shadow:0 8px 30px rgba(16,60,57,.07)
 }
 
 .admin-head-inner {
@@ -2296,7 +2295,7 @@ button,.button {
 }
 
 .admin-brand img {
-    box-shadow:0 5px 16px rgba(10,41,68,.10)
+    box-shadow:0 5px 16px rgba(16,60,57,.10)
 }
 
 .quick-link {
@@ -2626,29 +2625,29 @@ input[type=radio] {
 /* Every interactive button must be visually distinct; no white button surfaces. */
 button,.button,.icon-btn,.action-menu>summary,.profile-menu>summary,.quick-link {
     background:#e7f2ef;
-    color:#143b57;
+    color:#123f3c;
     border-color:#bfd5ce;
     box-shadow:0 3px 10px rgba(16,60,57,.06)
 }
 
 button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-menu>summary:hover,.quick-link:hover {
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
-    border-color:#0b6fa4;
-    box-shadow:0 8px 20px rgba(11,111,164,.18)
+    border-color:#0f7777;
+    box-shadow:0 8px 20px rgba(15,119,119,.16)
 }
 
 .button.secondary,.button.ghost,.list-card .button.secondary.small,.request-card .button.secondary.small,.gallery-item .button.secondary.small {
     background:#dff0ec;
-    color:#084f78;
+    color:#0b5f60;
     border-color:#a9cdc3;
     box-shadow:none
 }
 
 .button.secondary:hover,.button.ghost:hover,.list-card .button.secondary.small:hover,.request-card .button.secondary.small:hover,.gallery-item .button.secondary.small:hover {
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
-    border-color:#0b6fa4
+    border-color:#0f7777
 }
 
 .button.danger,button.danger {
@@ -2673,7 +2672,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    color:#084f78;
+    color:#0b5f60;
     background:#e5f3ef
 }
 
@@ -2682,9 +2681,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 }
 
 .action-menu[open]>summary {
-    background:#0a2944;
+    background:#103c39;
     color:#fff;
-    border-color:#0a2944
+    border-color:#103c39
 }
 
 .action-menu nav {
@@ -2693,13 +2692,13 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 
 .action-menu nav a,.action-menu nav button {
     background:#eaf4f1!important;
-    color:#123a5a!important;
+    color:#173f3d!important;
     border:1px solid transparent!important;
     margin:3px 0!important
 }
 
 .action-menu nav a:hover,.action-menu nav button:hover {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important
 }
 
@@ -2714,13 +2713,13 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 }
 
 .zoom-btn,.modal-close {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important;
-    border-color:#0b6fa4!important
+    border-color:#0f7777!important
 }
 
 .zoom-btn:hover,.modal-close:hover {
-    background:#084f78!important
+    background:#0b5f60!important
 }
 
 /* Premium top navigation. */
@@ -2774,23 +2773,23 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 }
 
 .public-view-link {
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
-    border-color:#0b6fa4
+    border-color:#0f7777
 }
 
 .public-view-link:hover {
-    background:#084f78
+    background:#0b5f60
 }
 
 .profile-menu>summary {
-    background:#0a2944;
-    border-color:#0a2944;
+    background:#103c39;
+    border-color:#103c39;
     color:#fff
 }
 
 .profile-menu>summary:hover {
-    background:#084f78
+    background:#0b5f60
 }
 
 .profile-copy small,.profile-menu .chev {
@@ -2882,9 +2881,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         width:40px!important;
         height:40px!important;
         flex:0 0 40px;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border-color:#0b6fa4!important
+        border-color:#0f7777!important
     }
 
     .admin-brand {
@@ -2922,9 +2921,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         min-width:40px!important;
         padding:0!important;
         border-radius:12px;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border-color:#0b6fa4!important
+        border-color:#0f7777!important
     }
 
     .profile-menu {
@@ -2937,7 +2936,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         min-height:42px;
         padding:3px!important;
         border-radius:13px!important;
-        background:#0a2944!important
+        background:#103c39!important
     }
 
     .profile-menu>summary .profile-copy,.profile-menu>summary .chev {
@@ -3006,29 +3005,29 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
    Strong, non-white controls across the administrator.
    ========================================================== */
 .button.secondary, .button.ghost, a.button.secondary, a.button.ghost, .list-card .button.secondary.small, .request-card .button.secondary.small, .gallery-item .button.secondary.small, .email-card .button.secondary.small, .integration-card .button.secondary.small {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important;
-    border-color:#0b6fa4!important;
+    border-color:#0f7777!important;
     box-shadow:0 5px 14px rgba(15,119,119,.14)!important;
 }
 
 .button.secondary:hover, .button.ghost:hover, a.button.secondary:hover, a.button.ghost:hover, .list-card .button.secondary.small:hover, .request-card .button.secondary.small:hover, .gallery-item .button.secondary.small:hover, .email-card .button.secondary.small:hover, .integration-card .button.secondary.small:hover {
-    background:#084f78!important;
+    background:#0b5f60!important;
     color:#fff!important;
-    border-color:#084f78!important;
+    border-color:#0b5f60!important;
 }
 
 .action-menu>summary {
-    background:#0a2944!important;
+    background:#103c39!important;
     color:#fff!important;
-    border-color:#0a2944!important;
+    border-color:#103c39!important;
     box-shadow:0 5px 14px rgba(16,60,57,.15)!important;
 }
 
 .action-menu>summary:hover, .action-menu[open]>summary {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important;
-    border-color:#0b6fa4!important;
+    border-color:#0f7777!important;
 }
 
 .action-menu nav {
@@ -3043,7 +3042,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
     min-height:42px!important;
     justify-content:flex-start!important;
     background:#dff0ec!important;
-    color:#084f78!important;
+    color:#0b5f60!important;
     border:1px solid #a9cdc3!important;
     border-radius:9px!important;
     font-weight:850!important;
@@ -3053,9 +3052,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 }
 
 .action-menu nav a:hover, .action-menu nav button:hover {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important;
-    border-color:#0b6fa4!important;
+    border-color:#0f7777!important;
 }
 
 .action-menu nav .danger-text, .action-menu nav button.danger-text, .action-menu nav a.danger-text {
@@ -3127,13 +3126,13 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 
 .mobile-view {
     width:40px;
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
-    border-color:#0b6fa4
+    border-color:#0f7777
 }
 
 .mobile-view:hover {
-    background:#084f78;
+    background:#0b5f60;
     color:#fff
 }
 
@@ -3248,10 +3247,10 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         height:40px!important;
         min-width:40px!important;
         flex:0 0 40px!important;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border:1px solid #0b6fa4!important;
-        box-shadow:0 5px 14px rgba(11,111,164,.18)!important
+        border:1px solid #0f7777!important;
+        box-shadow:0 5px 14px rgba(15,119,119,.16)!important
     }
 
     .admin-brand {
@@ -3292,9 +3291,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         height:42px!important;
         min-height:42px!important;
         padding:3px!important;
-        background:#0a2944!important;
+        background:#103c39!important;
         color:#fff!important;
-        border:1px solid #0a2944!important;
+        border:1px solid #103c39!important;
         border-radius:13px!important;
         box-shadow:0 6px 16px rgba(16,60,57,.18)!important
     }
@@ -3429,9 +3428,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         min-width:42px!important;
         flex:0 0 42px!important;
         padding:0!important;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border:2px solid #084f78!important;
+        border:2px solid #0b5f60!important;
         border-radius:13px!important;
         box-shadow:0 6px 16px rgba(15,119,119,.18)!important
     }
@@ -3500,7 +3499,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         height:42px!important;
         padding:0 11px!important;
         background:#e3f2ec!important;
-        color:#164b6c!important;
+        color:#154f3a!important;
         border:2px solid #9bcab7!important;
         border-radius:13px!important;
         box-shadow:none!important;
@@ -3536,11 +3535,11 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         width:auto!important;
         height:42px!important;
         padding:0 10px!important;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border:2px solid #084f78!important;
+        border:2px solid #0b5f60!important;
         border-radius:13px!important;
-        box-shadow:0 6px 16px rgba(11,111,164,.18)!important
+        box-shadow:0 6px 16px rgba(15,119,119,.16)!important
     }
 
     .mobile-view .ui-icon {
@@ -3566,9 +3565,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         height:44px!important;
         min-height:44px!important;
         padding:3px!important;
-        background:#0a2944!important;
+        background:#103c39!important;
         color:#fff!important;
-        border:2px solid #07243b!important;
+        border:2px solid #0a302e!important;
         border-radius:14px!important;
         box-shadow:0 6px 16px rgba(16,60,57,.20)!important
     }
@@ -3581,7 +3580,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
         width:34px!important;
         height:34px!important;
         border-radius:10px!important;
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important
     }
 }
@@ -3659,15 +3658,15 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
    ========================================================== */
 @media (hover:hover) and (pointer:fine) {
     button:hover,.button:hover,.icon-btn:hover,.quick-link:hover, .action-menu>summary:hover,.profile-menu>summary:hover, .mobile-menu:hover,.mobile-view:hover {
-        background:#084f78!important;
+        background:#0b5f60!important;
         color:#fff!important;
-        border-color:#084f78!important;
+        border-color:#0b5f60!important;
     }
 
     .button.secondary:hover,.button.ghost:hover,a.button.secondary:hover,a.button.ghost:hover, .list-card .button.secondary.small:hover,.request-card .button.secondary.small:hover, .gallery-item .button.secondary.small:hover,.email-card .button.secondary.small:hover, .integration-card .button.secondary.small:hover {
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border-color:#0b6fa4!important;
+        border-color:#0f7777!important;
     }
 
     .admin-brand:hover {
@@ -3676,7 +3675,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 
     .mobile-status:hover {
         background:#d6ece4!important;
-        color:#164b6c!important;
+        color:#154f3a!important;
         border-color:#8fc5b0!important
     }
 
@@ -3687,7 +3686,7 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
     }
 
     .admin-sidebar a:hover {
-        background:#154a6b!important;
+        background:#1a5853!important;
         color:#fff!important
     }
 
@@ -3697,9 +3696,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
     }
 
     .action-menu nav a:hover,.action-menu nav button:hover {
-        background:#0b6fa4!important;
+        background:#0f7777!important;
         color:#fff!important;
-        border-color:#0b6fa4!important
+        border-color:#0f7777!important
     }
 
     .action-menu nav .danger-text:hover,.action-menu nav button.danger-text:hover,.action-menu nav a.danger-text:hover {
@@ -3716,13 +3715,13 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 .top-shortcuts {
     background:#e7f1ed!important;
     border:1px solid #c7ddd4!important;
-    box-shadow:0 7px 20px rgba(10,41,68,.07)!important;
+    box-shadow:0 7px 20px rgba(16,60,57,.07)!important;
 }
 
 .top-shortcuts .quick-link {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important;
-    border:1px solid #075a87!important;
+    border:1px solid #0b6566!important;
     box-shadow:0 4px 12px rgba(15,119,119,.14)!important;
 }
 
@@ -3755,21 +3754,21 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
 }
 
 .top-shortcuts .quick-link.public-view-link {
-    background:#0a2944!important;
+    background:#103c39!important;
     color:#fff!important;
-    border-color:#07243b!important;
+    border-color:#0a302e!important;
 }
 
 @media (hover:hover) and (pointer:fine) {
     .top-shortcuts .quick-link:hover {
-        background:#084f78!important;
+        background:#0b5f60!important;
         color:#fff!important;
-        border-color:#073e60!important
+        border-color:#094e50!important
     }
 
     .top-shortcuts .quick-link.status-link:hover {
         background:#cce6dc!important;
-        color:#123f5c!important;
+        color:#124532!important;
         border-color:#83bda5!important
     }
 
@@ -3780,9 +3779,9 @@ button:hover,.button:hover,.icon-btn:hover,.action-menu>summary:hover,.profile-m
     }
 
     .top-shortcuts .quick-link.public-view-link:hover {
-        background:#07243b!important;
+        background:#0a302e!important;
         color:#fff!important;
-        border-color:#061d30!important
+        border-color:#082725!important
     }
 }
 
@@ -3836,7 +3835,7 @@ select.cr-native-select {
     border:2px solid #a9cfc1;
     border-radius:13px;
     background:#edf7f3;
-    color:#173d59;
+    color:#183d37;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -3860,7 +3859,7 @@ select.cr-native-select {
     width:24px;
     height:24px;
     border-radius:8px;
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
     display:grid;
     place-items:center;
@@ -3870,7 +3869,7 @@ select.cr-native-select {
 }
 
 .cr-select.open .cr-select-button,.cr-select-button:focus-visible {
-    border-color:#0b6fa4;
+    border-color:#0f7777;
     background:#e5f3ee;
     box-shadow:0 0 0 4px rgba(15,119,119,.11);
     outline:none;
@@ -3924,7 +3923,7 @@ select.cr-native-select {
 }
 
 .cr-select-option[aria-selected="true"] {
-    background:#0b6fa4!important;
+    background:#0f7777!important;
     color:#fff!important
 }
 
@@ -4304,7 +4303,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 .menu-count {
     margin-left:auto;
     background:#f2d45c;
-    color:#173f5c;
+    color:#183e3b;
     border-radius:999px;
     min-width:22px;
     height:22px;
@@ -4348,7 +4347,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 }
 
 .draft-status small {
-    color:#637586
+    color:#687574
 }
 
 .editor-layout {
@@ -4394,7 +4393,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .button.publish {
     background:#d9b92e!important;
-    color:#123a5a!important
+    color:#173f3d!important
 }
 
 .button.danger-lite,.danger-lite {
@@ -4456,7 +4455,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 .drag-handle {
     cursor:grab;
     font-size:24px;
-    color:#0b6fa4;
+    color:#0f7777;
     user-select:none
 }
 
@@ -4509,7 +4508,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     width:38px;
     height:38px;
     border-radius:50%;
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
     display:grid;
     place-items:center
@@ -4557,7 +4556,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     font-size:12px;
     font-weight:800;
     letter-spacing:.12em;
-    color:#0b6fa4;
+    color:#0f7777;
     text-transform:uppercase
 }
 
@@ -4608,7 +4607,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .notification-item p {
     margin:3px 0;
-    color:#637586
+    color:#687574
 }
 
 .notification-dot {
@@ -4643,7 +4642,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     width:10px;
     height:10px;
     border-radius:50%;
-    background:#0b6fa4;
+    background:#0f7777;
     margin-top:5px
 }
 
@@ -4672,12 +4671,12 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .health-score strong {
     font-size:42px;
-    color:#0b6fa4
+    color:#0f7777
 }
 
 .health-score span {
     padding-bottom:7px;
-    color:#637586
+    color:#687574
 }
 
 .health-meter {
@@ -4735,7 +4734,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .health-card a {
     font-weight:800;
-    color:#0b6fa4;
+    color:#0f7777;
     text-decoration:none
 }
 
@@ -4767,7 +4766,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     height:40px;
     border-radius:12px;
     background:#e5f4ef;
-    color:#0b6fa4;
+    color:#0f7777;
     display:grid;
     place-items:center
 }
@@ -4809,7 +4808,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .attention-card div>strong {
     font-size:24px;
-    color:#0b6fa4
+    color:#0f7777
 }
 
 .attention-card small {
@@ -4819,7 +4818,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .attention-card i {
     font-style:normal;
-    color:#0b6fa4;
+    color:#0f7777;
     font-size:18px
 }
 
@@ -5058,14 +5057,14 @@ input,textarea,select,.cr-select,.cr-select-button {
     height:42px;
     border-radius:10px;
     background:#e7f4f0;
-    color:#0b6fa4;
+    color:#0f7777;
     font-size:24px;
     line-height:1;
 }
 
 .section-sort-card .drag-handle:hover {
     background:#d6ebe5;
-    color:#084f78;
+    color:#0b5f60;
 }
 
 .section-sort-card.dragging .drag-handle, .section-sort-card .drag-handle:active {
@@ -5101,7 +5100,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     width:44px;
     height:44px;
     border-radius:14px;
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
     display:grid;
     place-items:center;
@@ -5115,7 +5114,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 }
 
 .bell-button:hover,.notification-bell[open] .bell-button {
-    background:#084f78
+    background:#0b5f60
 }
 
 .bell-button .ui-icon {
@@ -5170,7 +5169,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 
 .bell-head a {
     font-weight:800;
-    color:#0b6fa4;
+    color:#0f7777;
     text-decoration:none
 }
 
@@ -5249,7 +5248,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     height:48px;
     border-radius:15px;
     background:#dfeee9;
-    color:#0b6fa4;
+    color:#0f7777;
     display:grid;
     place-items:center;
     font-size:19px;
@@ -5421,7 +5420,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     height:45px;
     border-radius:14px;
     background:#e4f2ed;
-    color:#0b6fa4;
+    color:#0f7777;
     display:grid;
     place-items:center
 }
@@ -5548,7 +5547,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     width:10px;
     height:10px;
     border-radius:50%;
-    background:#0b6fa4;
+    background:#0f7777;
     margin-top:5px
 }
 
@@ -5592,7 +5591,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     height:40px;
     border-radius:12px;
     background:#e3f2ed;
-    color:#0b6fa4;
+    color:#0f7777;
     display:grid;
     place-items:center
 }
@@ -5767,13 +5766,13 @@ input,textarea,select,.cr-select,.cr-select-button {
 .totp-setup small {
     font-weight:900;
     letter-spacing:.1em;
-    color:#0b6fa4
+    color:#0f7777
 }
 
 .totp-setup code {
     display:block;
     padding:12px;
-    background:#0a2944;
+    background:#103c39;
     color:#fff;
     border-radius:11px;
     font-size:16px;
@@ -5868,7 +5867,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 }
 
 .preset-grid input:checked+span {
-    border-color:#0b6fa4;
+    border-color:#0f7777;
     background:#eaf4f1;
     box-shadow:0 0 0 3px rgba(15,119,119,.10)
 }
@@ -5899,7 +5898,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     font-size:11px;
     font-weight:800;
     letter-spacing:.04em;
-    color:#0b6fa4
+    color:#0f7777
 }
 
 .mini-content {
@@ -5910,7 +5909,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     font-size:10px;
     font-weight:800;
     letter-spacing:.14em;
-    color:#0b6fa4
+    color:#0f7777
 }
 
 .mini-content h2 {
@@ -5927,7 +5926,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 .mini-content button {
     border:0;
     border-radius:999px;
-    background:#0b6fa4;
+    background:#0f7777;
     color:#fff;
     padding:11px 16px;
     font-weight:800
@@ -5945,7 +5944,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     display:grid;
     place-items:center;
     background:#eef4f2;
-    color:#0b6fa4;
+    color:#0f7777;
     font-weight:900;
     font-size:13px
 }
@@ -5973,11 +5972,11 @@ input,textarea,select,.cr-select,.cr-select-button {
 .document-icon {
     width:72px;
     height:88px;
-    border:2px solid #0b6fa4;
+    border:2px solid #0f7777;
     border-radius:10px;
     display:grid;
     place-items:center;
-    color:#0b6fa4;
+    color:#0f7777;
     font-weight:900
 }
 
@@ -5985,7 +5984,7 @@ input,textarea,select,.cr-select,.cr-select-button {
     position:absolute;
     left:10px;
     top:10px;
-    background:#0a2944;
+    background:#103c39;
     color:#fff;
     border-radius:999px;
     padding:5px 9px;
@@ -6075,7 +6074,7 @@ input,textarea,select,.cr-select,.cr-select-button {
 .admin-find-trigger {
     border: 1px solid #bdd6cf !important;
     background: #edf7f4 !important;
-    color: #084f78 !important;
+    color: #0b5f60 !important;
     cursor: pointer;
 }
 
@@ -6155,7 +6154,7 @@ body.admin-find-open {
 }
 
 .admin-find-input span {
-    color: #0b6fa4;
+    color: #0f7777;
     font-size: 22px;
     font-weight: 900;
 }
@@ -6190,7 +6189,7 @@ body.admin-find-open {
 }
 
 .admin-find-results a b {
-    color: #0b6fa4;
+    color: #0f7777;
     white-space: nowrap;
 }
 
@@ -6329,7 +6328,7 @@ body.admin-find-open {
 }
 
 .theme-preset-card input:checked + span {
-    border-color: #0b6fa4;
+    border-color: #0f7777;
     background: #eaf4f1;
     box-shadow: 0 0 0 3px rgba(15, 119, 119, .10);
 }
@@ -6503,8 +6502,8 @@ body.admin-find-open {
 }
 
 .premium-check input:checked + .check-ui {
-    border-color: #0b6fa4;
-    background: #0b6fa4;
+    border-color: #0f7777;
+    background: #0f7777;
 }
 
 .premium-check input:checked + .check-ui::after {
@@ -6527,7 +6526,7 @@ body.admin-find-open {
     border: 1px solid #d8e2de;
     border-radius: 20px;
     background: var(--mini-bg, #f7f6f1);
-    color: var(--mini-text, #132a3a);
+    color: var(--mini-text, #1c2a2a);
 }
 
 .mini-banner {
@@ -6550,7 +6549,7 @@ body.admin-find-open {
     font-size: 12px;
     font-weight: 800;
     letter-spacing: .04em;
-    color: var(--mini-primary, #0b6fa4);
+    color: var(--mini-primary, #0f7777);
 }
 
 .mini-content {
@@ -6561,7 +6560,7 @@ body.admin-find-open {
     font-size: 12px;
     font-weight: 800;
     letter-spacing: .12em;
-    color: var(--mini-primary, #0b6fa4);
+    color: var(--mini-primary, #0f7777);
 }
 
 .mini-content h2 {
@@ -6579,7 +6578,7 @@ body.admin-find-open {
 .mini-content button {
     border: 0;
     border-radius: 999px;
-    background: var(--mini-primary, #0b6fa4) !important;
+    background: var(--mini-primary, #0f7777) !important;
     color: #ffffff !important;
     padding: 11px 16px;
     font-weight: 800;
@@ -6750,7 +6749,7 @@ body.admin-find-open {
     gap: 7px;
     border: 2px solid rgba(255, 255, 255, .9) !important;
     border-radius: 999px !important;
-    background: #0b6fa4 !important;
+    background: #0f7777 !important;
     color: #ffffff !important;
     box-shadow: 0 10px 28px rgba(0, 0, 0, .28);
     font-weight: 850;
@@ -6771,7 +6770,7 @@ body.admin-find-open {
 }
 
 .modal-close:hover, .modal-close:focus-visible {
-    background: #084f78 !important;
+    background: #0b5f60 !important;
     color: #ffffff !important;
     transform: translateY(-1px);
 }
@@ -6981,7 +6980,7 @@ body.admin-find-open {
 }
 
 .view-switch a.is-active {
-    background: #0b6fa4;
+    background: #0f7777;
     color: #ffffff;
 }
 
@@ -7094,7 +7093,7 @@ body.admin-find-open {
     place-items: center;
     border-radius: 16px;
     background: #e7f3ef;
-    color: #0b6fa4;
+    color: #0f7777;
 }
 
 .role-summary-grid {
@@ -7116,7 +7115,7 @@ body.admin-find-open {
 
 .role-summary-grid strong {
     font-size: 22px;
-    color: #0b6fa4;
+    color: #0f7777;
 }
 
 .role-summary-grid span {
@@ -8826,1056 +8825,391 @@ select:focus {
     }
 }
 
+
 /* ==========================================================
-   ES MULTISERVICIOS ADMIN — HEADER LEGIBILITY V4
-   Stronger contrast and readable desktop header without
-   changing routes, permissions or behavior.
+   TWO-FACTOR AUTHENTICATION · QR SETUP
    ========================================================== */
-@media (min-width: 1101px) {
-    .admin-header {
-        background: #ffffff !important;
-        border-bottom: 1px solid #cbd9e7 !important;
-        box-shadow: 0 8px 28px rgba(7, 31, 61, .08) !important;
-    }
-
-    .admin-head-inner {
-        min-height: 82px !important;
-        padding: 10px 18px 10px 14px !important;
-        gap: 14px !important;
-    }
-
-    .head-left {
-        min-width: 300px !important;
-    }
-
-    .admin-brand {
-        gap: 12px !important;
-    }
-
-    .admin-brand strong {
-        color: #082d58 !important;
-        font-size: 16px !important;
-        font-weight: 900 !important;
-        line-height: 1.2 !important;
-        letter-spacing: -.01em !important;
-    }
-
-    .admin-brand small {
-        margin-top: 3px !important;
-        color: #58718c !important;
-        font-size: 10.5px !important;
-        font-weight: 800 !important;
-        line-height: 1.2 !important;
-        letter-spacing: .1em !important;
-    }
-
-    .top-shortcuts {
-        gap: 8px !important;
-    }
-
-    .top-shortcuts .quick-link {
-        min-width: 0 !important;
-        height: 46px !important;
-        padding: 0 14px !important;
-        gap: 8px !important;
-        border: 1px solid #0a67a6 !important;
-        border-radius: 12px !important;
-        background: #0b75b9 !important;
-        color: #ffffff !important;
-        font-size: 13.5px !important;
-        font-weight: 850 !important;
-        line-height: 1 !important;
-        letter-spacing: 0 !important;
-        text-shadow: 0 1px 1px rgba(4, 31, 61, .18);
-        box-shadow: 0 5px 14px rgba(11, 99, 166, .12) !important;
-    }
-
-    .top-shortcuts .quick-link:hover,
-    .top-shortcuts .quick-link:focus-visible {
-        background: #095f99 !important;
-        border-color: #095f99 !important;
-        color: #ffffff !important;
-        transform: translateY(-1px);
-        box-shadow: 0 8px 18px rgba(7, 47, 91, .16) !important;
-    }
-
-    .top-shortcuts .quick-link .ui-icon {
-        width: 18px !important;
-        height: 18px !important;
-        flex: 0 0 18px !important;
-        color: currentColor !important;
-    }
-
-    .top-shortcuts .status-link {
-        background: #e9f7ef !important;
-        border-color: #a9d9bd !important;
-        color: #176b47 !important;
-        text-shadow: none !important;
-        box-shadow: none !important;
-    }
-
-    .top-shortcuts .status-link:hover,
-    .top-shortcuts .status-link:focus-visible {
-        background: #dff2e8 !important;
-        border-color: #83c6a1 !important;
-        color: #105c3b !important;
-    }
-
-    .top-shortcuts .status-link.maintenance {
-        background: #fff4df !important;
-        border-color: #efc36f !important;
-        color: #775316 !important;
-    }
-
-    .top-shortcuts .public-view-link {
-        background: #082d58 !important;
-        border-color: #082d58 !important;
-        color: #ffffff !important;
-    }
-
-    .top-shortcuts .public-view-link:hover,
-    .top-shortcuts .public-view-link:focus-visible {
-        background: #061f3d !important;
-        border-color: #061f3d !important;
-    }
-
-    .profile-menu > summary {
-        min-height: 54px !important;
-        padding: 6px 10px 6px 7px !important;
-        gap: 10px !important;
-        background: #082d58 !important;
-        border: 1px solid #082d58 !important;
-        color: #ffffff !important;
-        box-shadow: 0 6px 16px rgba(7, 31, 61, .15) !important;
-    }
-
-    .profile-menu > summary:hover,
-    .profile-menu > summary:focus-visible {
-        background: #061f3d !important;
-        border-color: #061f3d !important;
-    }
-
-    .profile-copy {
-        max-width: 190px !important;
-    }
-
-    .profile-copy strong {
-        color: #ffffff !important;
-        font-size: 12.5px !important;
-        font-weight: 900 !important;
-        line-height: 1.25 !important;
-    }
-
-    .profile-copy small {
-        margin-top: 2px !important;
-        color: #d8e7f5 !important;
-        font-size: 10.5px !important;
-        font-weight: 650 !important;
-        line-height: 1.25 !important;
-    }
-
-    .profile-menu .chev {
-        color: #e8f1fa !important;
-    }
+.totp-setup-grid {
+    display:grid;
+    grid-template-columns:minmax(260px,.72fr) minmax(0,1.28fr);
+    gap:18px;
+    align-items:stretch
 }
 
-@media (min-width: 1101px) and (max-width: 1450px) {
-    .head-left {
-        min-width: 255px !important;
+.totp-qr-card,
+.totp-manual-card {
+    min-width:0;
+    padding:16px;
+    border:1px solid #d6e2ec;
+    background:#fff;
+    border-radius:14px
+}
+
+.totp-qr-card {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center
+}
+
+.totp-qr-card>small,
+.totp-manual-card>small {
+    display:block;
+    width:100%;
+    margin-bottom:10px
+}
+
+.totp-qr {
+    width:244px;
+    min-height:244px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px;
+    margin:0 auto 12px;
+    background:#fff;
+    border:1px solid #d6e2ec;
+    border-radius:14px
+}
+
+.totp-qr canvas,
+.totp-qr img {
+    display:block;
+    max-width:220px!important;
+    width:220px!important;
+    height:220px!important
+}
+
+.totp-qr-fallback {
+    display:block;
+    max-width:190px;
+    color:#5b6d80;
+    font-size:13px;
+    line-height:1.5
+}
+
+.totp-manual-card {
+    display:flex;
+    flex-direction:column;
+    justify-content:center
+}
+
+.totp-manual-card .button {
+    align-self:flex-start;
+    margin-top:4px
+}
+
+.totp-verify-form {
+    margin-top:16px
+}
+
+.totp-password-note {
+    margin:0 0 12px;
+    padding:11px 13px;
+    border:1px solid #d7e4ef;
+    background:#f7fafc;
+    border-radius:11px
+}
+
+@media (max-width:760px) {
+    .totp-setup-grid {
+        grid-template-columns:1fr
     }
 
-    .top-shortcuts .quick-link {
-        padding: 0 11px !important;
-        font-size: 12.5px !important;
+    .totp-qr {
+        width:min(244px,100%);
+        min-height:0;
+        aspect-ratio:1/1
     }
 
-    .profile-copy {
-        max-width: 150px !important;
+    .totp-qr canvas,
+    .totp-qr img {
+        max-width:100%!important;
+        width:100%!important;
+        height:auto!important
     }
 }
 
 
-/* ===== ES MULTISERVICIOS: premium section ordering ===== */
-.section-sort-card {
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    border-color: #d6e2ee;
-    box-shadow: 0 8px 24px rgba(9, 47, 91, .06);
-}
-.section-sort-copy {
-    min-width: 0;
-}
-.section-sort-title-row {
-    display: flex !important;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px !important;
-}
-.section-context-badge {
-    display: inline-flex;
-    align-items: center;
-    min-height: 25px;
-    padding: 4px 9px;
-    border: 1px solid #d5e2ef;
-    border-radius: 999px;
-    background: #f4f8fc;
-    color: #46627d;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: .02em;
-}
-.section-context-badge.is-menu {
-    border-color: #bcd5ec;
-    background: #eef6fd;
-    color: #075f9a;
-}
-.section-sort-actions {
-    display: flex !important;
-    align-items: center;
-    gap: 6px !important;
-}
-.section-move-button {
-    width: 34px;
-    height: 34px;
-    min-width: 34px;
-    padding: 0;
-    border: 1px solid #c8d9e9;
-    border-radius: 10px;
-    background: #f5f9fd;
-    color: #0a4778;
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1;
-    cursor: pointer !important;
-}
-.section-move-button:hover:not(:disabled),
-.section-move-button:focus-visible:not(:disabled) {
-    border-color: #1478b8;
-    background: #eaf4fb;
-    color: #073b65;
-}
-.section-move-button:disabled {
-    opacity: .35;
-    cursor: not-allowed !important;
-}
-.section-sort-card.dragging {
-    border-color: #1478b8;
-    background: #f3f8fd;
-    box-shadow: 0 16px 36px rgba(9, 47, 91, .13);
-}
-.section-sort-card .drag-handle {
-    background: #edf5fb;
-    color: #0b6fa4;
-}
-@media (max-width: 760px) {
-    .section-sort-card {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: start;
-    }
-    .section-sort-actions {
-        grid-column: 2 / 3;
-        justify-content: flex-start;
-    }
-    .section-sort-card .premium-switch {
-        grid-column: 3 / 4;
-        grid-row: 1 / span 2;
-    }
-}
-@media (max-width: 520px) {
-    .section-sort-card {
-        grid-template-columns: auto minmax(0, 1fr);
-    }
-    .section-sort-card .premium-switch {
-        grid-column: 1 / -1;
-        grid-row: auto;
-        justify-self: stretch;
-    }
-    .section-sort-actions {
-        grid-column: 2 / 3;
-    }
-}
+/* ==========================================================
+   GLOBAL FORM ALIGNMENT + CHECKBOX POLISH — 2026-09-15
+   Keeps labels/controls aligned without affecting premium switches.
+   ========================================================== */
 
-/* ============================================================
-   ES MULTISERVICIOS - Email configuration workspace
-   SMTP / Microsoft Graph + reusable connection copying
-   ============================================================ */
-.email-config-form {
-    display: grid;
-    gap: 18px;
-}
-
-.email-config-topline {
-    align-items: end;
-}
-
-/* Address fields must align by their labels/controls, not by helper-text height. */
-.email-address-grid {
+/* Every side-by-side field starts from the same top edge. */
+.two-col,
+.three-col,
+.form-grid,
+.bilingual-grid,
+.service-map-fields,
+.service-area-form-grid {
     align-items: start;
 }
 
-.email-active-switch,
-.sent-items-switch {
-    min-height: 74px;
-    align-self: stretch;
-}
-
-.email-method-panel {
-    border: 1px solid var(--border, #d9e2ec);
-    border-radius: 18px;
-    padding: 20px;
-    background: var(--surface, #ffffff);
-    display: grid;
-    gap: 16px;
-}
-
-.email-method-panel[hidden] {
-    display: none !important;
-}
-
-.method-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border, #d9e2ec);
-}
-
-.method-heading strong {
-    display: block;
-    color: var(--text, #14263d);
-    font-size: 1rem;
-    margin-bottom: 4px;
-}
-
-.method-heading small,
-.email-config-form label small,
-.email-copy-types small {
-    display: block;
-    color: var(--muted, #68798b);
-    line-height: 1.5;
-    margin-top: 5px;
-}
-
-.email-copy-panel {
-    overflow: visible;
-}
-
-.email-copy-form {
-    display: grid;
-    gap: 16px;
-}
-
-.email-copy-types {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.email-copy-types .check-row {
-    min-width: 0;
-    align-items: flex-start;
-    border: 1px solid var(--border, #d9e2ec);
-    border-radius: 14px;
-    padding: 14px;
-    background: var(--surface, #ffffff);
-}
-
-.email-copy-types .check-row span {
-    min-width: 0;
-}
-
-.email-copy-types b {
-    color: var(--text, #14263d);
-}
-
-.copy-warning {
-    border-left: 4px solid var(--admin-primary, #1769aa);
-    background: #eef5fb;
-    color: #23415e;
-    border-radius: 10px;
-    padding: 12px 14px;
-    line-height: 1.5;
-}
-
-.email-card-meta {
-    margin: 5px 0;
-    color: var(--muted, #68798b);
-    overflow-wrap: anywhere;
-}
-
-.email-card-actions {
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.email-card-test {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    flex: 1 1 320px;
-}
-
-.email-card-test input {
-    min-width: 0;
-    max-width: 260px;
-    flex: 1 1 220px;
-}
-
-@media (max-width: 900px) {
-    .email-copy-types {
-        grid-template-columns: 1fr;
-    }
-
-    .email-card-actions,
-    .email-card-test {
-        align-items: stretch;
-    }
-
-    .email-card-test {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .email-card-test input {
-        max-width: none;
-        width: 100%;
-        flex-basis: 100%;
-    }
-}
-
-@media (max-width: 640px) {
-    .email-method-panel {
-        padding: 15px;
-        border-radius: 14px;
-    }
-
-    .email-active-switch,
-    .sent-items-switch {
-        min-height: auto;
-    }
-
-    .email-copy-types .check-row {
-        padding: 12px;
-    }
-
-    .email-card-test button,
-    .email-copy-form .form-actions button,
-    .email-test-panel .form-actions button {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* ============================================================
-   ES MULTISERVICIOS - Website Health / PHP requirements
-   ============================================================ */
-.health-page-heading {
-    align-items: center;
-    gap: 18px;
-}
-.health-recheck-form {
+.two-col > label,
+.three-col > label,
+.form-grid > label,
+.bilingual-grid > label,
+.service-map-fields > label,
+.service-area-form-grid > label:not(.status-switch) {
+    align-self: start;
     margin: 0;
-    flex: 0 0 auto;
 }
-.health-recheck-button {
-    min-height: 44px;
-    white-space: nowrap;
+
+/* Normal field labels use one predictable rhythm: label -> control -> helper. */
+.service-map-fields > label,
+.service-area-form-grid > label:not(.status-switch) {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 8px;
 }
-.health-global-alert,
-.health-global-ready {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    margin: 0 0 22px;
-    padding: 16px 18px;
-    border: 1px solid #efc9c9;
-    border-left: 4px solid #b42318;
-    border-radius: 16px;
-    background: #fff7f7;
-    color: #61201d;
+
+.service-map-fields > label > input,
+.service-map-fields > label > select,
+.service-map-fields > label > textarea,
+.service-area-form-grid > label:not(.status-switch) > input,
+.service-area-form-grid > label:not(.status-switch) > select,
+.service-area-form-grid > label:not(.status-switch) > textarea {
+    margin: 0;
 }
-.health-global-ready {
-    border-color: #b9ddcf;
-    border-left-color: #167a5a;
-    background: #f4fbf8;
-    color: #165b47;
+
+.service-map-fields > label > small,
+.service-area-form-grid > label:not(.status-switch) > small {
+    margin: 0;
+    align-self: start;
 }
-.health-global-alert-icon,
-.health-global-ready > span {
+
+/* Login: render the Remember me check ourselves so the tick is truly centered. */
+.remember-check.cr-check {
+    position: relative;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 36px;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+.remember-check.cr-check > input[type="checkbox"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none;
+    margin: 0 !important;
+}
+
+.remember-check.cr-check .cr-check-box {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
     display: grid;
     place-items: center;
-    flex: 0 0 32px;
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: #b42318;
+    border: 1px solid #b9ccda;
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1px rgba(11,46,89,.02);
+    transition: .18s ease;
+}
+
+.remember-check.cr-check > input[type="checkbox"]:checked + .cr-check-box {
+    background: #0c78aa;
+    border-color: #0c78aa;
+    box-shadow: 0 0 0 4px rgba(12,120,170,.10);
+}
+
+.remember-check.cr-check > input[type="checkbox"]:checked + .cr-check-box::after {
+    content: "✓";
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
     color: #fff;
+    font-size: 17px;
     font-weight: 900;
+    line-height: 1;
+    transform: translateY(-.5px);
 }
-.health-global-ready > span {
-    background: #167a5a;
+
+.remember-check.cr-check > input[type="checkbox"]:focus-visible + .cr-check-box {
+    outline: 3px solid rgba(12,120,170,.18);
+    outline-offset: 2px;
 }
-.health-global-alert strong,
-.health-global-ready strong {
-    display: block;
-    margin-bottom: 3px;
-    font-size: 15px;
-}
-.health-global-alert p,
-.health-global-ready p {
-    margin: 0;
-    line-height: 1.55;
-}
-.health-requirements-panel {
-    margin-bottom: 28px;
-}
-.health-requirements-head {
-    align-items: center;
-}
-.health-requirements-summary {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 10px 14px;
-    border: 1px solid var(--border, #d9e2ec);
-    border-radius: 12px;
-    background: #f7fafc;
-    color: var(--text, #14263d);
-}
-.health-requirements-summary strong {
-    font-size: 18px;
-}
-.health-requirements-summary span {
-    color: var(--muted, #68798b);
-    font-size: 13px;
-}
-.health-requirements-list {
-    display: grid;
-    gap: 12px;
-}
-.health-requirement {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr);
-    gap: 18px;
-    align-items: stretch;
-    padding: 17px;
-    border: 1px solid var(--border, #d9e2ec);
-    border-left: 4px solid #167a5a;
-    border-radius: 15px;
-    background: var(--surface, #fff);
-}
-.health-requirement.missing {
-    border-left-color: #b42318;
-    background: #fffafa;
-}
-.health-requirement-main,
-.health-enable-instructions {
-    min-width: 0;
-}
-.health-requirement-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 7px;
-}
-.health-requirement h3 {
-    margin: 0;
-    color: var(--text, #14263d);
-    font-size: 16px;
-}
-.health-requirement p {
-    margin: 0;
-    color: var(--muted, #68798b);
-    line-height: 1.55;
-    overflow-wrap: anywhere;
-}
-.health-requirement small {
-    display: block;
-    margin-top: 7px;
-    color: #66778a;
-    line-height: 1.45;
-}
-.health-status {
+
+.remember-check.cr-check .cr-check-text {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    flex: 0 0 auto;
     min-height: 28px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: .01em;
-}
-.health-status.available {
-    background: #e8f6f0;
-    color: #136548;
-}
-.health-status.missing {
-    background: #fdecec;
-    color: #9f241b;
-}
-.health-enable-instructions {
-    padding: 13px 14px;
-    border: 1px solid #dce7f1;
-    border-radius: 12px;
-    background: #f7fafc;
-}
-.health-enable-instructions strong {
-    display: block;
-    margin-bottom: 5px;
-    color: #173a5e;
-    font-size: 13px;
-}
-.health-enable-instructions p {
-    color: #456079;
-    font-size: 13px;
-}
-.health-section-heading {
-    margin: 0 0 12px;
-}
-.health-section-heading h2 {
-    margin: 3px 0 0;
-}
-@media (max-width: 900px) {
-    .health-page-heading,
-    .health-requirements-head {
-        align-items: stretch;
-    }
-    .health-recheck-form,
-    .health-recheck-button {
-        width: 100%;
-    }
-    .health-recheck-button {
-        justify-content: center;
-    }
-    .health-requirements-summary {
-        width: max-content;
-        max-width: 100%;
-    }
-    .health-requirement {
-        grid-template-columns: 1fr;
-    }
-}
-@media (max-width: 560px) {
-    .health-global-alert,
-    .health-global-ready {
-        padding: 14px;
-        border-radius: 14px;
-    }
-    .health-requirement {
-        padding: 14px;
-        border-radius: 13px;
-    }
-    .health-requirement-title-row {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-    .health-status {
-        align-self: flex-start;
-    }
+    line-height: 1.2;
 }
 
-/* ============================================================
-   ES MULTISERVICIOS - Form controls polish
-   Neutral selects + uniform Email configuration spacing
-   ============================================================ */
-
-/* Custom select: keep the closed field neutral. Blue is reserved
-   for the currently selected / hovered option inside the dropdown. */
-.cr-select-button,
-button.cr-select-button {
-    background: #f8fbfe !important;
-    color: var(--deep, #0b2e59) !important;
-    border: 1px solid #c8d7e5 !important;
-    box-shadow: none !important;
-    font-weight: 750 !important;
-    transform: none !important;
+/* Consistent square checks used elsewhere; premium switches/toggles remain untouched. */
+.premium-check:not(.premium-switch),
+.compact-check,
+.permission-check,
+.check-row:not(.status-switch) > label {
+    align-items: center;
 }
 
-.cr-select-button:hover,
-button.cr-select-button:hover {
-    background: #f3f8fc !important;
-    color: var(--deep, #0b2e59) !important;
-    border-color: #9fb9d2 !important;
-    box-shadow: none !important;
-    transform: none !important;
+.premium-check:not(.premium-switch) input[type="checkbox"],
+.compact-check input[type="checkbox"],
+.permission-check input[type="checkbox"],
+.check-row:not(.status-switch) label input[type="checkbox"],
+.check-row:not(.status-switch) > input[type="checkbox"] {
+    width: 22px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 22px;
+    vertical-align: middle;
+    accent-color: #0c78aa;
 }
 
-.cr-select.open .cr-select-button,
-.cr-select-button:focus-visible,
-button.cr-select-button:focus-visible {
-    background: #ffffff !important;
-    color: var(--deep, #0b2e59) !important;
-    border-color: var(--teal, #0b63ce) !important;
-    box-shadow: 0 0 0 3px rgba(11, 99, 206, .10) !important;
-    outline: none !important;
+/* Service map form: both columns align by label and control, regardless of helper length. */
+.service-map-fields {
+    align-items: start !important;
 }
 
-.cr-select-button::after {
-    background: #e8f1fa !important;
-    color: var(--deep, #0b2e59) !important;
-    border: 1px solid #c7d9e9;
-}
-
-.cr-select-list {
-    padding: 6px !important;
-    background: #ffffff !important;
-    border: 1px solid #c8d7e5 !important;
-    box-shadow: 0 14px 34px rgba(11, 46, 89, .14) !important;
-}
-
-.cr-select-option,
-button.cr-select-option {
-    background: #ffffff !important;
-    color: var(--deep, #0b2e59) !important;
-    border: 1px solid transparent !important;
-    box-shadow: none !important;
-    transform: none !important;
-}
-
-.cr-select-option:hover,
-.cr-select-option:focus-visible,
-button.cr-select-option:hover,
-button.cr-select-option:focus-visible {
-    background: #eaf3ff !important;
-    color: var(--deep, #0b2e59) !important;
-    border-color: #c5d9ed !important;
-    box-shadow: none !important;
-    transform: none !important;
-}
-
-.cr-select-option[aria-selected="true"],
-button.cr-select-option[aria-selected="true"] {
-    background: var(--teal, #0b63ce) !important;
-    color: #ffffff !important;
-    border-color: var(--teal, #0b63ce) !important;
-}
-
-/* Email form: keep each group visually separated and aligned. */
-.email-config-form label {
+.service-map-fields > label {
     min-width: 0;
+    align-content: start;
 }
 
-.email-method-panel .three-col,
-.email-method-panel .two-col {
-    align-items: start;
-    row-gap: 18px;
-}
-
-.email-method-panel > label,
-.email-method-panel > .premium-switch {
-    margin-top: 2px;
-}
-
-/* The Sent Items control must not touch Graph User / mailbox. */
-.email-method-panel [name="graph_user"] {
-    margin-bottom: 0;
-}
-
-.sent-items-switch {
-    margin-top: 8px !important;
-}
-
-/* Keep SMTP password aligned and separated from server/port/security. */
-.email-method-panel [name="password"] {
-    margin-top: 0;
-}
-
-.email-method-panel .three-col + label {
-    margin-top: 4px;
-}
-
-.email-method-panel label:has(> input[name="password"]) {
-    display: grid;
-    gap: 8px;
-}
-
-/* Uniform vertical rhythm for labels and controls in Email configuration. */
-.email-config-form label:not(.premium-switch) {
-    display: grid;
-    gap: 8px;
-}
-
-.email-config-form label:not(.premium-switch) > small {
-    margin-top: -2px;
-}
-
-.email-config-form input,
-.email-config-form textarea,
-.email-config-form select,
-.email-config-form .cr-select-button {
+.service-map-fields > label > input {
     min-height: 50px;
 }
 
-.email-config-form .premium-switch {
-    padding-top: 14px;
-    padding-bottom: 14px;
+.service-map-fields > label > small {
+    min-height: 50px;
 }
 
-@media (max-width: 900px) {
-    .email-config-form .three-col,
-    .email-config-form .two-col {
-        row-gap: 16px;
-    }
+.service-map-admin-preview-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    border-bottom: 1px solid #d9e4ee;
 }
 
-@media (max-width: 640px) {
-    .sent-items-switch {
-        margin-top: 6px !important;
-    }
-
-    .email-method-panel .three-col + label {
-        margin-top: 2px;
-    }
-}
-
-/* ============================================================
-   ES MULTISERVICIOS - Email configuration layout final polish
-   Explicit field rhythm so labels, inputs and switches never touch.
-   ============================================================ */
-.email-config-form .email-method-panel {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 24px !important;
-    margin-top: 22px !important;
-}
-
-.email-config-form .email-method-panel > * {
+.service-map-admin-preview-head > div {
     min-width: 0;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    display: grid;
+    gap: 3px;
 }
 
-.email-config-form .email-method-panel .method-heading {
-    margin: 0 !important;
+.service-map-admin-preview-head small {
+    color: #65788d;
+    overflow-wrap: anywhere;
 }
 
-.email-config-form .email-method-grid {
-    display: grid !important;
-    gap: 20px !important;
-    margin: 0 !important;
-    align-items: start !important;
+.service-map-public-help {
+    margin: 0;
+    padding: 13px 15px;
+    border: 1px solid #cfe0eb;
+    border-radius: 14px;
+    background: #f2f8fc;
+    color: #36566f;
+    line-height: 1.55;
 }
 
-.email-config-form .email-field {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 9px !important;
-    margin: 0 !important;
-    min-width: 0;
-    line-height: 1.25;
-}
-
-.email-config-form .email-field > input,
-.email-config-form .email-field > select,
-.email-config-form .email-field > .cr-select {
-    margin: 0 !important;
-}
-
-.email-config-form .email-secret-field,
-.email-config-form .graph-user-field,
-.email-config-form .smtp-password-field {
-    padding: 0 !important;
-}
-
-/* Keep Graph credentials aligned as one clean row on wide screens. */
-.email-config-form .graph-credentials-grid {
-    row-gap: 20px !important;
-}
-
-/* Sent Items is its own block and must never touch Graph User. */
-.email-config-form .sent-items-switch {
-    margin: 0 !important;
-    padding: 16px 18px !important;
-    min-height: 72px;
-    align-items: center !important;
-}
-
-/* Ensure a visible breathing space even if an older rule changes panel gap. */
-.email-config-form .graph-credentials-grid + .sent-items-switch {
-    margin-top: 2px !important;
-}
-
-/* SMTP password is deliberately separated from server / port / security. */
-.email-config-form .email-method-grid + .smtp-password-field {
-    margin-top: 0 !important;
-}
-
-/* Top-level email fields use the same label-to-control distance. */
-.email-config-form > label:not(.premium-switch),
-.email-config-form .email-address-grid > label,
-.email-config-form .email-config-topline > label:not(.premium-switch) {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 9px !important;
-}
-
-/* Do not allow generic label/input rules to collapse the rhythm. */
-.email-config-form label > input,
-.email-config-form label > textarea,
-.email-config-form label > select,
-.email-config-form label > .cr-select {
-    margin-top: 0 !important;
-}
-
-@media (min-width: 901px) {
-    .email-config-form .email-method-grid.two-col,
-    .email-config-form .two-col.email-method-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-
-    .email-config-form .email-method-grid.three-col,
-    .email-config-form .three-col.email-method-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (max-width: 900px) {
-    .email-config-form .email-method-panel {
-        gap: 20px !important;
-    }
-
-    .email-config-form .email-method-grid {
+@media (max-width: 760px) {
+    .service-map-fields {
         grid-template-columns: 1fr !important;
-        gap: 18px !important;
     }
 
-    .email-config-form .sent-items-switch {
-        min-height: 68px;
-    }
-}
-
-@media (max-width: 560px) {
-    .email-config-form .email-method-panel {
-        gap: 18px !important;
+    .service-map-fields > label > small {
+        min-height: 0;
     }
 
-    .email-config-form .email-field,
-    .email-config-form > label:not(.premium-switch),
-    .email-config-form .email-address-grid > label,
-    .email-config-form .email-config-topline > label:not(.premium-switch) {
-        gap: 8px !important;
-    }
-
-    .email-config-form .sent-items-switch {
-        padding: 14px !important;
+    .service-map-admin-preview iframe {
+        height: 320px;
     }
 }
 
-/* ============================================================
-   ES MULTISERVICIOS ADMIN - Select controls final alignment
-   Applies consistently to every select in the administrator.
-   ============================================================ */
-
-/* Custom select trigger used throughout the admin. */
-.cr-select-button,
-button.cr-select-button {
-    padding-right: 52px !important;
+/* ==========================================================
+   SERVICE AREA MAP — LOCALIZED TITLES + LOCATION AUTOCOMPLETE
+   ========================================================== */
+.service-map-fields-localized {
+    grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(0, .82fr));
+    align-items: start;
 }
 
-.cr-select-button::after,
-button.cr-select-button::after {
-    content: '▾' !important;
-    position: absolute !important;
-    right: 14px !important;
-    top: 50% !important;
-    width: 28px !important;
-    height: 28px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    transform: translateY(-50%) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    line-height: 1 !important;
-    font-size: 11px !important;
-    font-family: Arial, sans-serif !important;
-    font-weight: 900 !important;
-    border-radius: 9px !important;
-    box-sizing: border-box !important;
+.service-map-fields-localized > label {
+    align-self: start;
 }
 
-/* Native selects that are not replaced by the custom component receive
-   the same centered chevron treatment, so the rule is admin-wide. */
-select:not(.cr-native-select) {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-    padding-right: 48px !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%230b2e59' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 18px center !important;
-    background-size: 12px 12px !important;
+.location-autocomplete {
+    position: relative;
+    min-width: 0;
 }
 
-@media (max-width: 620px) {
-    .cr-select-button::after,
-    button.cr-select-button::after {
-        right: 12px !important;
-        width: 30px !important;
-        height: 30px !important;
-    }
-
-    select:not(.cr-native-select) {
-        background-position: right 17px center !important;
-    }
+.location-autocomplete > input {
+    width: 100%;
 }
 
-/* ============================================================
-   ES MULTISERVICIOS - Email method visibility regression fix
-   Keep progressive disclosure working even after layout polish.
-   ============================================================ */
-.email-config-form .email-method-panel[hidden] {
+.location-suggestions {
+    position: absolute;
+    z-index: 80;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    max-height: 270px;
+    overflow-y: auto;
+    padding: 7px;
+    border: 1px solid #cbdce8;
+    border-radius: 15px;
+    background: #ffffff;
+    box-shadow: 0 18px 42px rgba(10, 42, 78, .15);
+}
+
+.location-suggestions[hidden] {
     display: none !important;
 }
 
-
-/* ============================================================
-   ES MULTISERVICIOS - Email address alignment + optional CC final fix
-   Sender/Internal destination start at exactly the same vertical line.
-   ============================================================ */
-.email-config-form .email-address-grid {
-    align-items: start !important;
+.location-suggestion {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #123456;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: left;
+    box-shadow: none;
+    cursor: pointer;
 }
 
-.email-config-form .email-address-grid > label {
-    align-self: start !important;
-    display: grid !important;
-    grid-template-rows: auto 50px auto !important;
-    gap: 9px !important;
-    margin: 0 !important;
+.location-suggestion:hover,
+.location-suggestion:focus-visible {
+    background: #edf6fb;
+    color: #075e8f;
+    outline: none;
 }
 
-.email-config-form .email-address-grid > label > input {
-    width: 100% !important;
-    height: 50px !important;
-    min-height: 50px !important;
-    margin: 0 !important;
+@media (max-width: 1180px) {
+    .service-map-fields-localized {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .service-map-location-field {
+        grid-column: 1 / -1;
+    }
 }
 
-.email-config-form .email-address-grid > label > small {
-    margin: 0 !important;
-    align-self: start !important;
-}
+@media (max-width: 720px) {
+    .service-map-fields-localized {
+        grid-template-columns: 1fr;
+    }
 
-.email-config-form .email-cc-field {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 9px !important;
-    margin: 0 !important;
-}
-
-.email-config-form .email-cc-field > input {
-    margin: 0 !important;
-}
-
-@media (max-width: 900px) {
-    .email-config-form .email-address-grid > label {
-        grid-template-rows: auto 50px auto !important;
+    .service-map-location-field {
+        grid-column: auto;
     }
 }

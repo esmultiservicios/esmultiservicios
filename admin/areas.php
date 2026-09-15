@@ -12,11 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'save_map') {
         $mapQuery = trim((string)($_POST['service_map_query'] ?? ''));
-        $mapLabel = trim((string)($_POST['service_map_label'] ?? ''));
+        $mapLabelEs = trim((string)($_POST['service_map_label_es'] ?? ''));
+        $mapLabelEn = trim((string)($_POST['service_map_label_en'] ?? ''));
         $mapEnabled = isset($_POST['service_map_enabled']) ? '1' : '0';
 
         save_setting('service_map_query', $mapQuery);
-        save_setting('service_map_label', $mapLabel);
+        save_setting('service_map_label_es', $mapLabelEs);
+        save_setting('service_map_label_en', $mapLabelEn);
+        // Keep the legacy key for backwards compatibility with older templates.
+        save_setting('service_map_label', $mapLabelEs !== '' ? $mapLabelEs : $mapLabelEn);
         save_setting('service_map_enabled', $mapEnabled);
 
         flash('success', 'Service area map settings saved.');
@@ -59,11 +63,25 @@ $rows = $pdo->query(
 )->fetchAll();
 
 $mapQuery = setting('service_map_query', '');
-$mapLabel = setting('service_map_label', 'Service Area Map');
+$legacyMapLabel = trim((string)setting('service_map_label', ''));
+$mapLabelEs = trim((string)setting('service_map_label_es', $legacyMapLabel !== '' ? $legacyMapLabel : 'Área de cobertura'));
+$mapLabelEn = trim((string)setting('service_map_label_en', 'Service coverage'));
 $mapEnabled = setting('service_map_enabled', '1') === '1';
+$firstVisibleArea = '';
+foreach ($rows as $areaRow) {
+    if (!empty($areaRow['active'])) {
+        $firstVisibleArea = trim((string)($areaRow['area_name'] ?? ''));
+        if ($firstVisibleArea !== '') {
+            break;
+        }
+    }
+}
+
 $mapPreviewQuery = $mapQuery !== ''
     ? $mapQuery
-    : ($rows[0]['area_name'] ?? 'United States');
+    : ($firstVisibleArea !== '' ? $firstVisibleArea : 'United States');
+$publicMapHasLocation = $mapQuery !== '' || $firstVisibleArea !== '';
+$publicMapWillShow = $mapEnabled && $publicMapHasLocation;
 
 $pageTitle = 'Service Areas';
 $active = 'areas';
@@ -99,30 +117,66 @@ require __DIR__ . '/_header.php';
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
         <input type="hidden" name="action" value="save_map">
 
-        <div class="service-map-fields">
-            <label>
+        <div class="service-map-fields service-map-fields-localized">
+            <label class="service-map-location-field">
                 Map location or search
-                <input
-                    name="service_map_query"
-                    value="<?= h($mapQuery) ?>"
-                    placeholder="Example: Washington, DC or 20001"
-                >
+                <div class="location-autocomplete" data-location-autocomplete>
+                    <input
+                        name="service_map_query"
+                        value="<?= h($mapQuery) ?>"
+                        placeholder="Example: San Pedro Sula, Cortés, Honduras"
+                        autocomplete="off"
+                        aria-autocomplete="list"
+                        aria-expanded="false"
+                        aria-controls="service-map-suggestions"
+                        data-location-input
+                    >
+                    <div
+                        class="location-suggestions"
+                        id="service-map-suggestions"
+                        role="listbox"
+                        hidden
+                        data-location-suggestions
+                    ></div>
+                </div>
                 <small>
-                    Use a city, address, ZIP code or coverage area. If left blank, the first visible
-                    service area is used automatically.
+                    Start typing a city, address or ZIP code to see location suggestions. If left blank,
+                    the first visible service area is used automatically.
                 </small>
             </label>
 
             <label>
-                Map title
+                Map title (ES)
                 <input
-                    name="service_map_label"
-                    value="<?= h($mapLabel) ?>"
-                    placeholder="Service Area Map"
+                    name="service_map_label_es"
+                    value="<?= h($mapLabelEs) ?>"
+                    placeholder="Área de cobertura"
                 >
-                <small>This title appears with the map on the public website.</small>
+                <small>Shown when the public website is viewed in Spanish.</small>
+            </label>
+
+            <label>
+                Map title (EN)
+                <input
+                    name="service_map_label_en"
+                    value="<?= h($mapLabelEn) ?>"
+                    placeholder="Service coverage"
+                >
+                <small>Shown when the public website is viewed in English.</small>
             </label>
         </div>
+
+        <p class="service-map-public-help">
+            <strong>Public behavior:</strong>
+            <?php if ($publicMapWillShow): ?>
+                the map will be shown on the public website using
+                <strong><?= h($mapQuery !== '' ? $mapQuery : $firstVisibleArea) ?></strong>.
+            <?php elseif (!$mapEnabled): ?>
+                the map is currently hidden on the public website. Turn on <strong>Show map on website</strong> to display it.
+            <?php else: ?>
+                add a map location above or create at least one visible service area before the map can be shown publicly.
+            <?php endif; ?>
+        </p>
 
         <div class="service-map-controls">
             <label class="check-row status-switch service-map-switch">
@@ -244,5 +298,104 @@ require __DIR__ . '/_header.php';
         </article>
     <?php endforeach; ?>
 </div>
+
+
+<script>
+(() => {
+    const root = document.querySelector('[data-location-autocomplete]');
+    if (!root) return;
+
+    const input = root.querySelector('[data-location-input]');
+    const list = root.querySelector('[data-location-suggestions]');
+    if (!input || !list) return;
+
+    let timer = null;
+    let controller = null;
+
+    const closeSuggestions = () => {
+        list.hidden = true;
+        list.innerHTML = '';
+        input.setAttribute('aria-expanded', 'false');
+    };
+
+    const renderSuggestions = (items) => {
+        list.innerHTML = '';
+        if (!items.length) {
+            closeSuggestions();
+            return;
+        }
+
+        items.forEach((item) => {
+            const label = String(item.display_name || '').trim();
+            if (!label) return;
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'location-suggestion';
+            button.setAttribute('role', 'option');
+            button.textContent = label;
+            button.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                input.value = label;
+                closeSuggestions();
+                input.focus();
+            });
+            list.appendChild(button);
+        });
+
+        if (list.children.length) {
+            list.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+        } else {
+            closeSuggestions();
+        }
+    };
+
+    const searchLocations = async () => {
+        const query = input.value.trim();
+        if (query.length < 3) {
+            closeSuggestions();
+            return;
+        }
+
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        try {
+            const url = new URL('https://nominatim.openstreetmap.org/search');
+            url.searchParams.set('format', 'jsonv2');
+            url.searchParams.set('limit', '5');
+            url.searchParams.set('addressdetails', '1');
+            url.searchParams.set('q', query);
+
+            const response = await fetch(url.toString(), {
+                signal: controller.signal,
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) throw new Error('Location lookup failed');
+
+            const results = await response.json();
+            renderSuggestions(Array.isArray(results) ? results : []);
+        } catch (error) {
+            if (error && error.name === 'AbortError') return;
+            // Autocomplete is a convenience only; manual entry must continue to work.
+            closeSuggestions();
+        }
+    };
+
+    input.addEventListener('input', () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(searchLocations, 450);
+    });
+
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeSuggestions();
+    });
+
+    input.addEventListener('blur', () => {
+        window.setTimeout(closeSuggestions, 120);
+    });
+})();
+</script>
 
 <?php require __DIR__ . '/_footer.php'; ?>
