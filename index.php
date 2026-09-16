@@ -24,7 +24,9 @@ function record_public_visit(array $settings): void
     $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
     if ($ua !== '' && preg_match('/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|preview|monitor|uptime/i', $ua)) return;
 
-    $today = date('Y-m-d');
+    $siteTimezone = new DateTimeZone('America/Tegucigalpa');
+    $siteNow = new DateTimeImmutable('now', $siteTimezone);
+    $today = $siteNow->format('Y-m-d');
     $cookieName = 'esms_visit_day';
     if ((string)($_COOKIE[$cookieName] ?? '') === $today) return;
 
@@ -48,13 +50,14 @@ function record_public_visit(array $settings): void
             'analytics_total_visits' => (string)$total,
             'analytics_today_date' => $today,
             'analytics_today_visits' => (string)$todayVisits,
-            'analytics_last_visit_at' => date('Y-m-d H:i:s'),
+            // Store the instant in UTC; convert only when it is displayed.
+            'analytics_last_visit_at' => gmdate('Y-m-d H:i:s'),
         ] as $key => $value) $up->execute([$key, $value]);
         $pdo->commit();
 
         if (!headers_sent()) {
             setcookie($cookieName, $today, [
-                'expires' => strtotime('tomorrow') + 3600,
+                'expires' => $siteNow->modify('tomorrow')->setTime(0, 0)->getTimestamp(),
                 'path' => '/',
                 'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
                 'httponly' => true,

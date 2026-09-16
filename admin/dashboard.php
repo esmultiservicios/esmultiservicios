@@ -31,9 +31,7 @@ try {
     }
     $visitStats['enabled']=$analyticsSettings['analytics_tracking_enabled']??'1';
     $visitStats['total']=max(0,(int)($analyticsSettings['analytics_total_visits']??0));
-    $visitStats['today']=(($analyticsSettings['analytics_today_date']??'')===date('Y-m-d'))
-        ? max(0,(int)($analyticsSettings['analytics_today_visits']??0))
-        : 0;
+    $visitStats['today']=max(0,(int)($analyticsSettings['analytics_today_visits']??0));
     $visitStats['last']=trim((string)($analyticsSettings['analytics_last_visit_at']??''));
 } catch(Throwable $e) {
     // Analytics are secondary; keep the administrator available if counters cannot be read.
@@ -55,7 +53,20 @@ $stats=[];
 // even when its value is zero.
 $analyticsHref=user_can('settings.manage')?'settings.php#visitor-analytics':'dashboard.php';
 $analyticsEnabled=$visitStats['enabled']==='1';
-$trafficLast=$visitStats['last']!==''?$visitStats['last']:'No public visit recorded yet';
+$analyticsTimezone=new DateTimeZone('America/Tegucigalpa');
+$analyticsToday=(new DateTimeImmutable('now',$analyticsTimezone))->format('Y-m-d');
+if (($analyticsSettings['analytics_today_date']??'') !== $analyticsToday) {
+    $visitStats['today']=0;
+}
+$trafficLast='No public visit recorded yet';
+if($visitStats['last']!=='') {
+    try {
+        $trafficLastUtc=new DateTimeImmutable($visitStats['last'],new DateTimeZone('UTC'));
+        $trafficLast=$trafficLastUtc->setTimezone($analyticsTimezone)->format('Y-m-d h:i:s A');
+    } catch(Throwable $e) {
+        $trafficLast=$visitStats['last'];
+    }
+}
 if(user_can('services.manage'))$stats[]=['Active services',
 $counts['services'],
 'Published',
@@ -177,7 +188,7 @@ Preview site</a>
             <div class="traffic-copy">
                 <span class="traffic-label">Last counted public visit</span>
                 <strong class="traffic-last"><?=h($trafficLast)?></strong>
-                <small>One visit per browser per day. Bots and admin preview are excluded when possible.</small>
+                <small>Honduras local time (America/Tegucigalpa). One visit per browser per day; admin preview is excluded.</small>
             </div>
         </div>
     </div>

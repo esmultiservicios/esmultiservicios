@@ -4,6 +4,19 @@ require_permission('settings.manage');
 $pdo=db();
 $set=settings();
 $error='';
+
+// Website analytics are stored as UTC instants and displayed in Honduras local time.
+$analyticsTimezone=new DateTimeZone('America/Tegucigalpa');
+$analyticsToday=(new DateTimeImmutable('now',$analyticsTimezone))->format('Y-m-d');
+$analyticsLastDisplay='No visits yet';
+if(trim((string)($set['analytics_last_visit_at']??''))!=='') {
+    try {
+        $analyticsLastUtc=new DateTimeImmutable((string)$set['analytics_last_visit_at'],new DateTimeZone('UTC'));
+        $analyticsLastDisplay=$analyticsLastUtc->setTimezone($analyticsTimezone)->format('Y-m-d h:i:s A');
+    } catch(Throwable $e) {
+        $analyticsLastDisplay=(string)$set['analytics_last_visit_at'];
+    }
+}
 if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $action=$_POST['action']??'';
@@ -264,8 +277,8 @@ endif;
 </div>
 <div class="three-col">
 <div class="list-card"><small>ESTIMATED VISITS</small><strong><?=number_format((int)($set['analytics_total_visits']??0))?></strong><p>Counted once per browser per day.</p></div>
-<div class="list-card"><small>TODAY</small><strong><?=h(($set['analytics_today_date']??'')===date('Y-m-d') ? number_format((int)($set['analytics_today_visits']??0)) : '0')?></strong><p>Anonymous visits recorded today.</p></div>
-<div class="list-card"><small>LAST VISIT</small><strong><?=h($set['analytics_last_visit_at']??'No visits yet')?></strong><p>Server date and time of the latest counted visit.</p></div>
+<div class="list-card"><small>TODAY</small><strong><?=h(($set['analytics_today_date']??'')===$analyticsToday ? number_format((int)($set['analytics_today_visits']??0)) : '0')?></strong><p>Anonymous visits recorded today in Honduras.</p></div>
+<div class="list-card"><small>LAST VISIT</small><strong><?=h($analyticsLastDisplay)?></strong><p>Honduras local time (America/Tegucigalpa) of the latest counted visit.</p></div>
 </div>
 <form method="post" style="margin-top:18px">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
