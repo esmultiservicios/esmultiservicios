@@ -63,6 +63,7 @@ $rows=$st->fetchAll();
 $view=null;
 $atts=[];
 $notes=[];
+$leadSource='';
 if(isset($_GET['view'])) {
     $st=$pdo->prepare('SELECT e.*,u.full_name assigned_name,u.username assigned_username FROM estimate_requests e LEFT JOIN admin_users u ON u.id=e.assigned_to WHERE e.id=?');
     $st->execute([(int)$_GET['view']]);
@@ -75,6 +76,17 @@ if(isset($_GET['view'])) {
         $n=$pdo->prepare('SELECT n.*,u.full_name,u.username FROM estimate_notes n LEFT JOIN admin_users u ON u.id=n.admin_id WHERE n.estimate_id=? ORDER BY n.id DESC');
         $n->execute([$view['id']]);
         $notes=$n->fetchAll();
+        $leadSource='';
+        $visibleNotes=[];
+        foreach($notes as $noteRow) {
+            $noteText=(string)($noteRow['note']??'');
+            if(strpos($noteText,'[LEAD_SOURCE] ')===0) {
+                if($leadSource==='') $leadSource=trim(substr($noteText,14));
+                continue;
+            }
+            $visibleNotes[]=$noteRow;
+        }
+        $notes=$visibleNotes;
     }
 }
 $assignees=$canAll?$pdo->query("SELECT u.id,u.full_name,u.username,r.role_name FROM admin_users u LEFT JOIN admin_roles r ON r.id=u.role_id WHERE u.active=1 ORDER BY u.full_name,u.username")->fetchAll():[];
@@ -149,6 +161,13 @@ if($view):
 </strong>
 </div>
 </div>
+<?php if($leadSource!==''): ?>
+<div class="list-card" style="margin-top:14px">
+<small>HOW THEY FOUND US</small>
+<strong><?=h($leadSource)?></strong>
+<p>Provided by the visitor on the public inquiry form.</p>
+</div>
+<?php endif; ?>
 <div class="two-col" style="margin-top:14px">
 <div class="list-card">
 <small>SERVICE</small>

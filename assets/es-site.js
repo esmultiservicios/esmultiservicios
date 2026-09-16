@@ -121,8 +121,66 @@
     const contactForm = document.querySelector('[data-contact-form]');
     const contactStatus = document.querySelector('[data-contact-status]');
     if (contactForm && contactStatus) {
+        const meaningfulMessage = contactForm.querySelector('[data-meaningful-message]');
+        const referralSelect = contactForm.querySelector('[data-referral-source]');
+        const referralOther = contactForm.querySelector('[data-referral-other]');
+        const referralDetails = contactForm.querySelector('[data-referral-details]');
+        const syncReferralDetails = () => {
+            if (!referralSelect || !referralOther || !referralDetails) return;
+            const selected = referralSelect.options[referralSelect.selectedIndex];
+            const isOther = !!selected && selected.dataset.isOther === '1';
+            referralOther.hidden = !isOther;
+            referralDetails.required = isOther;
+            if (!isOther) {
+                referralDetails.value = '';
+                referralDetails.setCustomValidity('');
+            }
+        };
+        if (referralSelect) {
+            referralSelect.addEventListener('change', syncReferralDetails);
+            syncReferralDetails();
+        }
+
+        const validateMeaningfulMessage = () => {
+            if (!meaningfulMessage) return true;
+            meaningfulMessage.setCustomValidity('');
+            const raw = meaningfulMessage.value.trim();
+            if (raw === '') return !meaningfulMessage.required;
+
+            const minChars = Number.parseInt(meaningfulMessage.dataset.minMeaningfulChars || '30', 10);
+            const minWords = Number.parseInt(meaningfulMessage.dataset.minMeaningfulWords || '5', 10);
+            const normalized = typeof raw.normalize === 'function' ? raw.normalize('NFKC') : raw;
+            let usefulChars = '';
+            let words = [];
+            try {
+                usefulChars = normalized.replace(/[^\p{L}\p{N}]+/gu, '');
+                words = normalized.match(/[\p{L}\p{N}]{2,}/gu) || [];
+            } catch (_) {
+                usefulChars = normalized.replace(/[^A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]+/g, '');
+                words = normalized.match(/[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ]{2,}/g) || [];
+            }
+            if (usefulChars.length < minChars || words.length < minWords) {
+                const message = document.documentElement.lang === 'es'
+                    ? `Describe con más detalle lo que necesitas: mínimo ${minChars} caracteres útiles y ${minWords} palabras. Espacios, signos o un simple “Hola” no son suficientes.`
+                    : `Please add more detail: at least ${minChars} meaningful characters and ${minWords} words are required. Spaces, punctuation or a simple “Hello” are not enough.`;
+                meaningfulMessage.setCustomValidity(message);
+                return false;
+            }
+            return true;
+        };
+
+        if (meaningfulMessage) {
+            meaningfulMessage.addEventListener('input', validateMeaningfulMessage);
+            meaningfulMessage.addEventListener('blur', validateMeaningfulMessage);
+        }
+
         contactForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+            validateMeaningfulMessage();
+            if (!contactForm.checkValidity()) {
+                contactForm.reportValidity();
+                return;
+            }
             const button = contactForm.querySelector('button[type="submit"]');
             const original = button ? button.textContent : '';
             contactStatus.className = 'contact-form-status';
@@ -141,6 +199,7 @@
                     ? 'Gracias. Recibimos tu consulta.'
                     : 'Thank you. We received your inquiry.';
                 contactForm.reset();
+                syncReferralDetails();
             } catch (error) {
                 contactStatus.classList.add('error');
                 contactStatus.textContent = error.message || (document.documentElement.lang === 'es'

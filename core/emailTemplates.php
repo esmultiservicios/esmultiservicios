@@ -178,6 +178,7 @@ final class EmailTemplates
             . self::infoRow('Email', (string)($request['email'] ?? ''))
             . self::infoRow('Phone', (string)($request['phone'] ?? ''))
             . self::infoRow('Service', (string)($request['service_needed'] ?? ''))
+            . self::infoRow('How they found us', trim((string)($request['referral_source'] ?? '')).(trim((string)($request['referral_details'] ?? '')) !== '' ? ' — '.trim((string)($request['referral_details'] ?? '')) : ''))
             . self::infoRow('Preferred date', (string)($request['desired_date'] ?? ''))
             . self::infoRow('Address', (string)($request['address'] ?? ''))
             . self::infoRow('Attachments', $attachmentText);

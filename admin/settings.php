@@ -27,8 +27,53 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             save_setting('whatsapp_message',trim((string)($_POST['whatsapp_message']??'')));
             save_setting('whatsapp_position',in_array($_POST['whatsapp_position']??'right',['left','right'],true)?$_POST['whatsapp_position']:'right');
             flash('success','WhatsApp widget updated.');
+        } elseif($action==='visitor_analytics') {
+            save_setting('analytics_tracking_enabled', isset($_POST['analytics_tracking_enabled']) ? '1' : '0');
+            flash('success','Website visit tracking settings updated.');
+        } elseif($action==='contact_requirements') {
+            $required = [
+                'name' => isset($_POST['contact_required_name']),
+                'email' => true,
+                'phone' => isset($_POST['contact_required_phone']),
+                'service' => isset($_POST['contact_required_service']),
+                'message' => isset($_POST['contact_required_message']),
+                'referral' => isset($_POST['contact_required_referral']),
+            ];
+            if(!$required['service'] && !$required['message']) {
+                throw new RuntimeException('Keep at least Request type or Message required so every inquiry explains what the visitor needs.');
+            }
+
+            $minChars = (int)($_POST['contact_message_min_chars'] ?? 30);
+            $minWords = (int)($_POST['contact_message_min_words'] ?? 5);
+            if($minChars < 20 || $minChars > 300) {
+                throw new RuntimeException('Message minimum characters must be between 20 and 300.');
+            }
+            if($minWords < 3 || $minWords > 30) {
+                throw new RuntimeException('Message minimum words must be between 3 and 30.');
+            }
+
+            foreach($required as $field=>$enabled) {
+                save_setting('contact_required_'.$field,$enabled?'1':'0');
+            }
+            save_setting('contact_message_min_chars',(string)$minChars);
+            save_setting('contact_message_min_words',(string)$minWords);
+
+            $defaultReferralEs = "Búsqueda en Google u otro buscador\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecomendación de una persona o empresa\nYa conocía ES MULTISERVICIOS\nOtro";
+            $defaultReferralEn = "Google or another search engine\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecommendation from a person or company\nI already knew ES MULTISERVICIOS\nOther";
+            $referralEs = trim((string)($_POST['contact_referral_options_es'] ?? $defaultReferralEs));
+            $referralEn = trim((string)($_POST['contact_referral_options_en'] ?? $defaultReferralEn));
+            $cleanOptions = static function(string $raw): string {
+                $items = array_values(array_unique(array_filter(array_map('trim', preg_split('/\R/u', $raw) ?: []), static fn($v) => $v !== '')));
+                return implode("\n", array_slice($items, 0, 20));
+            };
+            $referralEs = $cleanOptions($referralEs);
+            $referralEn = $cleanOptions($referralEn);
+            if ($referralEs === '' || $referralEn === '') throw new RuntimeException('Referral source options cannot be empty.');
+            save_setting('contact_referral_options_es',$referralEs);
+            save_setting('contact_referral_options_en',$referralEn);
+            flash('success','Public inquiry requirements updated. Email remains mandatory, referral settings were saved and message quality rules remain active.');
         }
-        header('Location: settings.php'.($action==='maintenance'?'#site-status':''));
+        header('Location: settings.php'.($action==='maintenance'?'#site-status':($action==='visitor_analytics'?'#visitor-analytics':($action==='contact_requirements'?'#contact-requirements':''))));
         exit;
     } catch(Throwable $e) {
         $error=$e->getMessage();
@@ -206,6 +251,105 @@ endif;
 <button>Save website status</button>
 <a class="button secondary" href="../?preview=1" target="_blank" rel="noopener">Preview real site</a>
 <a class="button ghost" href="../" target="_blank" rel="noopener">View public status</a>
+</div>
+</form>
+</section>
+<section class="panel wide animate-in" id="visitor-analytics">
+<div class="panel-heading">
+<div class="panel-icon">↗</div>
+<div>
+<h2>Private website visits</h2>
+<p>See an anonymous estimate of how many browsers are reaching the public website. These counters are visible only in the administrator.</p>
+</div>
+</div>
+<div class="three-col">
+<div class="list-card"><small>ESTIMATED VISITS</small><strong><?=number_format((int)($set['analytics_total_visits']??0))?></strong><p>Counted once per browser per day.</p></div>
+<div class="list-card"><small>TODAY</small><strong><?=h(($set['analytics_today_date']??'')===date('Y-m-d') ? number_format((int)($set['analytics_today_visits']??0)) : '0')?></strong><p>Anonymous visits recorded today.</p></div>
+<div class="list-card"><small>LAST VISIT</small><strong><?=h($set['analytics_last_visit_at']??'No visits yet')?></strong><p>Server date and time of the latest counted visit.</p></div>
+</div>
+<form method="post" style="margin-top:18px">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
+<input type="hidden" name="action" value="visitor_analytics">
+<label class="premium-switch">
+<input type="checkbox" name="analytics_tracking_enabled" <?=($set['analytics_tracking_enabled']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Enable anonymous visit counter</b><small>Uses a first-party daily cookie. It does not store IP addresses or visitor identity and ignores common crawler user agents.</small></span>
+</label>
+<p class="secret-hint">This is a lightweight internal counter, not person identification. One person using multiple devices or clearing cookies can be counted more than once, while repeat page loads on the same browser during the same day are not counted again.</p>
+<div class="form-actions"><button>Save visit tracking</button></div>
+</form>
+</section>
+<section class="panel wide animate-in" id="contact-requirements">
+<div class="panel-heading">
+<div class="panel-icon"><?=icon('edit')?>
+</div>
+<div>
+<h2>Public inquiry requirements</h2>
+<p>Choose which fields visitors must complete before a website inquiry can be sent.</p>
+</div>
+</div>
+<form method="post">
+<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
+<input type="hidden" name="action" value="contact_requirements">
+<div class="two-col">
+<label class="premium-switch">
+<input type="checkbox" name="contact_required_name" <?=($set['contact_required_name']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Name required</b><small>Visitors must provide their name before sending the inquiry.</small></span>
+</label>
+<label class="premium-switch requirement-locked" aria-label="Email is always required">
+<input type="checkbox" checked disabled>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Email always required</b><small>Locked for safety. Every inquiry must include a valid email so you always have a direct reply channel.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_required_phone" <?=($set['contact_required_phone']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Phone required</b><small>Require a phone number for calls or WhatsApp follow-up.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_required_service" <?=($set['contact_required_service']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Request type required</b><small>Visitors must choose IZZY, CAMI, Website, Custom software, Support or another listed option.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_required_message" <?=($set['contact_required_message']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Message required</b><small>Require a description so the inquiry includes useful context.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_required_referral" <?=($set['contact_required_referral']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>How did you hear about us? required</b><small>Ask every visitor which channel or recommendation led them to the website.</small></span>
+</label>
+</div>
+<div class="two-col requirement-quality-grid">
+<label>Minimum meaningful characters in Message
+<input type="number" name="contact_message_min_chars" min="20" max="300" step="1" value="<?=h((string)($set['contact_message_min_chars']??'30'))?>">
+<small>Counts letters and numbers, not spaces or punctuation. Default: 30.</small>
+</label>
+<label>Minimum meaningful words in Message
+<input type="number" name="contact_message_min_words" min="3" max="30" step="1" value="<?=h((string)($set['contact_message_min_words']??'5'))?>">
+<small>Words must contain at least 2 letters or numbers. Default: 5.</small>
+</label>
+</div>
+<?php
+$defaultReferralEs = "Búsqueda en Google u otro buscador\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecomendación de una persona o empresa\nYa conocía ES MULTISERVICIOS\nOtro";
+$defaultReferralEn = "Google or another search engine\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecommendation from a person or company\nI already knew ES MULTISERVICIOS\nOther";
+?>
+<div class="two-col requirement-quality-grid">
+<label>Referral options (ES)
+<textarea name="contact_referral_options_es" rows="8"><?=h($set['contact_referral_options_es']??$defaultReferralEs)?></textarea>
+<small>One option per line. Keep “Otro” if you want visitors to specify a custom source.</small>
+</label>
+<label>Referral options (EN)
+<textarea name="contact_referral_options_en" rows="8"><?=h($set['contact_referral_options_en']??$defaultReferralEn)?></textarea>
+<small>One option per line. Keep “Other” if you want visitors to specify a custom source.</small>
+</label>
+</div>
+<p class="secret-hint">Safety rules: Email is always required. Phone, Name, Request type, Message and How did you hear about us? remain configurable except Email. At least Request type or Message must stay required. When a message is entered, punctuation-only, spaces, “Hi/Hello” alone, or other too-short text is rejected according to the quality limits above.</p>
+<div class="form-actions">
+<button>Save inquiry requirements</button>
 </div>
 </form>
 </section>

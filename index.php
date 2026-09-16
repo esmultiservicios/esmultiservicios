@@ -10,6 +10,65 @@ if (!config_ready()) {
 }
 
 $settings = settings();
+
+/**
+ * Lightweight first-party visit counter.
+ * Counts at most once per browser per calendar day and ignores common crawlers.
+ * No IP address, fingerprint or personal identifier is stored.
+ */
+function record_public_visit(array $settings): void
+{
+    if (($settings['analytics_tracking_enabled'] ?? '1') !== '1') return;
+    if (isset($_GET['preview']) && (string)$_GET['preview'] === '1') return;
+
+    $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    if ($ua !== '' && preg_match('/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|preview|monitor|uptime/i', $ua)) return;
+
+    $today = date('Y-m-d');
+    $cookieName = 'esms_visit_day';
+    if ((string)($_COOKIE[$cookieName] ?? '') === $today) return;
+
+    try {
+        $pdo = db();
+        $pdo->beginTransaction();
+        $keys = ['analytics_total_visits','analytics_today_date','analytics_today_visits'];
+        $placeholders = implode(',', array_fill(0, count($keys), '?'));
+        $st = $pdo->prepare("SELECT setting_key,setting_value FROM settings WHERE setting_key IN ($placeholders) FOR UPDATE");
+        $st->execute($keys);
+        $current = [];
+        foreach ($st->fetchAll() as $row) $current[(string)$row['setting_key']] = (string)$row['setting_value'];
+
+        $total = max(0, (int)($current['analytics_total_visits'] ?? 0)) + 1;
+        $todayVisits = (($current['analytics_today_date'] ?? '') === $today)
+            ? max(0, (int)($current['analytics_today_visits'] ?? 0)) + 1
+            : 1;
+
+        $up = $pdo->prepare('INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
+        foreach ([
+            'analytics_total_visits' => (string)$total,
+            'analytics_today_date' => $today,
+            'analytics_today_visits' => (string)$todayVisits,
+            'analytics_last_visit_at' => date('Y-m-d H:i:s'),
+        ] as $key => $value) $up->execute([$key, $value]);
+        $pdo->commit();
+
+        if (!headers_sent()) {
+            setcookie($cookieName, $today, [
+                'expires' => strtotime('tomorrow') + 3600,
+                'path' => '/',
+                'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+        }
+    } catch (Throwable $e) {
+        if (isset($pdo) && $pdo instanceof PDO && $pdo->inTransaction()) $pdo->rollBack();
+        error_log('ES MULTISERVICIOS public analytics: ' . $e->getMessage());
+        // Analytics must never interrupt the public website.
+    }
+}
+
+record_public_visit($settings);
 $requestedLanguage = (string) ($_GET['lang'] ?? '');
 
 if (in_array($requestedLanguage, ['es', 'en'], true)) {
@@ -941,23 +1000,50 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                         </div>
                     </div>
 
+                    <?php
+                    $contactRequired = [
+                        'name' => ($settings['contact_required_name'] ?? '1') === '1',
+                        'email' => true,
+                        'phone' => ($settings['contact_required_phone'] ?? '1') === '1',
+                        'service' => ($settings['contact_required_service'] ?? '1') === '1',
+                        'message' => ($settings['contact_required_message'] ?? '1') === '1',
+                    ];
+                    $requiredMark = '<span class="field-required" aria-hidden="true">*</span>';
+                    $messageMinChars = max(20, min(300, (int)($settings['contact_message_min_chars'] ?? 30)));
+                    $messageMinWords = max(3, min(30, (int)($settings['contact_message_min_words'] ?? 5)));
+                    $contactRequired['referral'] = ($settings['contact_required_referral'] ?? '1') === '1';
+                    $defaultReferralEs = "Búsqueda en Google u otro buscador\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecomendación de una persona o empresa\nYa conocía ES MULTISERVICIOS\nOtro";
+                    $defaultReferralEn = "Google or another search engine\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecommendation from a person or company\nI already knew ES MULTISERVICIOS\nOther";
+                    $referralRaw = (string)($settings[$lang === 'es' ? 'contact_referral_options_es' : 'contact_referral_options_en'] ?? ($lang === 'es' ? $defaultReferralEs : $defaultReferralEn));
+                    $referralOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $referralRaw) ?: []), static fn($v) => $v !== ''));
+                    if (!$referralOptions) $referralOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $lang === 'es' ? $defaultReferralEs : $defaultReferralEn) ?: [])));
+                    ?>
                     <form class="contact-form" data-contact-form action="estimate-submit.php" method="post">
+                        <input type="hidden" name="lang" value="<?= h($lang) ?>">
+                        <div class="contact-required-note" role="note">
+                            <strong><span class="field-required" aria-hidden="true">*</span> <?= $lang === 'es' ? 'Campos requeridos' : 'Required fields' ?></strong>
+                            <span><?= $lang === 'es' ? 'Los campos con asterisco son obligatorios. El correo siempre es requerido para poder responderte.' : 'Fields marked with an asterisk are required. Email is always required so we can reply.' ?></span>
+                        </div>
                         <div class="contact-form-grid">
                             <label>
-                                <span><?= $lang === 'es' ? 'Nombre' : 'Name' ?></span>
-                                <input name="name" autocomplete="name" required>
+                                <span><?= $lang === 'es' ? 'Nombre' : 'Name' ?><?= $contactRequired['name'] ? $requiredMark : '' ?></span>
+                                <input name="name" autocomplete="name" maxlength="120" <?= $contactRequired['name'] ? 'required' : '' ?>>
+                                <?php if ($contactRequired['name']): ?><small class="field-requirement-hint"><?= $lang === 'es' ? 'Tu nombre completo.' : 'Your full name.' ?></small><?php endif; ?>
                             </label>
                             <label>
-                                <span><?= $lang === 'es' ? 'Correo' : 'Email' ?></span>
-                                <input type="email" name="email" autocomplete="email">
+                                <span><?= $lang === 'es' ? 'Correo' : 'Email' ?><?= $contactRequired['email'] ? $requiredMark : '' ?></span>
+                                <input type="email" name="email" autocomplete="email" maxlength="190" required aria-describedby="contact-email-help">
+                                <small id="contact-email-help" class="field-requirement-hint"><?= $lang === 'es' ? 'Usaremos este correo para responderte.' : 'We will use this email to reply.' ?></small>
                             </label>
                             <label>
-                                <span><?= $lang === 'es' ? 'Teléfono' : 'Phone' ?></span>
-                                <input name="phone" autocomplete="tel">
+                                <span><?= $lang === 'es' ? 'Teléfono' : 'Phone' ?><?= $contactRequired['phone'] ? $requiredMark : '' ?></span>
+                                <input name="phone" autocomplete="tel" maxlength="50" <?= $contactRequired['phone'] ? 'required' : '' ?>>
+                                <?php if ($contactRequired['phone']): ?><small class="field-requirement-hint"><?= $lang === 'es' ? 'Número donde podamos contactarte.' : 'Best number to reach you.' ?></small><?php endif; ?>
                             </label>
                             <label>
-                                <span><?= $lang === 'es' ? '¿Qué necesitas?' : 'What do you need?' ?></span>
-                                <select name="service">
+                                <span><?= $lang === 'es' ? '¿Qué necesitas?' : 'What do you need?' ?><?= $contactRequired['service'] ? $requiredMark : '' ?></span>
+                                <select name="service" <?= $contactRequired['service'] ? 'required' : '' ?>>
+                                    <option value="" selected><?= $lang === 'es' ? 'Selecciona una opción' : 'Select an option' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Información general' : 'General information' ?>"><?= $lang === 'es' ? 'Información general' : 'General information' ?></option>
                                     <option value="IZZY">IZZY</option>
                                     <option value="CAMI">CAMI</option>
@@ -965,11 +1051,28 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                                     <option value="<?= $lang === 'es' ? 'Software a la medida' : 'Custom software' ?>"><?= $lang === 'es' ? 'Software a la medida' : 'Custom software' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Soporte' : 'Support' ?>"><?= $lang === 'es' ? 'Soporte' : 'Support' ?></option>
                                 </select>
+                                <?php if ($contactRequired['service']): ?><small class="field-requirement-hint"><?= $lang === 'es' ? 'Selecciona una opción.' : 'Select one option.' ?></small><?php endif; ?>
+                            </label>
+                            <label>
+                                <span><?= $lang === 'es' ? '¿Cómo nos conociste?' : 'How did you hear about us?' ?><?= $contactRequired['referral'] ? $requiredMark : '' ?></span>
+                                <select name="referral_source" data-referral-source <?= $contactRequired['referral'] ? 'required' : '' ?>>
+                                    <option value="" selected><?= $lang === 'es' ? 'Selecciona una opción' : 'Select an option' ?></option>
+                                    <?php foreach ($referralOptions as $referralOption): ?>
+                                        <option value="<?= h($referralOption) ?>" data-is-other="<?= preg_match('/^(otro|other)$/iu', $referralOption) ? '1' : '0' ?>"><?= h($referralOption) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <?php if ($contactRequired['referral']): ?><small class="field-requirement-hint"><?= $lang === 'es' ? 'Esto nos ayuda a saber cómo nos encontraste.' : 'This helps us know how you found us.' ?></small><?php endif; ?>
+                            </label>
+                            <label class="referral-other-field" data-referral-other hidden>
+                                <span><?= $lang === 'es' ? 'Cuéntanos dónde nos encontraste' : 'Tell us where you found us' ?><span class="field-required" aria-hidden="true">*</span></span>
+                                <input name="referral_details" data-referral-details maxlength="180" placeholder="<?= $lang === 'es' ? 'Ejemplo: un amigo, una empresa, un evento o un sitio específico' : 'Example: a friend, a company, an event or a specific website' ?>">
+                                <small class="field-requirement-hint"><?= $lang === 'es' ? 'Completa este campo si elegiste “Otro”.' : 'Complete this field if you selected “Other”.' ?></small>
                             </label>
                         </div>
                         <label>
-                            <span><?= $lang === 'es' ? 'Mensaje' : 'Message' ?></span>
-                            <textarea name="message" rows="5" required></textarea>
+                            <span><?= $lang === 'es' ? 'Mensaje' : 'Message' ?><?= $contactRequired['message'] ? $requiredMark : '' ?></span>
+                            <textarea name="message" rows="5" maxlength="5000" <?= $contactRequired['message'] ? 'required' : '' ?> data-meaningful-message data-min-meaningful-chars="<?= $messageMinChars ?>" data-min-meaningful-words="<?= $messageMinWords ?>" aria-describedby="contact-message-help" placeholder="<?= $lang === 'es' ? 'Ejemplo: Me interesa IZZY para mi negocio y necesito información sobre planes, facturación e inventario.' : 'Example: I am interested in IZZY for my business and need information about plans, billing and inventory.' ?>"></textarea>
+                            <small id="contact-message-help" class="field-requirement-hint message-help <?= $contactRequired['message'] ? '' : 'optional-hint' ?>"><?= $contactRequired['message'] ? ($lang === 'es' ? 'Describe lo que necesitas con al menos ' . $messageMinChars . ' caracteres útiles y ' . $messageMinWords . ' palabras. Un “Hola” o solo signos no cuentan como detalle suficiente.' : 'Describe what you need using at least ' . $messageMinChars . ' meaningful characters and ' . $messageMinWords . ' words. A simple “Hello” or only punctuation is not enough.') : ($lang === 'es' ? 'Si escribes un mensaje, incluye detalles reales de lo que necesitas.' : 'If you enter a message, include real details about what you need.') ?></small>
                         </label>
                         <div class="contact-form-actions">
                             <button class="btn btn-primary" type="submit">
@@ -1005,6 +1108,11 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                         <?php if (!empty($settings['phone'])): ?><span><b><?= $lang === 'es' ? 'Teléfono' : 'Phone' ?></b><?= h((string) $settings['phone']) ?></span><?php endif; ?>
                         <?php if (!empty($settings['email'])): ?><span><b>Email</b><?= h((string) $settings['email']) ?></span><?php endif; ?>
                         <?php if (!empty($settings['business_hours'])): ?><span><b><?= $lang === 'es' ? 'Horario' : 'Hours' ?></b><?= nl2br(h((string) $settings['business_hours'])) ?></span><?php endif; ?>
+                    </div>
+                    <div class="contact-info-points" aria-label="<?= $lang === 'es' ? 'Ventajas de contacto' : 'Contact advantages' ?>">
+                        <span><?= $lang === 'es' ? 'Respuesta rápida en horario laboral.' : 'Fast response during business hours.' ?></span>
+                        <span><?= $lang === 'es' ? 'Atención directa para ventas, demos y soporte.' : 'Direct assistance for sales, demos and support.' ?></span>
+                        <span><?= $lang === 'es' ? 'Acompañamiento real por nuestro equipo.' : 'Real follow-up from our team.' ?></span>
                     </div>
                 </aside>
             </div>

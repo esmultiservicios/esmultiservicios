@@ -12,6 +12,32 @@ $counts=['services'=>(int)$pdo->query('SELECT COUNT(*) FROM services WHERE activ
 $missing=(int)$pdo->query("SELECT COUNT(*) FROM gallery WHERE active=1 AND (image_path IS NULL OR image_path='')")->fetchColumn();
 $emailOk=(int)$pdo->query('SELECT COUNT(*) FROM correo WHERE estado=1')->fetchColumn()>0;
 $areas=(int)$pdo->query('SELECT COUNT(*) FROM service_areas WHERE active=1')->fetchColumn();
+
+// Private website analytics are intentionally lightweight and must never break the dashboard.
+$visitStats=[
+    'enabled'=>'1',
+    'total'=>0,
+    'today'=>0,
+    'last'=>''
+];
+try {
+    $analyticsKeys=['analytics_tracking_enabled','analytics_total_visits','analytics_today_date','analytics_today_visits','analytics_last_visit_at'];
+    $placeholders=implode(',',array_fill(0,count($analyticsKeys),'?'));
+    $st=$pdo->prepare("SELECT setting_key,setting_value FROM settings WHERE setting_key IN ($placeholders)");
+    $st->execute($analyticsKeys);
+    $analyticsSettings=[];
+    foreach($st->fetchAll(PDO::FETCH_ASSOC) as $row){
+        $analyticsSettings[(string)$row['setting_key']]=(string)$row['setting_value'];
+    }
+    $visitStats['enabled']=$analyticsSettings['analytics_tracking_enabled']??'1';
+    $visitStats['total']=max(0,(int)($analyticsSettings['analytics_total_visits']??0));
+    $visitStats['today']=(($analyticsSettings['analytics_today_date']??'')===date('Y-m-d'))
+        ? max(0,(int)($analyticsSettings['analytics_today_visits']??0))
+        : 0;
+    $visitStats['last']=trim((string)($analyticsSettings['analytics_last_visit_at']??''));
+} catch(Throwable $e) {
+    // Analytics are secondary; keep the administrator available if counters cannot be read.
+}
 if(user_can('estimates.manage_all')) {
     $due=(int)$pdo->query("SELECT COUNT(*) FROM estimate_requests WHERE follow_up_date IS NOT NULL AND follow_up_date<=CURDATE() AND status NOT IN ('won','lost','closed')")->fetchColumn();
     $recent=$pdo->query('SELECT id,full_name,service_needed,status,priority,created_at FROM estimate_requests ORDER BY id DESC LIMIT 5')->fetchAll();
@@ -24,6 +50,12 @@ if(user_can('estimates.manage_all')) {
     $recent=$st->fetchAll();
 }
 $stats=[];
+// Website traffic gets its own clearly labeled dashboard section instead of
+// being mixed into the generic KPI cards. This makes the counter unmistakable
+// even when its value is zero.
+$analyticsHref=user_can('settings.manage')?'settings.php#visitor-analytics':'dashboard.php';
+$analyticsEnabled=$visitStats['enabled']==='1';
+$trafficLast=$visitStats['last']!==''?$visitStats['last']:'No public visit recorded yet';
 if(user_can('services.manage'))$stats[]=['Active services',
 $counts['services'],
 'Published',
@@ -107,6 +139,50 @@ endif;
 Preview site</a>
 </div>
 </div>
+
+<section class="website-traffic-panel animate-in" aria-labelledby="website-traffic-title">
+    <div class="website-traffic-heading">
+        <div>
+            <p class="eyebrow">PRIVATE ANALYTICS</p>
+            <h2 id="website-traffic-title">Website traffic</h2>
+            <p>Public website visits only. Administrator previews are excluded so your numbers stay cleaner.</p>
+        </div>
+        <span class="traffic-status <?= $analyticsEnabled?'is-active':'is-paused' ?>">
+            <?= $analyticsEnabled?'Tracking active':'Tracking paused' ?>
+        </span>
+    </div>
+    <div class="website-traffic-grid">
+        <a class="traffic-card traffic-card-primary" href="<?=h($analyticsHref)?>">
+            <span class="traffic-icon"><?=icon('eye')?></span>
+            <div class="traffic-copy">
+                <span class="traffic-label">Total website visits</span>
+                <strong><?=number_format((int)$visitStats['total'])?></strong>
+                <small><?= $analyticsEnabled
+                    ? ($visitStats['total']>0?'Estimated public browser visits':'No public visits recorded yet')
+                    : 'Counter is currently paused' ?></small>
+            </div>
+        </a>
+        <a class="traffic-card" href="<?=h($analyticsHref)?>">
+            <span class="traffic-icon"><?=icon('dashboard')?></span>
+            <div class="traffic-copy">
+                <span class="traffic-label">Visits today</span>
+                <strong><?=number_format((int)$visitStats['today'])?></strong>
+                <small><?= $analyticsEnabled
+                    ? ($visitStats['today']>0?'Counted today':'No public visit counted today')
+                    : 'Counter is currently paused' ?></small>
+            </div>
+        </a>
+        <div class="traffic-card traffic-card-info">
+            <span class="traffic-icon"><?=icon('bell')?></span>
+            <div class="traffic-copy">
+                <span class="traffic-label">Last counted public visit</span>
+                <strong class="traffic-last"><?=h($trafficLast)?></strong>
+                <small>One visit per browser per day. Bots and admin preview are excluded when possible.</small>
+            </div>
+        </div>
+    </div>
+</section>
+
 <div class="stat-grid"><?php
 foreach($stats as $s):
 ?>
