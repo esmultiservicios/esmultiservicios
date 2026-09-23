@@ -4,7 +4,111 @@ declare(strict_types=1);
 require __DIR__.'/config/bootstrap.php';
 require_once __DIR__.'/core/EmailService.php';
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 header('Content-Type: application/json; charset=utf-8');
+
+/**
+ * Return a normal success response for automated/spam submissions without saving
+ * a request or sending any email. This avoids teaching bots which check failed.
+ */
+function contact_spam_sink(string $lang, string $reason): void
+{
+    error_log('ES MULTISERVICIOS contact anti-spam blocked: '.$reason);
+    echo json_encode([
+        'ok' => true,
+        'message' => $lang === 'es' ? 'Gracias. Recibimos tu consulta.' : 'Thank you. Your request has been received.',
+    ]);
+    exit;
+}
+
+/**
+ * Conservative score for obvious unsolicited sales outreach.
+ * It intentionally requires several independent signals to reduce false positives.
+ */
+
+/**
+ * Validate a Cloudflare Turnstile token without sending the visitor IP.
+ * The secret key is encrypted at rest in settings and decrypted only server-side.
+ */
+function contact_turnstile_verify(string $token, string $secret): array
+{
+    if ($token === '' || $secret === '') {
+        return ['success' => false, 'error-codes' => ['missing-input']];
+    }
+
+    $payload = http_build_query([
+        'secret' => $secret,
+        'response' => $token,
+    ], '', '&');
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 4,
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+        ]);
+        $raw = curl_exec($ch);
+        $errno = curl_errno($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($errno !== 0 || !is_string($raw) || $raw === '' || $status < 200 || $status >= 300) {
+            return ['success' => false, 'error-codes' => ['siteverify-unavailable']];
+        }
+    } else {
+        $ctx = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'content' => $payload,
+                'timeout' => 8,
+                'ignore_errors' => true,
+            ],
+        ]);
+        $raw = @file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $ctx);
+        if (!is_string($raw) || $raw === '') {
+            return ['success' => false, 'error-codes' => ['siteverify-unavailable']];
+        }
+    }
+
+    $decoded = json_decode($raw, true);
+    return is_array($decoded) ? $decoded : ['success' => false, 'error-codes' => ['invalid-siteverify-response']];
+}
+
+function contact_solicitation_score(string $text): int
+{
+    $normalized = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+    $score = 0;
+
+    $urls = preg_match_all('~https?://|www\.~iu', $normalized, $urlMatches);
+    if ($urls >= 2) $score += 2;
+    elseif ($urls === 1) $score += 1;
+
+    $strongPatterns = [
+        '/\b(?:we|i)\s+(?:offer|provide|specialize in|can provide|would like to offer)\b/i',
+        '/\bour\s+(?:agency|company|team)\s+(?:offers|provides|specializes)\b/i',
+        '/\b(?:seo services?|link building|backlinks?|guest posts?|domain authority)\b/i',
+        '/\b(?:increase|boost|improve)\s+(?:your\s+)?(?:traffic|rankings?|google ranking|online presence)\b/i',
+        '/\b(?:digital marketing|lead generation|marketing agency|social media marketing)\b/i',
+        '/\b(?:video production|video editing|explainer videos?|promotional videos?)\b/i',
+        '/\b(?:free website audit|free seo audit|website audit)\b/i',
+        '/\b(?:partnership opportunity|business proposal|special offer)\b/i',
+    ];
+    foreach ($strongPatterns as $pattern) {
+        if (preg_match($pattern, $normalized)) $score++;
+    }
+
+    if (preg_match('/\b(?:came across|found|visited)\s+your\s+(?:website|site)\b/i', $normalized)) $score++;
+    if (preg_match('/\b(?:help you|get you)\s+(?:more|new)\s+(?:customers|clients|leads|traffic)\b/i', $normalized)) $score++;
+
+    return $score;
+}
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new RuntimeException('Invalid request.');
@@ -19,8 +123,62 @@ try {
     $referralSource = trim((string)($_POST['referral_source'] ?? ''));
     $referralDetails = trim((string)($_POST['referral_details'] ?? ''));
     $lang = strtolower(trim((string)($_POST['lang'] ?? 'en'))) === 'es' ? 'es' : 'en';
+    $honeypot = trim((string)($_POST['website_url_confirm'] ?? ''));
+    $formStartedAt = (int)($_POST['form_started_at'] ?? 0);
+    $turnstileToken = trim((string)($_POST['cf-turnstile-response'] ?? ''));
 
     $set = settings();
+
+    $antiSpamEnabled = ($set['contact_antispam_enabled'] ?? '1') === '1';
+    $antiSpamBlockSolicitation = ($set['contact_antispam_block_solicitation'] ?? '1') === '1';
+    $antiSpamMinSeconds = max(1, min(30, (int)($set['contact_antispam_min_seconds'] ?? 3)));
+    $antiSpamCooldownSeconds = max(15, min(600, (int)($set['contact_antispam_cooldown_seconds'] ?? 60)));
+    $antiSpamHourlyLimit = max(1, min(20, (int)($set['contact_antispam_hourly_limit'] ?? 5)));
+    $turnstileEnabled = ($set['contact_turnstile_enabled'] ?? '0') === '1';
+    $turnstileSiteKey = trim((string)($set['contact_turnstile_site_key'] ?? ''));
+    $turnstileSecret = secret_decrypt((string)($set['contact_turnstile_secret'] ?? ''));
+    $turnstileReady = $turnstileEnabled && $turnstileSiteKey !== '' && $turnstileSecret !== '';
+
+    if ($antiSpamEnabled) {
+        // Honeypot: real visitors never see or fill this field.
+        if ($honeypot !== '') {
+            contact_spam_sink($lang, 'honeypot');
+        }
+
+        // A bot often submits immediately without spending any time on the form.
+        $now = time();
+        if ($formStartedAt <= 0 || ($now - $formStartedAt) < $antiSpamMinSeconds) {
+            contact_spam_sink($lang, 'invalid_form_timing');
+        }
+
+        // Browser-session rate limiting. No IP address or fingerprint is stored.
+        $recent = array_values(array_filter(
+            is_array($_SESSION['contact_submit_times'] ?? null) ? $_SESSION['contact_submit_times'] : [],
+            static fn($ts) => is_int($ts) && $ts >= ($now - 3600)
+        ));
+        $lastSubmit = $recent ? max($recent) : 0;
+        if ($lastSubmit > 0 && ($now - $lastSubmit) < $antiSpamCooldownSeconds) {
+            http_response_code(429);
+            throw new DomainException($lang === 'es'
+                ? 'Espera un momento antes de enviar otra consulta.'
+                : 'Please wait a moment before sending another inquiry.');
+        }
+        if (count($recent) >= $antiSpamHourlyLimit) {
+            http_response_code(429);
+            throw new DomainException($lang === 'es'
+                ? 'Se alcanzó temporalmente el límite de consultas desde este navegador. Intenta nuevamente más tarde.'
+                : 'The temporary inquiry limit for this browser has been reached. Please try again later.');
+        }
+        $_SESSION['contact_submit_times'] = $recent;
+
+        // Block only strongly-scored unsolicited commercial outreach.
+        if ($antiSpamBlockSolicitation) {
+            $solicitationText = trim($name.' '.$service.' '.$message.' '.$referralDetails);
+            if (contact_solicitation_score($solicitationText) >= 4) {
+                contact_spam_sink($lang, 'sales_solicitation');
+            }
+        }
+    }
     $required = [
         'name' => ($set['contact_required_name'] ?? '1') === '1',
         'email' => true,
@@ -93,6 +251,26 @@ try {
         throw new DomainException($lang === 'es' ? 'Uno de los campos supera la longitud permitida.' : 'One of the fields exceeds the allowed length.');
     }
 
+    if ($turnstileEnabled && !$turnstileReady) {
+        error_log('ES MULTISERVICIOS Turnstile enabled but keys are incomplete or the secret cannot be decrypted.');
+        throw new RuntimeException($lang === 'es'
+            ? 'La verificación de seguridad está temporalmente indisponible. Intenta nuevamente más tarde.'
+            : 'Security verification is temporarily unavailable. Please try again later.');
+    }
+
+    if ($turnstileReady) {
+        $turnstileResult = contact_turnstile_verify($turnstileToken, $turnstileSecret);
+        $turnstileOk = ($turnstileResult['success'] ?? false) === true;
+        $turnstileAction = (string)($turnstileResult['action'] ?? '');
+        if (!$turnstileOk || ($turnstileAction !== '' && $turnstileAction !== 'contact_inquiry')) {
+            $codes = $turnstileResult['error-codes'] ?? [];
+            error_log('ES MULTISERVICIOS Turnstile rejected contact form: '.json_encode($codes));
+            throw new DomainException($lang === 'es'
+                ? 'No pudimos completar la verificación de seguridad. Actualiza la página e intenta nuevamente.'
+                : 'We could not complete the security verification. Refresh the page and try again.');
+        }
+    }
+
     $files = normalized_files('photos');
     if (count($files) > 8) throw new RuntimeException('Please upload no more than 8 images.');
 
@@ -126,6 +304,13 @@ try {
     }
     if ($first) $pdo->prepare('UPDATE estimate_requests SET photo_path=? WHERE id=?')->execute([$first, $id]);
     $pdo->commit();
+
+    if ($antiSpamEnabled) {
+        $now = time();
+        $recent = is_array($_SESSION['contact_submit_times'] ?? null) ? $_SESSION['contact_submit_times'] : [];
+        $recent[] = $now;
+        $_SESSION['contact_submit_times'] = array_values(array_filter($recent, static fn($ts) => is_int($ts) && $ts >= ($now - 3600)));
+    }
 
     admin_notify(
         'info',

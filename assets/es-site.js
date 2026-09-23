@@ -40,6 +40,12 @@
                 closeNavigation();
             }
         }, { passive: true });
+
+        window.addEventListener('orientationchange', () => {
+            if (nav.classList.contains('open')) {
+                closeNavigation();
+            }
+        }, { passive: true });
     }
 
     const moveIndicator = (link) => {
@@ -122,6 +128,34 @@
     const contactStatus = document.querySelector('[data-contact-status]');
     if (contactForm && contactStatus) {
         const meaningfulMessage = contactForm.querySelector('[data-meaningful-message]');
+        const turnstileWrap = contactForm.querySelector('[data-turnstile-wrap]');
+        const turnstileContainer = contactForm.querySelector('[data-turnstile-container]');
+        let turnstileWidgetId = null;
+        const initTurnstile = () => {
+            if (!turnstileContainer || turnstileWidgetId !== null || !window.turnstile || typeof window.turnstile.render !== 'function') return;
+            const sitekey = turnstileContainer.dataset.sitekey || '';
+            if (!sitekey) return;
+            try {
+                turnstileWidgetId = window.turnstile.render(turnstileContainer, {
+                    sitekey,
+                    action: 'contact_inquiry',
+                    theme: 'light',
+                    size: 'flexible',
+                    appearance: 'interaction-only',
+                    'refresh-expired': 'auto',
+                    language: turnstileContainer.dataset.language || 'auto'
+                });
+            } catch (_) {}
+        };
+        const resetTurnstile = () => {
+            if (turnstileWidgetId !== null && window.turnstile && typeof window.turnstile.reset === 'function') {
+                try { window.turnstile.reset(turnstileWidgetId); } catch (_) {}
+            }
+        };
+        if (turnstileContainer) {
+            if (document.readyState === 'complete') initTurnstile();
+            else window.addEventListener('load', initTurnstile, { once: true });
+        }
         const referralSelect = contactForm.querySelector('[data-referral-source]');
         const referralOther = contactForm.querySelector('[data-referral-other]');
         const referralDetails = contactForm.querySelector('[data-referral-details]');
@@ -199,8 +233,12 @@
                     ? 'Gracias. Recibimos tu consulta.'
                     : 'Thank you. We received your inquiry.';
                 contactForm.reset();
+                resetTurnstile();
+                const startedAt = contactForm.querySelector('[data-form-started-at]');
+                if (startedAt) startedAt.value = String(Math.floor(Date.now() / 1000));
                 syncReferralDetails();
             } catch (error) {
+                resetTurnstile();
                 contactStatus.classList.add('error');
                 contactStatus.textContent = error.message || (document.documentElement.lang === 'es'
                     ? 'No pudimos enviar la consulta.'

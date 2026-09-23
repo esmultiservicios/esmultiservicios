@@ -221,7 +221,10 @@ if ($maintenance && !$adminPreview) {
                 )) ?>"
             >WhatsApp</a>
         </main>
-    </body>
+    <?php if (!empty($turnstileConfigured)): ?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+<?php endif; ?>
+</body>
     </html>
     <?php
     exit;
@@ -1020,9 +1023,18 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                     $referralRaw = (string)($settings[$lang === 'es' ? 'contact_referral_options_es' : 'contact_referral_options_en'] ?? ($lang === 'es' ? $defaultReferralEs : $defaultReferralEn));
                     $referralOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $referralRaw) ?: []), static fn($v) => $v !== ''));
                     if (!$referralOptions) $referralOptions = array_values(array_filter(array_map('trim', preg_split('/\R/u', $lang === 'es' ? $defaultReferralEs : $defaultReferralEn) ?: [])));
+                    $turnstileEnabled = ($settings['contact_turnstile_enabled'] ?? '0') === '1';
+                    $turnstileSiteKey = trim((string)($settings['contact_turnstile_site_key'] ?? ''));
+                    $turnstileConfigured = $turnstileEnabled && $turnstileSiteKey !== '' && trim((string)($settings['contact_turnstile_secret'] ?? '')) !== '';
                     ?>
                     <form class="contact-form" data-contact-form action="estimate-submit.php" method="post">
                         <input type="hidden" name="lang" value="<?= h($lang) ?>">
+                        <input type="hidden" name="form_started_at" value="<?= time() ?>" data-form-started-at>
+                        <div class="contact-antispam-field" aria-hidden="true">
+                            <label>Leave this field empty
+                                <input type="text" name="website_url_confirm" value="" tabindex="-1" autocomplete="off" inputmode="none">
+                            </label>
+                        </div>
                         <div class="contact-required-note" role="note">
                             <strong><span class="field-required" aria-hidden="true">*</span> <?= $lang === 'es' ? 'Campos requeridos' : 'Required fields' ?></strong>
                             <span><?= $lang === 'es' ? 'Los campos con asterisco son obligatorios. El correo siempre es requerido para poder responderte.' : 'Fields marked with an asterisk are required. Email is always required so we can reply.' ?></span>
@@ -1077,6 +1089,15 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             <textarea name="message" rows="5" maxlength="5000" <?= $contactRequired['message'] ? 'required' : '' ?> data-meaningful-message data-min-meaningful-chars="<?= $messageMinChars ?>" data-min-meaningful-words="<?= $messageMinWords ?>" aria-describedby="contact-message-help" placeholder="<?= $lang === 'es' ? 'Ejemplo: Me interesa IZZY para mi negocio y necesito información sobre planes, facturación e inventario.' : 'Example: I am interested in IZZY for my business and need information about plans, billing and inventory.' ?>"></textarea>
                             <small id="contact-message-help" class="field-requirement-hint message-help <?= $contactRequired['message'] ? '' : 'optional-hint' ?>"><?= $contactRequired['message'] ? ($lang === 'es' ? 'Describe lo que necesitas con al menos ' . $messageMinChars . ' caracteres útiles y ' . $messageMinWords . ' palabras. Un “Hola” o solo signos no cuentan como detalle suficiente.' : 'Describe what you need using at least ' . $messageMinChars . ' meaningful characters and ' . $messageMinWords . ' words. A simple “Hello” or only punctuation is not enough.') : ($lang === 'es' ? 'Si escribes un mensaje, incluye detalles reales de lo que necesitas.' : 'If you enter a message, include real details about what you need.') ?></small>
                         </label>
+                        <?php if ($turnstileConfigured): ?>
+                            <div class="contact-turnstile-wrap" data-turnstile-wrap>
+                                <div class="contact-turnstile-widget"
+                                     data-turnstile-container
+                                     data-sitekey="<?= h($turnstileSiteKey) ?>"
+                                     data-language="<?= $lang === 'es' ? 'es' : 'en' ?>"></div>
+                                <small><?= $lang === 'es' ? 'Protección automática contra bots. Normalmente no tendrás que hacer nada.' : 'Automatic bot protection. You normally will not need to do anything.' ?></small>
+                            </div>
+                        <?php endif; ?>
                         <div class="contact-form-actions">
                             <button class="btn btn-primary" type="submit">
                                 <?= $lang === 'es' ? 'Enviar consulta' : 'Send inquiry' ?> →

@@ -44,6 +44,38 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             save_setting('analytics_tracking_enabled', isset($_POST['analytics_tracking_enabled']) ? '1' : '0');
             flash('success','Website visit tracking settings updated.');
         } elseif($action==='contact_requirements') {
+            $antiSpamEnabled = isset($_POST['contact_antispam_enabled']);
+            $antiSpamBlockSolicitation = isset($_POST['contact_antispam_block_solicitation']);
+            $antiSpamMinSeconds = max(1, min(30, (int)($_POST['contact_antispam_min_seconds'] ?? 3)));
+            $antiSpamCooldownSeconds = max(15, min(600, (int)($_POST['contact_antispam_cooldown_seconds'] ?? 60)));
+            $antiSpamHourlyLimit = max(1, min(20, (int)($_POST['contact_antispam_hourly_limit'] ?? 5)));
+            save_setting('contact_antispam_enabled', $antiSpamEnabled ? '1' : '0');
+            save_setting('contact_antispam_block_solicitation', $antiSpamBlockSolicitation ? '1' : '0');
+            save_setting('contact_antispam_min_seconds', (string)$antiSpamMinSeconds);
+            save_setting('contact_antispam_cooldown_seconds', (string)$antiSpamCooldownSeconds);
+            save_setting('contact_antispam_hourly_limit', (string)$antiSpamHourlyLimit);
+
+            $turnstileEnabled = isset($_POST['contact_turnstile_enabled']);
+            $turnstileSiteKey = trim((string)($_POST['contact_turnstile_site_key'] ?? ''));
+            $turnstileSecretInput = trim((string)($_POST['contact_turnstile_secret'] ?? ''));
+            $turnstileRemoveSecret = isset($_POST['contact_turnstile_remove_secret']);
+            if (strlen($turnstileSiteKey) > 100 || strlen($turnstileSecretInput) > 200) {
+                throw new RuntimeException('Turnstile keys exceed the allowed length.');
+            }
+            save_setting('contact_turnstile_enabled', $turnstileEnabled ? '1' : '0');
+            save_setting('contact_turnstile_site_key', $turnstileSiteKey);
+            if ($turnstileRemoveSecret) {
+                save_setting('contact_turnstile_secret', '');
+            } elseif ($turnstileSecretInput !== '') {
+                save_setting('contact_turnstile_secret', secret_encrypt($turnstileSecretInput));
+            }
+            if ($turnstileEnabled) {
+                $savedSecret = $turnstileSecretInput !== '' || (!$turnstileRemoveSecret && trim((string)($set['contact_turnstile_secret'] ?? '')) !== '');
+                if ($turnstileSiteKey === '' || !$savedSecret) {
+                    throw new RuntimeException('Turnstile cannot be enabled until both Site Key and Secret Key are configured.');
+                }
+            }
+
             $required = [
                 'name' => isset($_POST['contact_required_name']),
                 'email' => true,
@@ -84,7 +116,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             if ($referralEs === '' || $referralEn === '') throw new RuntimeException('Referral source options cannot be empty.');
             save_setting('contact_referral_options_es',$referralEs);
             save_setting('contact_referral_options_en',$referralEn);
-            flash('success','Public inquiry requirements updated. Email remains mandatory, referral settings were saved and message quality rules remain active.');
+            flash('success','Public inquiry requirements and anti-spam settings updated. Email remains mandatory, referral settings were saved and message quality rules remain active.');
         }
         header('Location: settings.php'.($action==='maintenance'?'#site-status':($action==='visitor_analytics'?'#visitor-analytics':($action==='contact_requirements'?'#contact-requirements':''))));
         exit;
@@ -304,6 +336,61 @@ endif;
 <form method="post">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="contact_requirements">
+<div class="panel-subsection" style="margin-bottom:22px">
+<h3 style="margin:0 0 8px">Spam protection</h3>
+<p class="muted" style="margin:0 0 14px">Reduce automated submissions and obvious sales pitches without adding a CAPTCHA or exposing visitor identity.</p>
+<div class="two-col">
+<label class="premium-switch">
+<input type="checkbox" name="contact_antispam_enabled" <?=($set['contact_antispam_enabled']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Enable form anti-spam</b><small>Uses a hidden honeypot, minimum fill time and session-based rate limits. No IP address is stored.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_antispam_block_solicitation" <?=($set['contact_antispam_block_solicitation']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Block obvious sales solicitation</b><small>Suppresses messages that strongly resemble unsolicited SEO, marketing, backlink or service pitches.</small></span>
+</label>
+</div>
+<div class="three-col requirement-quality-grid" style="margin-top:14px">
+<label>Minimum form time (seconds)
+<input type="number" name="contact_antispam_min_seconds" min="1" max="30" step="1" value="<?=h((string)($set['contact_antispam_min_seconds']??'3'))?>">
+<small>Submissions faster than this are treated as automated. Recommended: 3.</small>
+</label>
+<label>Cooldown between sends (seconds)
+<input type="number" name="contact_antispam_cooldown_seconds" min="15" max="600" step="1" value="<?=h((string)($set['contact_antispam_cooldown_seconds']??'60'))?>">
+<small>Prevents rapid repeated submissions in the same browser session. Recommended: 60.</small>
+</label>
+<label>Maximum sends per hour
+<input type="number" name="contact_antispam_hourly_limit" min="1" max="20" step="1" value="<?=h((string)($set['contact_antispam_hourly_limit']??'5'))?>">
+<small>Limits repeated form submissions in the same session. Recommended: 5.</small>
+</label>
+</div>
+<div class="panel-subsection" style="margin-top:18px">
+<h4 style="margin:0 0 8px">Cloudflare Turnstile</h4>
+<p class="muted" style="margin:0 0 14px">Optional stronger verification. Managed mode with interaction-only appearance stays invisible for most legitimate visitors and only asks for interaction when Cloudflare considers it necessary.</p>
+<div class="two-col">
+<label class="premium-switch">
+<input type="checkbox" name="contact_turnstile_enabled" <?=($set['contact_turnstile_enabled']??'0')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Enable Cloudflare Turnstile</b><small>Requires a Site Key and Secret Key. Server-side Siteverify validation is enforced before a request is saved or emailed.</small></span>
+</label>
+<label>Turnstile Site Key
+<input type="text" name="contact_turnstile_site_key" maxlength="100" autocomplete="off" value="<?=h((string)($set['contact_turnstile_site_key']??''))?>" placeholder="0x4AAAA...">
+<small>Public key from the Cloudflare Turnstile widget configured for this website.</small>
+</label>
+<label>Turnstile Secret Key
+<input type="password" name="contact_turnstile_secret" maxlength="200" autocomplete="new-password" value="" placeholder="<?=trim((string)($set['contact_turnstile_secret']??''))!==''?'Secret already stored — leave blank to keep it':'Paste secret key'?>">
+<small>The secret is encrypted before being stored. Leave blank to keep the existing secret.</small>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_turnstile_remove_secret">
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Remove stored Turnstile secret</b><small>Use only when rotating or disabling the current integration.</small></span>
+</label>
+</div>
+</div>
+<p class="secret-hint">Protection layers work together: honeypot, timing, session rate limits, unsolicited-sales scoring and optional Cloudflare Turnstile. No visitor IP is sent by this application to Siteverify.</p>
+</div>
 <div class="two-col">
 <label class="premium-switch">
 <input type="checkbox" name="contact_required_name" <?=($set['contact_required_name']??'1')==='1'?'checked':''?>>
