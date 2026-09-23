@@ -20,6 +20,12 @@
     back?.classList.remove('show');
     toggle?.setAttribute('aria-expanded','false');
   }
+  // Shared overlay manager so later admin components can close each other safely.
+  window.AdminOverlayManager = {
+    closeSide,
+    closeTopbarMenus,
+    closeAdminFind
+  };
   toggle?.addEventListener('click',()=> {
     const o=!side.classList.contains('open');
     if(o) {
@@ -247,12 +253,13 @@ document.querySelectorAll('[data-toggle-panel]').forEach(btn=>btn.addEventListen
   );
 }
 ));
-// Keep admin navigation overlays mutually exclusive.
+// Keep admin navigation overlays mutually exclusive in both directions.
 document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu.addEventListener('toggle',()=> {
   if(!menu.open)return;
-  closeSide();
-  closeAdminFind();
-  closeTopbarMenus(menu);
+  const manager=window.AdminOverlayManager;
+  manager?.closeSide();
+  manager?.closeAdminFind();
+  manager?.closeTopbarMenus(menu);
 }
 ));
 // Appearance mini live preview.
@@ -297,8 +304,9 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
     );
   }
   ; const open = () => {
-    closeSide();
-    closeTopbarMenus();
+    const manager=window.AdminOverlayManager;
+    manager?.closeSide();
+    manager?.closeTopbarMenus();
     overlay.hidden = false; document.body.classList.add('admin-find-open'); render(''); window.setTimeout(() => input.focus(), 30);
   }
   ; const close = () => {
