@@ -400,21 +400,24 @@ if($view):
 <p>Provided by the visitor on the public inquiry form.</p>
 </div>
 <?php endif; ?>
-<div class="two-col" style="margin-top:14px">
-<div class="list-card">
+<div class="request-detail-stack">
+<div class="list-card request-service-card">
+<div class="request-service-line">
+<span>
 <small>SERVICE</small>
-<strong><?=h($view['service_needed']?:'General project')?>
-
-</strong>
-<p><?=h($view['address']?:'No address provided')?>
-
-</p>
+<strong><?=h($view['service_needed']?:'General project')?></strong>
+</span>
+<?php if(!empty($view['address'])): ?>
+<span class="request-service-address">
+<small>ADDRESS</small>
+<strong><?=h($view['address'])?></strong>
+</span>
+<?php endif; ?>
 </div>
-<div class="list-card">
+</div>
+<div class="list-card request-project-details">
 <small>PROJECT DETAILS</small>
-<p><?=nl2br(h($view['message']?:'No additional details.'))?>
-
-</p>
+<p><?=nl2br(h($view['message']?:'No additional details.'))?></p>
 </div>
 </div>
 <?php
@@ -547,10 +550,16 @@ endif;
 <div id="estimate-rich-editor" class="rich-mail-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write the response the customer will receive…"></div>
 <textarea name="reply_message_html" id="reply-message-html" hidden></textarea>
 </div>
-<label class="reply-file-uploader" for="reply-files">
-<span><strong>Attach files</strong><small>PDF, Word, Excel, TXT or images · up to 5 files · 2.5 MB total.</small></span>
-<input id="reply-files" type="file" name="reply_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp">
-</label>
+<div class="reply-file-uploader" id="reply-file-uploader" tabindex="0" role="button" aria-describedby="reply-file-help">
+<input id="reply-files" class="reply-file-input" type="file" name="reply_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp">
+<div class="reply-file-uploader-icon" aria-hidden="true">📎</div>
+<div class="reply-file-uploader-copy">
+<strong>Attach files</strong>
+<span>Drag & drop files here, paste from clipboard, or choose them from your device.</span>
+<small id="reply-file-help">PDF, Word, Excel, TXT, JPG, PNG or WEBP · up to 5 files · 2.5 MB total.</small>
+</div>
+<button type="button" class="button secondary reply-file-choose" id="reply-file-choose">Choose files</button>
+</div>
 <div id="reply-file-list" class="reply-file-list" aria-live="polite"></div>
 <div class="form-actions"><button>Send formal response</button></div>
 </form>
@@ -742,25 +751,96 @@ endif;
     }
     const input=document.getElementById('reply-files');
     const list=document.getElementById('reply-file-list');
-    if(input&&list){
+    const dropzone=document.getElementById('reply-file-uploader');
+    const chooseButton=document.getElementById('reply-file-choose');
+    if(input&&list&&dropzone){
+        let selectedFiles=[];
+        const fileKey=function(file){return [file.name,file.size,file.lastModified].join('::');};
+        const syncInput=function(){
+            if(typeof DataTransfer==='undefined')return;
+            const transfer=new DataTransfer();
+            selectedFiles.forEach(function(file){transfer.items.add(file);});
+            input.files=transfer.files;
+        };
+        const mergeFiles=function(files){
+            const existing=new Set(selectedFiles.map(fileKey));
+            Array.from(files||[]).forEach(function(file){
+                const key=fileKey(file);
+                if(!existing.has(key)){
+                    selectedFiles.push(file);
+                    existing.add(key);
+                }
+            });
+            syncInput();
+            render();
+        };
+        const removeFile=function(index){
+            selectedFiles.splice(index,1);
+            syncInput();
+            render();
+        };
         const render=function(){
-            const files=Array.from(input.files||[]);
+            if(!selectedFiles.length&&input.files&&input.files.length){selectedFiles=Array.from(input.files);}
             list.innerHTML='';
-            if(!files.length)return;
-            const total=files.reduce((sum,file)=>sum+file.size,0);
-            files.forEach(function(file){
+            if(!selectedFiles.length){
+                const empty=document.createElement('span');
+                empty.className='reply-file-empty';
+                empty.textContent='No attachments selected.';
+                list.appendChild(empty);
+                return;
+            }
+            const total=selectedFiles.reduce((sum,file)=>sum+file.size,0);
+            selectedFiles.forEach(function(file,index){
                 const chip=document.createElement('span');
-                chip.textContent='📎 '+file.name+' · '+(file.size/1024/1024).toFixed(2)+' MB';
+                chip.className='reply-file-chip';
+                const name=document.createElement('span');
+                name.textContent='📎 '+file.name+' · '+(file.size/1024/1024).toFixed(2)+' MB';
+                const remove=document.createElement('button');
+                remove.type='button';
+                remove.className='reply-file-remove';
+                remove.setAttribute('aria-label','Remove '+file.name);
+                remove.textContent='×';
+                remove.addEventListener('click',function(){removeFile(index);});
+                chip.appendChild(name);
+                chip.appendChild(remove);
                 list.appendChild(chip);
             });
-            if(files.length>5||total>2621440){
+            if(selectedFiles.length>5||total>2621440){
                 const warning=document.createElement('strong');
                 warning.className='reply-file-warning';
-                warning.textContent=files.length>5?'Maximum 5 files.':'Attachments must be 2.5 MB or less in total.';
+                warning.textContent=selectedFiles.length>5?'Maximum 5 files.':'Attachments must be 2.5 MB or less in total.';
                 list.appendChild(warning);
             }
         };
-        input.addEventListener('change',render);
+        input.addEventListener('change',function(){
+            const picked=Array.from(input.files||[]);
+            if(typeof DataTransfer==='undefined'){
+                selectedFiles=picked;
+                render();
+                return;
+            }
+            mergeFiles(picked);
+        });
+        if(chooseButton){chooseButton.addEventListener('click',function(event){event.stopPropagation();input.click();});}
+        dropzone.addEventListener('click',function(event){
+            if(event.target.closest('.reply-file-remove')||event.target.closest('#reply-file-choose'))return;
+            input.click();
+        });
+        dropzone.addEventListener('keydown',function(event){
+            if(event.key==='Enter'||event.key===' '){event.preventDefault();input.click();}
+        });
+        ['dragenter','dragover'].forEach(function(type){
+            dropzone.addEventListener(type,function(event){event.preventDefault();event.stopPropagation();dropzone.classList.add('is-dragging');});
+        });
+        ['dragleave','drop'].forEach(function(type){
+            dropzone.addEventListener(type,function(event){event.preventDefault();event.stopPropagation();dropzone.classList.remove('is-dragging');});
+        });
+        dropzone.addEventListener('drop',function(event){mergeFiles(event.dataTransfer&&event.dataTransfer.files);});
+        dropzone.addEventListener('paste',function(event){
+            const files=event.clipboardData&&event.clipboardData.files;
+            if(files&&files.length){event.preventDefault();mergeFiles(files);}
+        });
+        render();
     }
 })();
 </script>
