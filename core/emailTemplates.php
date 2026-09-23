@@ -195,6 +195,28 @@ final class EmailTemplates
         return self::shell('NEW INQUIRY', 'Website request received', $content, $settings, 'request');
     }
 
+    public static function estimateManualReply(array $request, array $settings): string
+    {
+        $name = trim((string)($request['full_name'] ?? ''));
+        $adminName = trim((string)($request['admin_name'] ?? ''));
+        $message = trim((string)($request['reply_message'] ?? ''));
+        $service = trim((string)($request['service_needed'] ?? ''));
+        $greeting = $name !== '' ? 'Hello '.self::esc($name).',' : 'Hello,';
+        $serviceBlock = $service !== ''
+            ? '<div style="margin:20px 0;padding:16px 18px;background:'.self::SOFT_BLUE.';border:1px solid #D7EAF5;border-radius:12px;"><div style="font-size:11px;font-weight:800;letter-spacing:.9px;color:'.self::BLUE.';text-transform:uppercase;">Regarding</div><div style="margin-top:6px;font-size:14px;font-weight:700;color:'.self::NAVY.';">'.self::esc($service).'</div></div>'
+            : '';
+        $signature = $adminName !== ''
+            ? '<p style="margin:24px 0 0;font-size:14px;line-height:1.65;color:'.self::MUTED.';">Best regards,<br><strong style="color:'.self::NAVY.';">'.self::esc($adminName).'</strong><br>ES MULTISERVICIOS</p>'
+            : '<p style="margin:24px 0 0;font-size:14px;line-height:1.65;color:'.self::MUTED.';">Best regards,<br><strong style="color:'.self::NAVY.';">ES MULTISERVICIOS</strong></p>';
+
+        $content = '<p style="margin:0 0 16px;font-size:16px;color:'.self::TEXT.';">'.$greeting.'</p>'
+            .$serviceBlock
+            .'<div style="font-size:15px;line-height:1.75;color:'.self::TEXT.';">'.nl2br(self::esc($message)).'</div>'
+            .$signature;
+
+        return self::shell('CUSTOMER RESPONSE', 'Response to your request', $content, $settings, 'request');
+    }
+
     public static function estimateCustomer(array $request, array $settings): string
     {
         $c = self::company($settings);

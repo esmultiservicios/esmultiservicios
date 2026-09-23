@@ -762,6 +762,36 @@ INSERT INTO marketing_plans(
     'Experiencia visual configurable','Configurable visual experience','',0,60,1
 );
 
+
+-- =========================================================
+-- ESTIMATE REQUESTS — PREMIUM ACTION CENTER / COMMUNICATION
+-- Fresh-install schema: spam/archive metadata + outbound reply history
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS estimate_request_flags (
+  estimate_id BIGINT UNSIGNED NOT NULL,
+  is_spam TINYINT(1) NOT NULL DEFAULT 0,
+  archived_at DATETIME NULL,
+  updated_by INT UNSIGNED NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (estimate_id),
+  KEY idx_estimate_request_flags_bucket (is_spam, archived_at),
+  KEY idx_estimate_request_flags_updated_by (updated_by)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS estimate_replies (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  estimate_id BIGINT UNSIGNED NOT NULL,
+  admin_id INT UNSIGNED NULL,
+  recipient_email VARCHAR(380) NOT NULL,
+  subject VARCHAR(240) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_estimate_replies_request (estimate_id, created_at),
+  KEY idx_estimate_replies_admin (admin_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
 
 -- ES MULTISERVICIOS premium contact defaults

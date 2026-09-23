@@ -9593,106 +9593,15 @@ form > .form-actions,
     .traffic-copy strong { font-size: 34px; }
 }
 
-/* ==========================================================
-   ADMIN MOBILE NOTIFICATIONS — VIEWPORT SAFE FINAL FIX
-   Keep the notification panel completely inside small screens.
-   ========================================================== */
-@media (max-width:760px) {
-    .notification-bell[open] .bell-dropdown {
-        position:fixed!important;
-        top:78px!important;
-        left:max(10px, env(safe-area-inset-left))!important;
-        right:max(10px, env(safe-area-inset-right))!important;
-        width:auto!important;
-        min-width:0!important;
-        max-width:none!important;
-        max-height:calc(100dvh - 90px)!important;
-        margin:0!important;
-        padding:10px!important;
-        overflow:hidden!important;
-        box-sizing:border-box!important;
-        z-index:1400!important;
-    }
-
-    .bell-dropdown,
-    .bell-dropdown * {
-        box-sizing:border-box;
-        min-width:0;
-    }
-
-    .bell-head {
-        display:grid!important;
-        grid-template-columns:minmax(0,1fr) auto!important;
-        align-items:center!important;
-        gap:10px!important;
-        padding:8px 8px 12px!important;
-    }
-
-    .bell-head>div {
-        min-width:0!important;
-    }
-
-    .bell-head strong,
-    .bell-head small,
-    .bell-head a {
-        overflow-wrap:anywhere!important;
-        word-break:normal!important;
-    }
-
-    .bell-head a {
-        white-space:nowrap!important;
-        justify-self:end!important;
-    }
-
-    .bell-list {
-        width:100%!important;
-        max-height:calc(100dvh - 165px)!important;
-        overflow-x:hidden!important;
-        overflow-y:auto!important;
-        overscroll-behavior:contain;
-        -webkit-overflow-scrolling:touch;
-    }
-
-    .bell-item {
-        width:100%!important;
-        grid-template-columns:minmax(0,1fr)!important;
-        gap:5px!important;
-        padding:12px 9px!important;
-        overflow:hidden!important;
-    }
-
-    .bell-item>div,
-    .bell-item strong,
-    .bell-item p,
-    .bell-item small,
-    .bell-item time {
-        width:100%!important;
-        max-width:100%!important;
-        min-width:0!important;
-        white-space:normal!important;
-        overflow-wrap:anywhere!important;
-        word-break:normal!important;
-    }
-
-    .bell-item time {
-        display:block!important;
-    }
-}
-
-@media (max-width:380px) {
-    .notification-bell[open] .bell-dropdown {
-        left:max(7px, env(safe-area-inset-left))!important;
-        right:max(7px, env(safe-area-inset-right))!important;
-        padding:8px!important;
-        border-radius:15px!important;
-    }
-
-    .bell-head {
-        gap:7px!important;
-        padding-inline:6px!important;
-    }
-
-    .bell-head a {
-        font-size:12px!important;
-    }
-}
+/* ============================================================
+   Estimate Requests — premium action center / communication
+   ============================================================ */
+.request-bucket-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.estimate-action-center{margin:18px 0;padding:16px 18px;border:1px solid #d8e4ee;border-radius:18px;background:#f8fbfd;display:flex;align-items:center;justify-content:space-between;gap:16px;box-sizing:border-box}
+.estimate-action-copy{min-width:0;display:grid;gap:4px}.estimate-action-copy strong{color:#0b315b;font-size:1rem}.estimate-action-copy span{color:#667b91;font-size:.9rem;line-height:1.45}
+.estimate-action-buttons{display:flex;flex-wrap:wrap;gap:9px;justify-content:flex-end;align-items:center}.inline-action-form{display:inline-flex;margin:0}.inline-action-form button{margin:0}
+.estimate-reply-panel{margin-top:22px;padding:20px;border:1px solid #d8e4ee;border-radius:20px;background:#fff}.estimate-reply-form{display:grid;gap:14px}.estimate-reply-form textarea{min-height:170px;resize:vertical}
+.estimate-reply-history{margin-top:22px;display:grid;gap:12px}.estimate-reply-history>h3{margin:0;color:#0b315b}.estimate-reply-history article{padding:16px 18px;border:1px solid #dce6ef;border-radius:16px;background:#f9fbfc;min-width:0}.reply-history-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.reply-history-head strong{color:#0b315b;overflow-wrap:anywhere}.reply-history-head small{color:#7a8c9c;white-space:nowrap}.estimate-reply-history p{color:#314d67;line-height:1.65;overflow-wrap:anywhere}
+.estimate-danger-zone{margin-top:22px}.estimate-danger-zone details{border:1px solid #f0c6c6;border-radius:18px;background:#fffafa;overflow:hidden}.estimate-danger-zone summary{cursor:pointer;padding:15px 18px;font-weight:800;color:#a52a2a}.danger-zone-body{padding:0 18px 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,420px);gap:18px;align-items:end}.danger-zone-body p{margin:6px 0 0;color:#775b5b}.delete-request-form{display:grid;gap:10px}.button.danger,button.danger{background:#b42318;color:#fff;border-color:#b42318}.button.danger:hover,button.danger:hover{background:#921b13;border-color:#921b13}.badge.spam{background:#fde8e7;color:#9b1c16;border-color:#f3c1bd}.badge.archived{background:#eef2f6;color:#526579;border-color:#d9e1e8}.request-card-flags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.request-card-actions{display:flex;flex-wrap:wrap;gap:9px}.request-card-actions .button{flex:1 1 140px;text-align:center}
+@media (max-width:900px){.estimate-action-center{align-items:flex-start;flex-direction:column}.estimate-action-buttons{width:100%;justify-content:flex-start}.estimate-action-buttons>*{flex:1 1 160px}.estimate-action-buttons .button,.estimate-action-buttons button{width:100%;justify-content:center}.danger-zone-body{grid-template-columns:1fr}.reply-history-head{flex-direction:column;gap:5px}.reply-history-head small{white-space:normal}}
+@media (max-width:600px){.request-bucket-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}.request-bucket-actions .button{width:100%;min-width:0}.estimate-action-center,.estimate-reply-panel{padding:16px;border-radius:16px}.estimate-action-buttons{display:grid;grid-template-columns:1fr;width:100%}.estimate-action-buttons>*{width:100%}.estimate-action-buttons .inline-action-form{display:block}.estimate-reply-form .form-actions,.estimate-reply-form .form-actions button{width:100%}.request-card-actions{display:grid;grid-template-columns:1fr;width:100%}.request-card-actions .button{width:100%;min-width:0}.danger-zone-body{padding:0 14px 14px}.estimate-danger-zone summary{padding:14px}.delete-request-form button{width:100%}}

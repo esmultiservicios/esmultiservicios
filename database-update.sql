@@ -132,20 +132,6 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   PRIMARY KEY(id), UNIQUE KEY uq_admin_session_hash(session_hash), KEY idx_admin_sessions_user(admin_id,last_seen_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS admin_remember_tokens (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  admin_id INT UNSIGNED NOT NULL,
-  selector CHAR(18) NOT NULL,
-  token_hash CHAR(64) NOT NULL,
-  expires_at DATETIME NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY(id),
-  UNIQUE KEY uq_admin_remember_selector(selector),
-  KEY idx_admin_remember_user(admin_id),
-  KEY idx_admin_remember_expiry(expires_at),
-  CONSTRAINT fk_admin_remember_user FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE IF NOT EXISTS admin_login_events (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   admin_id INT UNSIGNED NULL,
@@ -599,3 +585,33 @@ INSERT INTO marketing_plans(
     'Experiencia visual configurable','Configurable visual experience','',0,60,1
 );
 
+
+-- =========================================================
+-- ESTIMATE REQUESTS — PREMIUM ACTION CENTER / COMMUNICATION
+-- V5: spam/archive metadata + outbound reply history
+-- Idempotent and shared-host friendly: no ALTER TABLE required.
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS estimate_request_flags (
+  estimate_id BIGINT UNSIGNED NOT NULL,
+  is_spam TINYINT(1) NOT NULL DEFAULT 0,
+  archived_at DATETIME NULL,
+  updated_by INT UNSIGNED NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (estimate_id),
+  KEY idx_estimate_request_flags_bucket (is_spam, archived_at),
+  KEY idx_estimate_request_flags_updated_by (updated_by)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS estimate_replies (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  estimate_id BIGINT UNSIGNED NOT NULL,
+  admin_id INT UNSIGNED NULL,
+  recipient_email VARCHAR(380) NOT NULL,
+  subject VARCHAR(240) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_estimate_replies_request (estimate_id, created_at),
+  KEY idx_estimate_replies_admin (admin_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
