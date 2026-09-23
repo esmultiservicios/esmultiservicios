@@ -144,6 +144,7 @@ class EmailService
         $options['bcc'] = $bcc;
         $options['cc'] = $cc;
         $options['reply_to'] = $replyTo;
+        $options['attachments'] = $this->normalizeAttachments(is_array($options['attachments'] ?? null) ? $options['attachments'] : []);
 
         return strtoupper((string)$cfg['metodo_envio']) === 'GRAPH'
             ? $this->graph($cfg, $to, $subject, $html, $options)
@@ -161,6 +162,20 @@ class EmailService
         foreach ($items as $item) {
             $email = trim((string)$item);
             if ($email !== '' && !in_array($email, $out, true)) $out[] = $email;
+        }
+        return $out;
+    }
+
+    private function normalizeAttachments(array $items): array
+    {
+        $out = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+            $path = (string)($item['path'] ?? '');
+            if ($path === '' || !is_file($path) || !is_readable($path)) continue;
+            $name = trim((string)($item['name'] ?? basename($path))) ?: basename($path);
+            $mime = trim((string)($item['mime'] ?? 'application/octet-stream')) ?: 'application/octet-stream';
+            $out[] = ['path' => $path, 'name' => $name, 'mime' => $mime, 'size' => (int)filesize($path)];
         }
         return $out;
     }
@@ -223,6 +238,20 @@ class EmailService
 
         if (!empty($options['reply_to'])) {
             $message['replyTo'] = [['emailAddress' => ['address' => $options['reply_to']]]];
+        }
+
+        if (!empty($options['attachments'])) {
+            $message['attachments'] = [];
+            foreach ($options['attachments'] as $attachment) {
+                $bytes = @file_get_contents($attachment['path']);
+                if ($bytes === false) return ['success' => false, 'message' => 'Unable to read one of the email attachments.'];
+                $message['attachments'][] = [
+                    '@odata.type' => '#microsoft.graph.fileAttachment',
+                    'name' => $attachment['name'],
+                    'contentType' => $attachment['mime'],
+                    'contentBytes' => base64_encode($bytes),
+                ];
+            }
         }
 
         $payload = [
@@ -300,13 +329,33 @@ class EmailService
                 'To: <'.$to.'>',
                 'Subject: =?UTF-8?B?'.base64_encode($subject).'?=',
                 'MIME-Version: 1.0',
-                'Content-Type: text/html; charset=UTF-8',
-                'Content-Transfer-Encoding: base64',
             ];
             if (!empty($options['cc'])) $headers[] = 'Cc: '.implode(', ', $options['cc']);
             if (!empty($options['reply_to'])) $headers[] = 'Reply-To: <'.$options['reply_to'].'>';
 
-            $body = implode("\r\n", $headers)."\r\n\r\n".chunk_split(base64_encode($html))."\r\n.";
+            if (!empty($options['attachments'])) {
+                $boundary = 'mix_'.bin2hex(random_bytes(12));
+                $headers[] = 'Content-Type: multipart/mixed; boundary="'.$boundary.'"';
+                $mimeBody = '--'.$boundary."\r\n";
+                $mimeBody .= "Content-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n";
+                $mimeBody .= chunk_split(base64_encode($html));
+                foreach ($options['attachments'] as $attachment) {
+                    $bytes = @file_get_contents($attachment['path']);
+                    if ($bytes === false) throw new RuntimeException('Unable to read one of the email attachments.');
+                    $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '_', $attachment['name']) ?: 'attachment';
+                    $mimeBody .= '--'.$boundary."\r\n";
+                    $mimeBody .= 'Content-Type: '.$attachment['mime'].'; name="'.$safeName.'"'."\r\n";
+                    $mimeBody .= 'Content-Disposition: attachment; filename="'.$safeName.'"'."\r\n";
+                    $mimeBody .= "Content-Transfer-Encoding: base64\r\n\r\n";
+                    $mimeBody .= chunk_split(base64_encode($bytes));
+                }
+                $mimeBody .= '--'.$boundary."--\r\n";
+                $body = implode("\r\n", $headers)."\r\n\r\n".$mimeBody."\r\n.";
+            } else {
+                $headers[] = 'Content-Type: text/html; charset=UTF-8';
+                $headers[] = 'Content-Transfer-Encoding: base64';
+                $body = implode("\r\n", $headers)."\r\n\r\n".chunk_split(base64_encode($html))."\r\n.";
+            }
             fwrite($fp, $body."\r\n");
             $this->expect($fp, [250]);
             $this->cmd($fp, 'QUIT', [221]);

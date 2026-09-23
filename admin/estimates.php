@@ -7,6 +7,78 @@ $me=current_admin();
 $canAll=user_can('estimates.manage_all');
 $canAssigned=user_can('estimates.manage_assigned')||$canAll;
 $error='';
+
+function estimate_reply_files(): array {
+    $raw=$_FILES['reply_files']??null;
+    if(!$raw||!isset($raw['name']))return [];
+    if(!is_array($raw['name']))return [$raw];
+    $out=[];
+    foreach($raw['name'] as $i=>$name){
+        $out[]=[
+            'name'=>$name,
+            'type'=>$raw['type'][$i]??'',
+            'tmp_name'=>$raw['tmp_name'][$i]??'',
+            'error'=>$raw['error'][$i]??UPLOAD_ERR_NO_FILE,
+            'size'=>$raw['size'][$i]??0,
+        ];
+    }
+    return $out;
+}
+
+function estimate_store_reply_files(array $files,int $estimateId): array {
+    if(!$files)return [];
+    if(count($files)>5)throw new RuntimeException('Attach no more than 5 files per response.');
+    $allowed=[
+        'application/pdf'=>'pdf',
+        'application/msword'=>'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'=>'docx',
+        'application/vnd.ms-excel'=>'xls',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'=>'xlsx',
+        'image/jpeg'=>'jpg',
+        'image/png'=>'png',
+        'image/webp'=>'webp',
+        'text/plain'=>'txt',
+    ];
+    $total=0;
+    $stored=[];
+    $root=defined('ROOT_DIR')?ROOT_DIR:dirname(__DIR__);
+    $relativeDir='uploads/estimate-replies/'.$estimateId;
+    $absoluteDir=$root.'/'.$relativeDir;
+    if(!is_dir($absoluteDir)&&!mkdir($absoluteDir,0755,true)&&!is_dir($absoluteDir))throw new RuntimeException('Unable to prepare the attachment folder.');
+    $finfo=function_exists('finfo_open')?finfo_open(FILEINFO_MIME_TYPE):null;
+    try{
+        foreach($files as $file){
+            $err=(int)($file['error']??UPLOAD_ERR_NO_FILE);
+            if($err===UPLOAD_ERR_NO_FILE)continue;
+            if($err!==UPLOAD_ERR_OK)throw new RuntimeException('One of the attachments could not be uploaded.');
+            $size=(int)($file['size']??0);
+            if($size<1)continue;
+            $total+=$size;
+            if($total>2621440)throw new RuntimeException('Attachments must be 2.5 MB or less in total so they can be delivered reliably by email.');
+            $tmp=(string)($file['tmp_name']??'');
+            if($tmp===''||!is_uploaded_file($tmp))throw new RuntimeException('Invalid attachment upload.');
+            $mime=$finfo?((string)finfo_file($finfo,$tmp)):(string)($file['type']??'');
+            if(!isset($allowed[$mime]))throw new RuntimeException('Allowed attachments: PDF, Word, Excel, TXT, JPG, PNG and WEBP.');
+            $original=trim((string)($file['name']??'attachment'))?:'attachment';
+            $ext=$allowed[$mime];
+            $filename='reply-'.bin2hex(random_bytes(10)).'.'.$ext;
+            $relative=$relativeDir.'/'.$filename;
+            $absolute=$root.'/'.$relative;
+            if(!move_uploaded_file($tmp,$absolute))throw new RuntimeException('Unable to save one of the attachments.');
+            $stored[]=['path'=>$absolute,'relative_path'=>$relative,'name'=>$original,'mime'=>$mime,'size'=>$size];
+        }
+    }finally{
+        if($finfo)finfo_close($finfo);
+    }
+    return $stored;
+}
+
+function estimate_cleanup_reply_files(array $stored): void {
+    foreach($stored as $file){
+        $path=(string)($file['path']??'');
+        if($path!==''&&is_file($path))@unlink($path);
+    }
+}
 if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     if(!$canAssigned) {
@@ -40,32 +112,55 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         } elseif($action==='reply') {
             $to=trim((string)($cur['email']??''));
             $subject=trim((string)($_POST['reply_subject']??''));
-            $message=trim((string)($_POST['reply_message']??''));
+            $messageHtml=EmailTemplates::sanitizeEditorHtml((string)($_POST['reply_message_html']??''));
+            $messagePlain=trim(html_entity_decode(strip_tags(str_replace(['<br>','<br/>','<br />'],"\n",$messageHtml)),ENT_QUOTES|ENT_HTML5,'UTF-8'));
             if(!filter_var($to,FILTER_VALIDATE_EMAIL))throw new RuntimeException('This request does not have a valid email address.');
             if($subject==='')throw new RuntimeException('Write an email subject.');
-            if($message==='')throw new RuntimeException('Write the response before sending.');
+            if($messagePlain==='')throw new RuntimeException('Write the response before sending.');
             if(strlen($subject)>240)throw new RuntimeException('The subject is too long.');
-            if(strlen($message)>12000)throw new RuntimeException('The response is too long.');
-            $set=settings();
-            $mailer=new EmailService();
-            $cfg=$mailer->configByType(4) ?: $mailer->configByType(1);
-            if(!$cfg)throw new RuntimeException('No active Auto Replies or Website Alerts sender is configured.');
-            $replyTo=$mailer->resolveDestination($cfg);
-            $payload=$cur;
-            $payload['reply_subject']=$subject;
-            $payload['reply_message']=$message;
-            $payload['admin_name']=trim((string)($me['full_name']??$me['username']??'Administrator'));
-            $result=$mailer->send(
-                $cfg,
-                $to,
-                $subject,
-                EmailTemplates::estimateManualReply($payload,$set),
-                ['reply_to'=>filter_var($replyTo,FILTER_VALIDATE_EMAIL)?$replyTo:'']
-            );
-            if(!($result['success']??false))throw new RuntimeException('The email could not be sent. Review Email Configuration and try again.');
-            $pdo->prepare('INSERT INTO estimate_replies(estimate_id,admin_id,recipient_email,subject,message) VALUES(?,?,?,?,?)')->execute([$id,(int)$me['id'],$to,$subject,$message]);
-            if(($cur['status']??'new')==='new')$pdo->prepare("UPDATE estimate_requests SET status='contacted' WHERE id=?")->execute([$id]);
-            log_activity('estimate_reply','Sent response from estimate request',['estimate_id'=>$id,'recipient'=>$to]);
+            if(strlen($messageHtml)>30000)throw new RuntimeException('The response is too long.');
+            $storedReplyFiles=[];
+            try{
+                $storedReplyFiles=estimate_store_reply_files(estimate_reply_files(),$id);
+                $set=settings();
+                $mailer=new EmailService();
+                $cfg=$mailer->configByType(4) ?: $mailer->configByType(1);
+                if(!$cfg)throw new RuntimeException('No active Auto Replies or Website Alerts sender is configured.');
+                $replyTo=$mailer->resolveDestination($cfg);
+                $payload=$cur;
+                $payload['reply_subject']=$subject;
+                $payload['reply_message_html']=$messageHtml;
+                $payload['admin_name']=trim((string)($me['full_name']??$me['username']??'Administrator'));
+                $emailAttachments=array_map(static fn(array $file):array=>['path'=>$file['path'],'name'=>$file['name'],'mime'=>$file['mime']],$storedReplyFiles);
+                $result=$mailer->send(
+                    $cfg,
+                    $to,
+                    $subject,
+                    EmailTemplates::estimateManualReply($payload,$set),
+                    ['reply_to'=>filter_var($replyTo,FILTER_VALIDATE_EMAIL)?$replyTo:'','attachments'=>$emailAttachments]
+                );
+                if(!($result['success']??false))throw new RuntimeException('The email could not be sent. Review Email Configuration and try again.');
+                $pdo->beginTransaction();
+                try{
+                    $pdo->prepare('INSERT INTO estimate_replies(estimate_id,admin_id,recipient_email,subject,message) VALUES(?,?,?,?,?)')->execute([$id,(int)$me['id'],$to,$subject,$messageHtml]);
+                    $replyId=(int)$pdo->lastInsertId();
+                    if($storedReplyFiles){
+                        $insReplyFile=$pdo->prepare('INSERT INTO estimate_reply_attachments(reply_id,estimate_id,file_path,original_name,mime_type,file_size) VALUES(?,?,?,?,?,?)');
+                        foreach($storedReplyFiles as $file){
+                            $insReplyFile->execute([$replyId,$id,$file['relative_path'],$file['name'],$file['mime'],$file['size']]);
+                        }
+                    }
+                    if(($cur['status']??'new')==='new')$pdo->prepare("UPDATE estimate_requests SET status='contacted' WHERE id=?")->execute([$id]);
+                    $pdo->commit();
+                }catch(Throwable $dbError){
+                    if($pdo->inTransaction())$pdo->rollBack();
+                    throw $dbError;
+                }
+            }catch(Throwable $replyError){
+                estimate_cleanup_reply_files($storedReplyFiles);
+                throw $replyError;
+            }
+            log_activity('estimate_reply','Sent rich response from estimate request',['estimate_id'=>$id,'recipient'=>$to,'attachments'=>count($storedReplyFiles)]);
             flash('success','Response sent successfully and added to the request history.');
         } elseif($action==='mark_spam') {
             $pdo->prepare("INSERT INTO estimate_request_flags(estimate_id,is_spam,archived_at,updated_by) VALUES(?,1,NOW(),?) ON DUPLICATE KEY UPDATE is_spam=1,archived_at=COALESCE(archived_at,NOW()),updated_by=VALUES(updated_by)")->execute([$id,(int)$me['id']]);
@@ -94,9 +189,16 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
                 $candidate=trim((string)($fileRow['file_path']??''));
                 if($candidate!=='')$paths[]=$candidate;
             }
+            $rfs=$pdo->prepare('SELECT file_path FROM estimate_reply_attachments WHERE estimate_id=?');
+            $rfs->execute([$id]);
+            foreach($rfs->fetchAll() as $fileRow){
+                $candidate=trim((string)($fileRow['file_path']??''));
+                if($candidate!=='')$paths[]=$candidate;
+            }
             if(!empty($cur['photo_path']))$paths[]=(string)$cur['photo_path'];
             $pdo->beginTransaction();
             try {
+                $pdo->prepare('DELETE FROM estimate_reply_attachments WHERE estimate_id=?')->execute([$id]);
                 $pdo->prepare('DELETE FROM estimate_replies WHERE estimate_id=?')->execute([$id]);
                 $pdo->prepare('DELETE FROM estimate_request_flags WHERE estimate_id=?')->execute([$id]);
                 $pdo->prepare('DELETE FROM estimate_notes WHERE estimate_id=?')->execute([$id]);
@@ -156,6 +258,7 @@ $view=null;
 $atts=[];
 $notes=[];
 $replies=[];
+$replyAttachments=[];
 $leadSource='';
 if(isset($_GET['view'])) {
     $st=$pdo->prepare('SELECT e.*,COALESCE(f.is_spam,0) is_spam,f.archived_at,u.full_name assigned_name,u.username assigned_username FROM estimate_requests e LEFT JOIN estimate_request_flags f ON f.estimate_id=e.id LEFT JOIN admin_users u ON u.id=e.assigned_to WHERE e.id=?');
@@ -183,6 +286,11 @@ if(isset($_GET['view'])) {
         $rp=$pdo->prepare('SELECT r.*,u.full_name,u.username FROM estimate_replies r LEFT JOIN admin_users u ON u.id=r.admin_id WHERE r.estimate_id=? ORDER BY r.id DESC');
         $rp->execute([$view['id']]);
         $replies=$rp->fetchAll();
+        $raf=$pdo->prepare('SELECT * FROM estimate_reply_attachments WHERE estimate_id=? ORDER BY id');
+        $raf->execute([$view['id']]);
+        foreach($raf->fetchAll() as $replyFile){
+            $replyAttachments[(int)$replyFile['reply_id']][]=$replyFile;
+        }
     }
 }
 $assignees=$canAll?$pdo->query("SELECT u.id,u.full_name,u.username,r.role_name FROM admin_users u LEFT JOIN admin_roles r ON r.id=u.role_id WHERE u.active=1 ORDER BY u.full_name,u.username")->fetchAll():[];
@@ -246,6 +354,7 @@ if($view):
 <span>Respond, classify or remove this inquiry without leaving the request.</span>
 </div>
 <div class="estimate-action-buttons">
+<a class="button secondary" href="estimates.php">← Back to requests</a>
 <?php if(filter_var((string)($view['email']??''),FILTER_VALIDATE_EMAIL)): ?>
 <a class="button" href="#reply-to-request">Reply by email</a>
 <?php endif; ?>
@@ -407,7 +516,7 @@ endif;
 </div>
 <div class="form-actions">
 <button>Save workflow</button>
-<a class="button secondary" href="estimates.php">Back</a>
+<a class="button secondary" href="estimates.php">← Back to requests</a>
 </div>
 </form>
 <section class="estimate-reply-panel" id="reply-to-request">
@@ -419,12 +528,30 @@ endif;
 </div>
 </div>
 <?php if(filter_var((string)($view['email']??''),FILTER_VALIDATE_EMAIL)): ?>
-<form method="post" class="estimate-reply-form">
+<form method="post" enctype="multipart/form-data" class="estimate-reply-form" id="estimate-reply-form">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="id" value="<?=$view['id']?>">
 <input type="hidden" name="action" value="reply">
 <label>Subject<input type="text" name="reply_subject" maxlength="240" required value="<?=h('Re: '.($view['service_needed']?:'Your request to ES MULTISERVICIOS'))?>"></label>
-<label>Response<textarea name="reply_message" maxlength="12000" required placeholder="Write the response the customer will receive…"></textarea></label>
+<div class="rich-mail-field">
+<span class="field-label">Response</span>
+<div class="rich-mail-toolbar" role="toolbar" aria-label="Email formatting">
+<button type="button" data-rich-command="bold" title="Bold"><strong>B</strong></button>
+<button type="button" data-rich-command="italic" title="Italic"><em>I</em></button>
+<button type="button" data-rich-command="underline" title="Underline"><u>U</u></button>
+<button type="button" data-rich-command="insertUnorderedList" title="Bulleted list">• List</button>
+<button type="button" data-rich-command="insertOrderedList" title="Numbered list">1. List</button>
+<button type="button" data-rich-command="formatBlock" data-rich-value="blockquote" title="Quote">❝ Quote</button>
+<button type="button" data-rich-command="removeFormat" title="Clear formatting">Clear</button>
+</div>
+<div id="estimate-rich-editor" class="rich-mail-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write the response the customer will receive…"></div>
+<textarea name="reply_message_html" id="reply-message-html" hidden></textarea>
+</div>
+<label class="reply-file-uploader" for="reply-files">
+<span><strong>Attach files</strong><small>PDF, Word, Excel, TXT or images · up to 5 files · 2.5 MB total.</small></span>
+<input id="reply-files" type="file" name="reply_files[]" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.webp">
+</label>
+<div id="reply-file-list" class="reply-file-list" aria-live="polite"></div>
 <div class="form-actions"><button>Send formal response</button></div>
 </form>
 <?php else: ?>
@@ -436,7 +563,14 @@ endif;
 <?php foreach($replies as $reply): ?>
 <article>
 <div class="reply-history-head"><strong><?=h($reply['subject'])?></strong><small><?=h($reply['created_at'])?></small></div>
-<p><?=nl2br(h($reply['message']))?></p>
+<div class="reply-history-message"><?=EmailTemplates::sanitizeEditorHtml((string)$reply['message'])?></div>
+<?php if(!empty($replyAttachments[(int)$reply['id']])): ?>
+<div class="reply-history-files">
+<?php foreach($replyAttachments[(int)$reply['id']] as $replyFile): ?>
+<a href="../<?=h($replyFile['file_path'])?>" target="_blank" rel="noopener">📎 <?=h($replyFile['original_name']?:'Attachment')?></a>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
 <small>Sent by <?=h($reply['full_name']?:$reply['username']?:'Administrator')?> to <?=h($reply['recipient_email'])?></small>
 </article>
 <?php endforeach; ?>
@@ -504,6 +638,7 @@ endif;
 </details>
 </div>
 <?php endif; ?>
+<div class="request-detail-footer-actions"><a class="button secondary" href="estimates.php">← Back to requests</a></div>
 
 </section><?php
 endif;
@@ -573,5 +708,61 @@ if(!$rows):
 </div><?php
 endif;
 ?>
+<script>
+(function(){
+    const form=document.getElementById('estimate-reply-form');
+    const editor=document.getElementById('estimate-rich-editor');
+    const hidden=document.getElementById('reply-message-html');
+    if(form&&editor&&hidden){
+        document.querySelectorAll('[data-rich-command]').forEach(function(button){
+            button.addEventListener('click',function(){
+                editor.focus();
+                const command=button.dataset.richCommand||'';
+                const value=button.dataset.richValue||null;
+                document.execCommand(command,false,value);
+                hidden.value=editor.innerHTML;
+            });
+        });
+        editor.addEventListener('input',function(){hidden.value=editor.innerHTML;});
+        editor.addEventListener('paste',function(event){
+            event.preventDefault();
+            const text=(event.clipboardData||window.clipboardData).getData('text/plain');
+            document.execCommand('insertText',false,text);
+        });
+        form.addEventListener('submit',function(event){
+            hidden.value=editor.innerHTML;
+            if(!editor.innerText.trim()){
+                event.preventDefault();
+                editor.focus();
+                editor.classList.add('is-invalid');
+            }else{
+                editor.classList.remove('is-invalid');
+            }
+        });
+    }
+    const input=document.getElementById('reply-files');
+    const list=document.getElementById('reply-file-list');
+    if(input&&list){
+        const render=function(){
+            const files=Array.from(input.files||[]);
+            list.innerHTML='';
+            if(!files.length)return;
+            const total=files.reduce((sum,file)=>sum+file.size,0);
+            files.forEach(function(file){
+                const chip=document.createElement('span');
+                chip.textContent='📎 '+file.name+' · '+(file.size/1024/1024).toFixed(2)+' MB';
+                list.appendChild(chip);
+            });
+            if(files.length>5||total>2621440){
+                const warning=document.createElement('strong');
+                warning.className='reply-file-warning';
+                warning.textContent=files.length>5?'Maximum 5 files.':'Attachments must be 2.5 MB or less in total.';
+                list.appendChild(warning);
+            }
+        };
+        input.addEventListener('change',render);
+    }
+})();
+</script>
 <?php
 require __DIR__.'/_footer.php';

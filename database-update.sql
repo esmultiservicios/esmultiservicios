@@ -615,3 +615,23 @@ CREATE TABLE IF NOT EXISTS estimate_replies (
   KEY idx_estimate_replies_request (estimate_id, created_at),
   KEY idx_estimate_replies_admin (admin_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =========================================================
+-- ESTIMATE REPLIES — OUTBOUND ATTACHMENTS
+-- Stores files attached by administrators to sent responses.
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS estimate_reply_attachments (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  reply_id BIGINT UNSIGNED NOT NULL,
+  estimate_id BIGINT UNSIGNED NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(120) NULL,
+  file_size BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_estimate_reply_files_reply (reply_id, created_at),
+  KEY idx_estimate_reply_files_estimate (estimate_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

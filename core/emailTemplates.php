@@ -195,11 +195,22 @@ final class EmailTemplates
         return self::shell('NEW INQUIRY', 'Website request received', $content, $settings, 'request');
     }
 
+    public static function sanitizeEditorHtml(string $html): string
+    {
+        $html = trim($html);
+        if ($html === '') return '';
+        $html = strip_tags($html, '<p><br><strong><b><em><i><u><ul><ol><li><blockquote>');
+        $html = preg_replace('/<([a-z0-9]+)\b[^>]*>/i', '<$1>', $html) ?? '';
+        $html = preg_replace('/<(b|strong)>\s*<\/(b|strong)>/i', '', $html) ?? $html;
+        $html = preg_replace('/<(i|em|u|p|li|blockquote)>\s*<\/(i|em|u|p|li|blockquote)>/i', '', $html) ?? $html;
+        return trim($html);
+    }
+
     public static function estimateManualReply(array $request, array $settings): string
     {
         $name = trim((string)($request['full_name'] ?? ''));
         $adminName = trim((string)($request['admin_name'] ?? ''));
-        $message = trim((string)($request['reply_message'] ?? ''));
+        $message = self::sanitizeEditorHtml((string)($request['reply_message_html'] ?? $request['reply_message'] ?? ''));
         $service = trim((string)($request['service_needed'] ?? ''));
         $greeting = $name !== '' ? 'Hello '.self::esc($name).',' : 'Hello,';
         $serviceBlock = $service !== ''
@@ -211,7 +222,7 @@ final class EmailTemplates
 
         $content = '<p style="margin:0 0 16px;font-size:16px;color:'.self::TEXT.';">'.$greeting.'</p>'
             .$serviceBlock
-            .'<div style="font-size:15px;line-height:1.75;color:'.self::TEXT.';">'.nl2br(self::esc($message)).'</div>'
+            .'<div style="font-size:15px;line-height:1.75;color:'.self::TEXT.';">'.$message.'</div>'
             .$signature;
 
         return self::shell('CUSTOMER RESPONSE', 'Response to your request', $content, $settings, 'request');
