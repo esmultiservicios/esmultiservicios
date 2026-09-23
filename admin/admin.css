@@ -9592,3 +9592,107 @@ form > .form-actions,
     .traffic-card { min-height: 0; padding: 16px; }
     .traffic-copy strong { font-size: 34px; }
 }
+
+/* ==========================================================
+   ADMIN MOBILE NOTIFICATIONS — VIEWPORT SAFE FINAL FIX
+   Keep the notification panel completely inside small screens.
+   ========================================================== */
+@media (max-width:760px) {
+    .notification-bell[open] .bell-dropdown {
+        position:fixed!important;
+        top:78px!important;
+        left:max(10px, env(safe-area-inset-left))!important;
+        right:max(10px, env(safe-area-inset-right))!important;
+        width:auto!important;
+        min-width:0!important;
+        max-width:none!important;
+        max-height:calc(100dvh - 90px)!important;
+        margin:0!important;
+        padding:10px!important;
+        overflow:hidden!important;
+        box-sizing:border-box!important;
+        z-index:1400!important;
+    }
+
+    .bell-dropdown,
+    .bell-dropdown * {
+        box-sizing:border-box;
+        min-width:0;
+    }
+
+    .bell-head {
+        display:grid!important;
+        grid-template-columns:minmax(0,1fr) auto!important;
+        align-items:center!important;
+        gap:10px!important;
+        padding:8px 8px 12px!important;
+    }
+
+    .bell-head>div {
+        min-width:0!important;
+    }
+
+    .bell-head strong,
+    .bell-head small,
+    .bell-head a {
+        overflow-wrap:anywhere!important;
+        word-break:normal!important;
+    }
+
+    .bell-head a {
+        white-space:nowrap!important;
+        justify-self:end!important;
+    }
+
+    .bell-list {
+        width:100%!important;
+        max-height:calc(100dvh - 165px)!important;
+        overflow-x:hidden!important;
+        overflow-y:auto!important;
+        overscroll-behavior:contain;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    .bell-item {
+        width:100%!important;
+        grid-template-columns:minmax(0,1fr)!important;
+        gap:5px!important;
+        padding:12px 9px!important;
+        overflow:hidden!important;
+    }
+
+    .bell-item>div,
+    .bell-item strong,
+    .bell-item p,
+    .bell-item small,
+    .bell-item time {
+        width:100%!important;
+        max-width:100%!important;
+        min-width:0!important;
+        white-space:normal!important;
+        overflow-wrap:anywhere!important;
+        word-break:normal!important;
+    }
+
+    .bell-item time {
+        display:block!important;
+    }
+}
+
+@media (max-width:380px) {
+    .notification-bell[open] .bell-dropdown {
+        left:max(7px, env(safe-area-inset-left))!important;
+        right:max(7px, env(safe-area-inset-right))!important;
+        padding:8px!important;
+        border-radius:15px!important;
+    }
+
+    .bell-head {
+        gap:7px!important;
+        padding-inline:6px!important;
+    }
+
+    .bell-head a {
+        font-size:12px!important;
+    }
+}
