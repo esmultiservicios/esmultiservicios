@@ -29,14 +29,15 @@ FRESH INSTALL
 1. Upload/extract the core.
 2. Create a MySQL database/user in cPanel and grant privileges.
 3. Open /install/.
-4. Enter database credentials.
+4. Complete the 4-step assistant: Database, Administrator, Email and Confirmation.
 5. On normal cPanel hosting leave automatic DB creation OFF unless CREATE DATABASE is allowed.
-6. The installer imports database.sql and creates config/database.php, config/app.key and config/install.lock.
-7. Continue to /admin/setup.php and create the first Owner account.
-8. Configure company branding, logo/favicon, Appearance and content.
+6. The installer imports database.sql, creates config/config.php and config/app.key, and creates config/install.lock only after every required step succeeds.
+7. The first Owner account is created by the installer itself.
+8. After completion you are redirected to /admin/login.php?installed=1.
+9. To perform a clean reinstall, remove only config/install.lock. Existing config is reused, only project-owned tables are recreated, and DROP DATABASE is never used.
 
 IMPORTANT
-- config/database.php, config/app.key and config/install.lock are intentionally excluded and ignored by Git.
+- config/config.php, config/app.key and config/install.lock are intentionally excluded and ignored by Git.
 - database.sql is the only SQL needed for a fresh installation.
 - database-update.sql is retained only for controlled upgrades from older compatible builds.
 - This core is SINGLE-TENANT / SINGLE-SITE today.

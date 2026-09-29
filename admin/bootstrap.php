@@ -2,46 +2,16 @@
 declare(strict_types=1);
 session_start();
 require_once __DIR__ . '/../config/bootstrap.php';
-if (!headers_sent()) {
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-    header('Pragma: no-cache');
-    header('Expires: 0');
-}
-if (!config_ready()) {
+if (!installation_locked()) {
     header('Location: ../install/');
     exit;
 }
+if (!config_ready()) {
+    http_response_code(500);
+    exit('Installation lock exists but config/config.php is missing. Remove config/install.lock to run the installer again.');
+}
 function remember_cookie_name(): string {
     return 'escms_admin_remember';
-}
-function remember_username_cookie_name(): string {
-    return 'escms_admin_remember_user';
-}
-function remember_cookie_options(int $expires): array {
-    return [
-        'expires'=>$expires,
-        'path'=>'/',
-        'secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off',
-        'httponly'=>true,
-        'samesite'=>'Lax',
-    ];
-}
-function remember_username(): string {
-    return trim((string)($_COOKIE[remember_username_cookie_name()]??''));
-}
-function remember_username_enabled(): bool {
-    return remember_username()!=='';
-}
-function save_remember_username(string $username): void {
-    $username=trim($username);
-    if($username==='')return;
-    $expires=time()+60*60*24*30;
-    setcookie(remember_username_cookie_name(),$username,remember_cookie_options($expires));
-    $_COOKIE[remember_username_cookie_name()]=$username;
-}
-function clear_remember_username(): void {
-    setcookie(remember_username_cookie_name(),'',remember_cookie_options(time()-3600));
-    unset($_COOKIE[remember_username_cookie_name()]);
 }
 function clear_remember_cookie(): void {
     $name=remember_cookie_name();
@@ -54,10 +24,10 @@ function clear_remember_cookie(): void {
             }
         }
     }
-    setcookie($name,'',remember_cookie_options(time()-3600));
+    setcookie($name,'',[ 'expires'=>time()-3600,'path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax' ]);
     unset($_COOKIE[$name]);
 }
-function create_remember_token(int $adminId): bool {
+function create_remember_token(int $adminId): void {
     try {
         $selector=bin2hex(random_bytes(9));
         $validator=bin2hex(random_bytes(32));
@@ -66,11 +36,9 @@ function create_remember_token(int $adminId): bool {
         db()->prepare('DELETE FROM admin_remember_tokens WHERE admin_id=? OR expires_at<NOW()')->execute([$adminId]);
         db()->prepare('INSERT INTO admin_remember_tokens(admin_id,selector,token_hash,expires_at) VALUES(?,?,?,?)')->execute([$adminId,$selector,$hash,date('Y-m-d H:i:s',$expires)]);
         $value=$selector.':'.$validator;
-        setcookie(remember_cookie_name(),$value,remember_cookie_options($expires));
+        setcookie(remember_cookie_name(),$value,['expires'=>$expires,'path'=>'/','secure'=>!empty($_SERVER['HTTPS'])&&$_SERVER['HTTPS']!=='off','httponly'=>true,'samesite'=>'Lax']);
         $_COOKIE[remember_cookie_name()]=$value;
-        return true;
     } catch(Throwable $e) {
-        return false;
     }
 }
 function try_remember_login(): void {
@@ -80,7 +48,8 @@ function try_remember_login(): void {
         clear_remember_cookie();
         return;
     }
-    [$selector,$validator]=$parts;
+    [$selector,
+    $validator]=$parts;
     if(!preg_match('/^[a-f0-9]{18}$/',$selector)||!preg_match('/^[a-f0-9]{64}$/',$validator)) {
         clear_remember_cookie();
         return;
@@ -93,19 +62,10 @@ function try_remember_login(): void {
             clear_remember_cookie();
             return;
         }
-
         session_regenerate_id(true);
         $_SESSION['escms_admin_id']=(int)$row['admin_id'];
         $_SESSION['escms_admin_user']=$row['username'];
-
-        try {
-            db()->prepare('DELETE FROM admin_remember_tokens WHERE selector=?')->execute([$selector]);
-        } catch(Throwable $e) {
-        }
-        create_remember_token((int)$row['admin_id']);
-        save_remember_username((string)$row['username']);
     } catch(Throwable $e) {
-        // Keep the cookie on transient DB errors; normal login remains available.
     }
 }
 function request_ip(): string {
@@ -320,6 +280,7 @@ function icon(string $name): string {
     'shield'=>'<svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5.1 3.4 9.8 8 11 4.6-1.2 8-5.9 8-11V5l-8-3Zm0 4 4 1.5V11c0 3.2-1.9 6.4-4 7.5-2.1-1.1-4-4.3-4-7.5V7.5L12 6Z"/></svg>',
     'approval'=>'<svg viewBox="0 0 24 24"><path d="M4 3h11l5 5v13H4V3Zm10 2v4h4l-4-4Zm-4 12 7-7-1.4-1.4L10 14.2 7.4 11.6 6 13l4 4Z"/></svg>',
     'eye'=>'<svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.3 9.2 1 12c1.3 2.8 5.5 7 11 7s9.7-4.2 11-7c-1.3-2.8-5.5-7-11-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>',
+    'share'=>'<svg viewBox="0 0 24 24"><path d="M18 16a3 3 0 0 0-2.4 1.2L8.9 13.8A3.1 3.1 0 0 0 9 12l6.7-3.4A3 3 0 1 0 15 6.8L8.3 10.2A3 3 0 1 0 8.3 13.8l6.7 3.4A3 3 0 1 0 18 16Z"/></svg>',
     ];
     return '<span class="ui-icon">'.($icons[$name]??$icons['gear']).'</span>';
 }

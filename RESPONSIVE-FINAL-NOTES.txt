@@ -14,5 +14,5 @@ Database:
 
 After deployment:
 - Replace the project files.
-- Keep your local config/database.php and config/app.key.
+- Keep your local config/config.php and config/app.key.
 - Reload with Ctrl+F5 / clear browser cache if an older stylesheet remains cached.

@@ -111,12 +111,16 @@ $emailOk?'Email delivery is configured.':'Configure SMTP or Microsoft Graph.',
 'mail'];
 $cards=[['content.view','content.php','edit','Visual content editor','Draft, preview, approval and publishing.'],
 ['settings.manage','appearance.php','eye','Appearance','Typography, banner, navigation and visual presets.'],
+['settings.manage','social.php','share','Social networks','Manage public social profiles, placement, order and visibility.'],
 ['sections.manage','sections.php','dashboard','Section manager','Show, hide and reorder landing page sections.'],
 ['media.manage','media.php','image','Media Library','Upload, search, preview and reuse images.'],
 ['services.manage','services.php','tools','Services','Add, edit, order or hide services.'],
 ['gallery.manage','gallery.php','image','Gallery','Manage project images and public gallery.'],
 ['videos.manage','videos.php','eye','Videos','Manage YouTube, Vimeo and uploaded website videos with real preview.'],
 ['marketing.manage','marketing.php','eye','Marketing site ES/EN','Manage bilingual ES MULTISERVICIOS landing content, plans, products and projects.'],
+['social.manage','social.php','share','Social networks','Manage public social profiles, placement and visibility.'],
+['widgets.manage','widgets.php','api','Floating Widgets','Manage WhatsApp and optional external widgets.'],
+['analytics.view','analytics.php','dashboard','Analytics','Review public visits and anonymous visitor trends.'],
 ['areas.manage','areas.php','pin','Service areas','Manage cities, ZIP codes and coverage.'],
 ['seo.manage','seo.php','eye','SEO Manager','Search title, description and social image.'],
 ['health.view','health.php','gear','Website Health','Automatic readiness and configuration checks.'],
@@ -245,6 +249,38 @@ endforeach;
 </section><?php
 endif;
 ?>
+
+<?php if(user_can('social.manage')):
+    $socialRaw = trim((string)($set['social_networks_json'] ?? ''));
+    $socialConfigured = 0;
+    if ($socialRaw !== '') {
+        $socialDecoded = json_decode($socialRaw, true);
+        if (is_array($socialDecoded)) {
+            foreach ($socialDecoded as $socialRow) {
+                if (is_array($socialRow) && !empty($socialRow['enabled']) && filter_var((string)($socialRow['url'] ?? ''), FILTER_VALIDATE_URL)) {
+                    $socialConfigured++;
+                }
+            }
+        }
+    }
+    $socialPlacement = (string)($set['social_location'] ?? 'footer_floating_right');
+?>
+<section class="dashboard-section social-dashboard-panel">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">SOCIAL PRESENCE</p>
+            <h2>Social networks</h2>
+            <p>Manage public profiles, icon order, visibility and placement from one place.</p>
+        </div>
+        <a class="button" href="social.php"><?=icon('share')?> Configure social networks</a>
+    </div>
+    <div class="social-dashboard-summary">
+        <div><span>Enabled profiles</span><strong><?=number_format($socialConfigured)?></strong></div>
+        <div><span>Public placement</span><strong><?=h(ucwords(str_replace('_',' + ',$socialPlacement)))?></strong></div>
+        <div><span>Frontend</span><strong><?= $socialConfigured > 0 ? 'Ready' : 'Pending setup' ?></strong></div>
+    </div>
+</section>
+<?php endif; ?>
 
 <section class="dashboard-section">
 <div class="section-heading">

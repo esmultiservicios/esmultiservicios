@@ -4,12 +4,63 @@ declare(strict_types=1);
 session_start();
 require __DIR__ . '/config/bootstrap.php';
 
-if (!config_ready()) {
+if (!installation_locked()) {
     header('Location: install/');
     exit;
 }
+if (!config_ready()) {
+    http_response_code(500);
+    exit('Installation lock exists but config/config.php is missing. Remove config/install.lock to run the installer again.');
+}
 
 $settings = settings();
+
+/**
+ * Detailed privacy-friendly analytics.
+ * Stores an anonymous random visitor key and page path only; never stores IP addresses.
+ */
+function record_detailed_public_visit(array $settings): void
+{
+    if (($settings['analytics_tracking_enabled'] ?? '1') !== '1') return;
+    if (!empty($_SESSION['escms_admin_id'])) return;
+    if (isset($_GET['preview']) && (string)$_GET['preview'] === '1') return;
+    $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    if ($ua !== '' && preg_match('/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|preview|monitor|uptime/i', $ua)) return;
+
+    try {
+        $timezoneName = trim((string)($settings['site_timezone'] ?? 'America/Tegucigalpa')) ?: 'America/Tegucigalpa';
+        try { $timezone = new DateTimeZone($timezoneName); }
+        catch (Throwable $e) { $timezone = new DateTimeZone('America/Tegucigalpa'); }
+        $localNow = new DateTimeImmutable('now', $timezone);
+
+        $cookieName = 'esms_visitor_key';
+        $visitorRaw = (string)($_COOKIE[$cookieName] ?? '');
+        if (!preg_match('/^[a-f0-9]{32}$/', $visitorRaw)) {
+            $visitorRaw = bin2hex(random_bytes(16));
+            if (!headers_sent()) {
+                setcookie($cookieName, $visitorRaw, [
+                    'expires' => time() + 60 * 60 * 24 * 180,
+                    'path' => '/',
+                    'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            }
+        }
+        $visitorKey = hash('sha256', $visitorRaw);
+        $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+        $path = (string)(parse_url($uri, PHP_URL_PATH) ?: '/');
+        $path = mb_substr($path, 0, 500);
+        ensure_site_visits_table();
+        $st = db()->prepare('INSERT INTO site_visits(visitor_key,path,visited_at,visit_date) VALUES(?,?,?,?)');
+        $st->execute([$visitorKey, $path, gmdate('Y-m-d H:i:s'), $localNow->format('Y-m-d')]);
+    } catch (Throwable $e) {
+        // Upgrade-safe: existing installations may not have the table until database-update.sql runs.
+        error_log('Public analytics detail: ' . $e->getMessage());
+    }
+}
+
+record_detailed_public_visit($settings);
 
 /**
  * Lightweight first-party visit counter.
@@ -19,6 +70,7 @@ $settings = settings();
 function record_public_visit(array $settings): void
 {
     if (($settings['analytics_tracking_enabled'] ?? '1') !== '1') return;
+    if (!empty($_SESSION['escms_admin_id'])) return;
     if (isset($_GET['preview']) && (string)$_GET['preview'] === '1') return;
 
     $ua = strtolower((string)($_SERVER['HTTP_USER_AGENT'] ?? ''));
@@ -182,6 +234,70 @@ $whatsApp = static function (string $message) use ($whatsAppBase): string {
 };
 
 $companyName = (string) ($settings['company_name'] ?? 'ES MULTISERVICIOS');
+
+
+$socialPlatforms = [
+    'instagram' => 'Instagram',
+    'facebook' => 'Facebook',
+    'tiktok' => 'TikTok',
+    'youtube' => 'YouTube',
+    'linkedin' => 'LinkedIn',
+];
+$socialRows = [];
+$socialRaw = trim((string)($settings['social_networks_json'] ?? ''));
+if ($socialRaw !== '') {
+    $decodedSocial = json_decode($socialRaw, true);
+    if (is_array($decodedSocial)) {
+        foreach ($decodedSocial as $row) {
+            if (!is_array($row)) continue;
+            $platform = strtolower(trim((string)($row['platform'] ?? '')));
+            $url = trim((string)($row['url'] ?? ''));
+            if (!isset($socialPlatforms[$platform]) || empty($row['enabled']) || !filter_var($url, FILTER_VALIDATE_URL)) continue;
+            $scheme = strtolower((string)parse_url($url, PHP_URL_SCHEME));
+            if (!in_array($scheme, ['http','https'], true)) continue;
+            $socialRows[] = [
+                'platform' => $platform,
+                'label' => $socialPlatforms[$platform],
+                'url' => $url,
+                'sort_order' => (int)($row['sort_order'] ?? 0),
+            ];
+        }
+    }
+}
+usort($socialRows, static fn(array $a,array $b): int => $a['sort_order'] <=> $b['sort_order']);
+$socialSizeValue = (string)($settings['social_size'] ?? 'medium');
+$socialStyleValue = (string)($settings['social_style'] ?? 'icon');
+$socialLocationValue = (string)($settings['social_location'] ?? 'footer_floating_right');
+$socialSize = in_array($socialSizeValue, ['small','medium','large'], true) ? $socialSizeValue : 'medium';
+$socialStyle = in_array($socialStyleValue, ['icon','icon_name'], true) ? $socialStyleValue : 'icon';
+$socialLocation = in_array($socialLocationValue, ['footer','hero','floating_left','floating_right','footer_floating_left','footer_floating_right'], true) ? $socialLocationValue : 'footer_floating_right';
+$socialShowDesktop = ($settings['social_show_desktop'] ?? '1') === '1';
+$socialShowMobile = ($settings['social_show_mobile'] ?? '1') === '1';
+$socialVisibilityClass = (!$socialShowDesktop ? ' social-hide-desktop' : '') . (!$socialShowMobile ? ' social-hide-mobile' : '');
+$socialRender = static function(string $placement) use ($socialRows,$socialSize,$socialStyle,$socialLocation,$socialVisibilityClass): string {
+    if (!$socialRows) return '';
+    $footerAllowed = in_array($socialLocation, ['footer','footer_floating_left','footer_floating_right'], true);
+    $heroAllowed = $socialLocation === 'hero';
+    $leftAllowed = in_array($socialLocation, ['floating_left','footer_floating_left'], true);
+    $rightAllowed = in_array($socialLocation, ['floating_right','footer_floating_right'], true);
+    if (($placement === 'footer' && !$footerAllowed) || ($placement === 'hero' && !$heroAllowed) || ($placement === 'left' && !$leftAllowed) || ($placement === 'right' && !$rightAllowed)) return '';
+    $floating = in_array($placement, ['left','right'], true);
+    $classes = $floating
+        ? 'social-network-dock social-network-dock--'.$placement
+        : 'social-network-links social-network-links--'.$placement;
+    $classes .= ' social-size-'.$socialSize.' social-style-'.$socialStyle.$socialVisibilityClass;
+    $sideAttr = $floating ? ' data-floating-social-side="'.h($placement).'"' : '';
+    $html = '<div class="'.h($classes).'"'.$sideAttr.' aria-label="Social networks">';
+    foreach ($socialRows as $row) {
+        $platform = h($row['platform']);
+        $label = h($row['label']);
+        $html .= '<a class="social-network-link social-'.$platform.'" href="'.h($row['url']).'" target="_blank" rel="noopener noreferrer" aria-label="'.$label.'">';
+        $html .= '<span class="social-network-icon" aria-hidden="true"></span>';
+        if ($socialStyle === 'icon_name') $html .= '<span class="social-network-name">'.$label.'</span>';
+        $html .= '</a>';
+    }
+    return $html.'</div>';
+};
 $maintenance = ($settings['maintenance_mode'] ?? '0') === '1';
 $adminPreview = !empty($_SESSION['escms_admin_id'])
     && ($_GET['preview'] ?? '') === '1';
@@ -205,7 +321,8 @@ if ($maintenance && !$adminPreview) {
         <?php $maintenanceFavicon = trim((string) ($settings['favicon_path'] ?? '')) ?: 'assets/brand/favicon.png'; ?>
         <link rel="icon" type="image/png" href="<?= h($maintenanceFavicon) ?>">
         <link rel="shortcut icon" href="<?= h($maintenanceFavicon) ?>">
-        <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
+        <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/select2/select2.local.css', 'assets/vendor/select2/select2.local.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
     </head>
     <body class="maintenance-page">
         <main class="maintenance-card">
@@ -323,6 +440,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
         rel="stylesheet"
     >
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/select2/select2.local.css', 'assets/vendor/select2/select2.local.css'))?>">
     <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
 </head>
 <body>
@@ -437,6 +555,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
             </div>
         </div>
     </section>
+    <?= $socialRender('hero') ?>
 
     <section class="section section-soft" id="solutions">
         <div class="shell">
@@ -808,7 +927,14 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                                 alt="<?= h($project['title']) ?>"
                             >
                         <?php else: ?>
-                            <div class="project-placeholder"><span>ES</span></div>
+                            <div class="project-placeholder"><span><?php
+                                $projectWords = preg_split('/\s+/u', trim((string)$project['title'])) ?: [];
+                                $projectInitials = '';
+                                foreach (array_slice($projectWords, 0, 2) as $word) {
+                                    $projectInitials .= function_exists('mb_substr') ? mb_substr($word, 0, 1, 'UTF-8') : substr($word, 0, 1);
+                                }
+                                echo h(strtoupper($projectInitials !== '' ? $projectInitials : 'PR'));
+                            ?></span></div>
                         <?php endif; ?>
 
                         <div>
@@ -820,7 +946,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                                     class="text-link"
                                     href="<?= h($project['project_url']) ?>"
                                     target="_blank"
-                                    rel="noopener"
+                                    rel="noopener noreferrer"
                                 ><?= $lang === 'es' ? 'Ver proyecto' : 'View project' ?> →</a>
                             <?php endif; ?>
                         </div>
@@ -1057,7 +1183,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             </label>
                             <label>
                                 <span><?= $lang === 'es' ? '¿Qué necesitas?' : 'What do you need?' ?><?= $contactRequired['service'] ? $requiredMark : '' ?></span>
-                                <select name="service" <?= $contactRequired['service'] ? 'required' : '' ?>>
+                                <select class="public-select2" name="service" data-select2-placeholder="<?= h($lang === 'es' ? 'Selecciona una opción' : 'Select an option') ?>" <?= $contactRequired['service'] ? 'required' : '' ?>>
                                     <option value="" selected><?= $lang === 'es' ? 'Selecciona una opción' : 'Select an option' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Información general' : 'General information' ?>"><?= $lang === 'es' ? 'Información general' : 'General information' ?></option>
                                     <option value="IZZY">IZZY</option>
@@ -1070,7 +1196,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             </label>
                             <label>
                                 <span><?= $lang === 'es' ? '¿Cómo nos conociste?' : 'How did you hear about us?' ?><?= $contactRequired['referral'] ? $requiredMark : '' ?></span>
-                                <select name="referral_source" data-referral-source <?= $contactRequired['referral'] ? 'required' : '' ?>>
+                                <select class="public-select2" name="referral_source" data-referral-source data-select2-placeholder="<?= h($lang === 'es' ? 'Selecciona una opción' : 'Select an option') ?>" <?= $contactRequired['referral'] ? 'required' : '' ?>>
                                     <option value="" selected><?= $lang === 'es' ? 'Selecciona una opción' : 'Select an option' ?></option>
                                     <?php foreach ($referralOptions as $referralOption): ?>
                                         <option value="<?= h($referralOption) ?>" data-is-other="<?= preg_match('/^(otro|other)$/iu', $referralOption) ? '1' : '0' ?>"><?= h($referralOption) ?></option>
@@ -1154,6 +1280,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                     ? 'Más que servicios, construimos soluciones.'
                     : 'More than services, we build solutions.' ?>
             </p>
+            <?= $socialRender('footer') ?>
         </div>
 
         <div>
@@ -1191,16 +1318,62 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
     </div>
 </footer>
 
-<a
-    class="floating-wa"
-    href="<?= h($whatsApp(
-        $lang === 'es'
-            ? 'Hola, quiero información sobre ES MULTISERVICIOS.'
-            : 'Hello, I would like information about ES MULTISERVICIOS.'
-    )) ?>"
-    aria-label="WhatsApp"
->WA</a>
+<?= $socialRender('left') ?>
+<?= $socialRender('right') ?>
 
+<?php
+    $externalWidgetEnabled = (string)($settings['floating_external_enabled'] ?? '0') === '1';
+    $externalWidgetSnippet = trim((string)($settings['floating_external_snippet'] ?? ''));
+    $externalWidgetPosition = in_array(($settings['floating_external_position'] ?? 'right'), ['left','right'], true)
+        ? (string)$settings['floating_external_position'] : 'right';
+    $waPosition = in_array(($settings['whatsapp_position'] ?? 'right'), ['left','right'], true)
+        ? (string)$settings['whatsapp_position'] : 'right';
+
+    $widgetGap = max(8, min(32, (int)($settings['floating_widget_gap'] ?? 12)));
+    $waShowDesktop = ($settings['whatsapp_show_desktop'] ?? '1') === '1';
+    $waShowMobile = ($settings['whatsapp_show_mobile'] ?? '1') === '1';
+    $externalShowDesktop = ($settings['floating_external_show_desktop'] ?? '1') === '1';
+    $externalShowMobile = ($settings['floating_external_show_mobile'] ?? '1') === '1';
+
+    $managedFloating = ['left' => [], 'right' => []];
+
+    if (($settings['whatsapp_enabled'] ?? '1') === '1') {
+        $visibility = (!$waShowDesktop ? ' floating-hide-desktop' : '') . (!$waShowMobile ? ' floating-hide-mobile' : '');
+        $message = trim((string)($settings['whatsapp_message'] ?? ''));
+        if ($message === '') {
+            $message = $lang === 'es'
+                ? 'Hola, quiero información sobre sus soluciones.'
+                : 'Hello, I would like information about your solutions.';
+        }
+        $managedFloating[$waPosition][] = [
+            'order' => (int)($settings['whatsapp_order'] ?? 10),
+            'html' => '<a class="floating-wa managed-floating-control'.$visibility.'" href="'.h($whatsApp($message)).'" aria-label="WhatsApp"><img src="assets/icons/whatsapp.svg" alt="" aria-hidden="true"></a>',
+        ];
+    }
+
+    if ($externalWidgetEnabled && $externalWidgetSnippet !== '') {
+        $visibility = (!$externalShowDesktop ? ' floating-hide-desktop' : '') . (!$externalShowMobile ? ' floating-hide-mobile' : '');
+        $managedFloating[$externalWidgetPosition][] = [
+            'order' => (int)($settings['floating_external_order'] ?? 20),
+            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($settings['floating_external_name'] ?? 'External chat').'">'.$externalWidgetSnippet.'</div>',
+        ];
+    }
+
+    foreach (['left', 'right'] as $floatingSide):
+        if (!$managedFloating[$floatingSide]) continue;
+        usort($managedFloating[$floatingSide], static fn(array $a, array $b): int => $b['order'] <=> $a['order']);
+?>
+    <div class="floating-widget-stack floating-widget-stack-<?= h($floatingSide) ?>"
+         data-floating-stack="<?= h($floatingSide) ?>"
+         style="--floating-widget-gap: <?= (int)$widgetGap ?>px">
+        <?php foreach ($managedFloating[$floatingSide] as $managedWidget): ?>
+            <div class="floating-widget-item"><?= $managedWidget['html'] /* trusted configured widget markup */ ?></div>
+        <?php endforeach; ?>
+    </div>
+<?php endforeach; ?>
+
+<script src="<?=h(versioned_asset('assets/vendor/jquery/jquery.min.js', 'assets/vendor/jquery/jquery.min.js'))?>"></script>
+<script src="<?=h(versioned_asset('assets/vendor/select2/select2.local.js', 'assets/vendor/select2/select2.local.js'))?>"></script>
 <script src="<?=h(versioned_asset('assets/es-site.js', 'assets/es-site.js'))?>"></script>
 </body>
 </html>

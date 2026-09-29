@@ -24,9 +24,9 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
     <link rel="icon" href="../<?= h($favicon) ?>">
     <link rel="shortcut icon" href="../<?= h($favicon) ?>">
     <?php endif; ?>
-    <link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
-    <link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
-    <link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
+    <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
+    <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <header class="admin-header">
@@ -76,6 +76,27 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
                 </a>
             <?php endif; ?>
 
+
+            <?php if (user_can('social.manage')): ?>
+                <a class="quick-link header-extra" href="social.php" title="Social networks">
+                    <?= icon('share') ?>
+                    <span>Social</span>
+                </a>
+            <?php endif; ?>
+            <?php if (user_can('widgets.manage')): ?>
+                <a class="quick-link header-extra" href="widgets.php" title="Floating Widgets">
+                    <?= icon('api') ?>
+                    <span>Widgets</span>
+                </a>
+            <?php endif; ?>
+
+            <?php if (user_can('analytics.view')): ?>
+                <a class="quick-link header-extra" href="analytics.php" title="Analytics">
+                    <?= icon('dashboard') ?>
+                    <span>Visits</span>
+                </a>
+            <?php endif; ?>
+
             <?php if (user_can('estimates.view')): ?>
                 <a class="quick-link" href="estimates.php" title="Estimate requests">
                     <?= icon('mail') ?>
@@ -97,7 +118,7 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
                 </a>
             <?php endif; ?>
 
-            <a class="quick-link public-view-link" href="../" target="_blank" rel="noopener" title="View public website">
+            <a class="quick-link public-view-link" href="../" target="_blank" rel="noopener noreferrer" title="View public website">
                 <?= icon('eye') ?>
                 <span>View site</span>
             </a>
@@ -189,9 +210,11 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
                 <div class="profile-head">
                     <strong><?= h($admin['full_name'] ?: $admin['username']) ?></strong>
                     <span><?= h($admin['email'] ?: $admin['username']) ?></span>
+                    <small class="profile-role"><?= h($admin['role_name'] ?: 'Administrator') ?></small>
                 </div>
 
-                <a href="profile.php"><?= icon('user') ?>Profile & security</a>
+                <a href="profile.php"><?= icon('user') ?>My profile</a>
+                <a href="../" target="_blank" rel="noopener"><?= icon('eye') ?>View site</a>
 
                 <?php if (user_can('email.manage')): ?>
                     <a href="email.php"><?= icon('mail') ?>Email configuration</a>
@@ -200,6 +223,16 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
                 <?php if (user_can('settings.manage')): ?>
                     <a href="appearance.php"><?= icon('eye') ?>Appearance</a>
                     <a href="settings.php"><?= icon('gear') ?>Site settings</a>
+                <?php endif; ?>
+
+                <?php if (user_can('social.manage')): ?>
+                    <a href="social.php"><?= icon('share') ?>Social networks</a>
+                <?php endif; ?>
+                <?php if (user_can('widgets.manage')): ?>
+                    <a href="widgets.php" class="menu-profile-extra-widgets"><?= icon('api') ?>Floating Widgets</a>
+                <?php endif; ?>
+                <?php if (user_can('analytics.view')): ?>
+                    <a href="analytics.php"><?= icon('dashboard') ?>Analytics</a>
                 <?php endif; ?>
 
                 <a href="notifications.php">
@@ -237,6 +270,13 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
         <?php if (user_can('sections.manage')): ?>
             <a class="<?= $active === 'sections' ? 'active' : '' ?>" href="sections.php">
                 <?= icon('dashboard') ?><span>Section manager</span>
+            </a>
+        <?php endif; ?>
+
+
+        <?php if (user_can('social.manage')): ?>
+            <a class="<?= $active === 'social' ? 'active' : '' ?>" href="social.php">
+                <?= icon('share') ?><span>Social networks</span>
             </a>
         <?php endif; ?>
 
@@ -298,6 +338,18 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
         <?php endif; ?>
 
         <div class="sidebar-label">OPTIMIZE</div>
+
+        <?php if (user_can('analytics.view')): ?>
+            <a class="<?= $active === 'analytics' ? 'active' : '' ?>" href="analytics.php">
+                <?= icon('dashboard') ?><span>Analytics</span>
+            </a>
+        <?php endif; ?>
+
+        <?php if (user_can('widgets.manage')): ?>
+            <a class="<?= $active === 'widgets' ? 'active' : '' ?>" href="widgets.php">
+                <?= icon('api') ?><span>Floating Widgets</span>
+            </a>
+        <?php endif; ?>
 
         <?php if (user_can('seo.manage')): ?>
             <a class="<?= $active === 'seo' ? 'active' : '' ?>" href="seo.php">

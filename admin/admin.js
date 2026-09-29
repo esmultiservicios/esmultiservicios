@@ -162,7 +162,7 @@
       icon:'question',title:'Log out of the administrator?',text:'Your current admin session will be closed.',showCancelButton:true,confirmButtonText:'Yes, log out',cancelButtonText:'Stay signed in',allowOutsideClick:false
     }
     ): {
-      isConfirmed:window.confirm('Log out of the administrator?')
+      isConfirmed:false
     }
     ;if(result.isConfirmed)window.location.href=href;
   }
@@ -289,7 +289,7 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
     href: link.getAttribute('href'), label: (link.textContent || '').replace(/\s+/g, ' ').trim(),
   }
   )); const aliases = {
-    appearance: 'theme colors typography fonts banner header navigation menu design', settings: 'logo favicon whatsapp maintenance contact social branding', media: 'images videos files documents upload library', gallery: 'projects photos images portfolio', content: 'text titles paragraphs landing copy editor publish draft', users: 'accounts team staff administrators login', roles: 'permissions access security roles', estimates: 'requests quotes customers leads follow up', email: 'smtp graph messages mail',
+    appearance: 'theme colors typography fonts banner header navigation menu design', settings: 'logo favicon whatsapp maintenance contact branding', social: 'social networks instagram facebook tiktok youtube linkedin icons profiles footer floating', media: 'images videos files documents upload library', gallery: 'projects photos images portfolio', content: 'text titles paragraphs landing copy editor publish draft', users: 'accounts team staff administrators login', roles: 'permissions access security roles', estimates: 'requests quotes customers leads follow up', email: 'smtp graph messages mail', analytics: 'visits traffic statistics visitors metrics', widgets: 'floating whatsapp external chat widget',
   }
   ; const render = (query = '') => {
     const term = query.trim().toLowerCase(); const matches = links.filter((item) => {
@@ -497,4 +497,38 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
   });
 
   selectSection(activeKey, false);
+})();
+
+
+// Local accessible dialog helper used by modules that need a lightweight modal without external dependencies.
+window.CMSDialog = (() => {
+    let lastFocus = null;
+    function close(dialog) {
+        if (!dialog) return;
+        dialog.hidden = true;
+        document.body.classList.remove('cms-dialog-open');
+        if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    }
+    function open(dialog) {
+        if (typeof dialog === 'string') dialog = document.querySelector(dialog);
+        if (!dialog) return;
+        lastFocus = document.activeElement;
+        dialog.hidden = false;
+        document.body.classList.add('cms-dialog-open');
+        const focusable = dialog.querySelector('[data-dialog-close],button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+        return dialog;
+    }
+    document.addEventListener('click', (event) => {
+        const closeBtn = event.target.closest('[data-dialog-close]');
+        if (closeBtn) close(closeBtn.closest('[data-cms-dialog]'));
+        const backdrop = event.target.matches('[data-cms-dialog-backdrop]') ? event.target : null;
+        if (backdrop && backdrop.dataset.closeOnBackdrop === '1') close(backdrop.closest('[data-cms-dialog]'));
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        const openDialog = document.querySelector('[data-cms-dialog]:not([hidden])');
+        if (openDialog) close(openDialog);
+    });
+    return { open, close };
 })();

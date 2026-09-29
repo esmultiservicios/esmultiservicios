@@ -36,13 +36,8 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         record_login_event((int)$row['id'],$row['username'],true);
         log_activity('login_2fa','Administrator signed in with two-factor authentication');
         admin_notify('info','Secure administrator login',$row['username'].' signed in with two-factor authentication.','security.php');
-        if($remember) {
-            create_remember_token((int)$row['id']);
-            save_remember_username((string)$row['username']);
-        } else {
-            clear_remember_cookie();
-            clear_remember_username();
-        }
+        if($remember)create_remember_token((int)$row['id']);
+        else clear_remember_cookie();
         sync_admin_session();
         header('Location: dashboard.php');
         exit;
@@ -57,9 +52,9 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="../<?=h($favicon)?>">
 <title>Two-factor verification</title>
-<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
-<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
-<link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
+<link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
+<link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <main class="auth-wrap">
@@ -86,7 +81,7 @@ endif;
 <div class="auth-footer-note">Protected administrator access · two-factor verification</div>
 </div>
 </main>
-<script src="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>">
+<script src="../assets/vendor/show-notify/showNotify.js">
 </script>
 </body>
 </html>

@@ -517,6 +517,25 @@ INSERT IGNORE INTO admin_role_permissions(role_id,permission_id) SELECT r.id,p.i
 
 
 
+
+
+-- =========================================================
+-- PRIVACY-FRIENDLY PUBLIC ANALYTICS
+-- Stores anonymous public page visits without IP addresses.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS site_visits (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  visitor_key CHAR(64) NOT NULL,
+  path VARCHAR(500) NOT NULL DEFAULT '/',
+  visited_at DATETIME NOT NULL,
+  visit_date DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_site_visits_date (visit_date, id),
+  KEY idx_site_visits_visitor (visitor_key, visit_date),
+  KEY idx_site_visits_visited_at (visited_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =========================================================
 -- ES MULTISERVICIOS MARKETING WEBSITE
 -- Bilingual, product/plan/project/affiliate management
@@ -642,6 +661,11 @@ UPDATE marketing_projects
 SET image_path='assets/projects/castros-ready-logo.jpg'
 WHERE title='Castro''s Ready' AND (image_path IS NULL OR image_path='');
 
+INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
+SELECT 'Sabrosísimo Mix','','','','','', 'https://sabrosisimomix.esmultiservicios.com/',20,1
+WHERE NOT EXISTS (SELECT 1 FROM marketing_projects WHERE title='Sabrosísimo Mix');
+
+
 INSERT INTO settings(setting_key,setting_value) VALUES
 ('company_name','ES MULTISERVICIOS'),
 ('admin_brand_name','ES MULTISERVICIOS Admin'),
@@ -658,15 +682,38 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('brand_primary','#0A2A4A'),
 ('brand_secondary','#0A9ED0'),
 ('brand_accent','#F28C28'),
-('brand_surface','#F7F9FC')
+('brand_surface','#F7F9FC'),
+('site_timezone','America/Tegucigalpa'),
+('floating_external_enabled','0'),
+('floating_external_name','External widget'),
+('floating_external_snippet',''),
+('floating_external_position','right'),
+('floating_external_order','20'),
+('whatsapp_order','10'),
+('whatsapp_show_desktop','1'),
+('whatsapp_show_mobile','1'),
+('floating_external_show_desktop','1'),
+('floating_external_show_mobile','1'),
+('floating_widget_gap','12')
 ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value);
 
 INSERT INTO admin_permissions(permission_key,permission_name,permission_group) VALUES
-('marketing.manage','Manage ES MULTISERVICIOS marketing website','Content')
+('marketing.manage','Manage ES MULTISERVICIOS marketing website','Content'),
+('analytics.view','View website analytics','Analytics'),
+('social.manage','Manage social networks','Content'),
+('widgets.manage','Manage floating widgets','Settings')
 ON DUPLICATE KEY UPDATE permission_name=VALUES(permission_name),permission_group=VALUES(permission_group);
 INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
 SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
 WHERE r.role_key IN ('owner','administrator','editor') AND p.permission_key='marketing.manage';
+
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
+SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
+WHERE r.role_key IN ('owner','administrator') AND p.permission_key IN ('analytics.view','widgets.manage');
+
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
+SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
+WHERE r.role_key IN ('owner','administrator','editor') AND p.permission_key='social.manage';
 
 
 -- ============================================================
@@ -817,4 +864,15 @@ SET FOREIGN_KEY_CHECKS=1;
 -- ES MULTISERVICIOS premium contact defaults
 INSERT INTO settings(setting_key,setting_value) VALUES
 ('contact_map_query','')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;
+
+
+-- Administrable social networks (no schema change; values live in generic settings).
+INSERT INTO settings(setting_key,setting_value) VALUES
+('social_networks_json','[{"enabled":false,"platform":"instagram","url":"","sort_order":1},{"enabled":true,"platform":"facebook","url":"https://web.facebook.com/esmultiserv","sort_order":2},{"enabled":false,"platform":"tiktok","url":"","sort_order":3},{"enabled":false,"platform":"youtube","url":"","sort_order":4},{"enabled":false,"platform":"linkedin","url":"","sort_order":5}]'),
+('social_size','medium'),
+('social_style','icon'),
+('social_location','footer_floating_right'),
+('social_show_desktop','1'),
+('social_show_mobile','1')
 ON DUPLICATE KEY UPDATE setting_value=setting_value;
