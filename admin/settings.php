@@ -22,7 +22,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
     $action=$_POST['action']??'';
     try {
         if($action==='identity') {
-            foreach(['admin_brand_name','company_name','phone','phone_digits','email','youtube','facebook','tiktok','website','business_hours','contact_map_query','developer_credit_text'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
+            foreach(['admin_brand_name','company_name','phone','phone_digits','email','website','business_hours','contact_map_query','developer_credit_text'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
             if(!empty($_FILES['admin_logo']['name']))save_setting('admin_logo_path',upload_image($_FILES['admin_logo'],'branding','admin-logo',5));
             if(!empty($_FILES['favicon']['name']))save_setting('favicon_path',upload_image($_FILES['favicon'],'branding','favicon',3));
             if(isset($_POST['remove_favicon']))save_setting('favicon_path','');
@@ -145,6 +145,14 @@ endif;
 ?>
 
 <div class="content-grid">
+<section class="panel wide animate-in settings-module-link">
+<div class="panel-heading">
+<div class="panel-icon"><?=icon('share')?></div>
+<div><h2>Social networks</h2><p>Manage Instagram, Facebook, TikTok, YouTube and LinkedIn from the dedicated module.</p></div>
+</div>
+<div class="settings-module-actions"><a class="button" href="social.php"><?=icon('share')?> Open Social networks</a></div>
+</section>
+
 <section class="panel animate-in">
 <div class="panel-heading">
 <div class="panel-icon"><?=icon('image')?>
@@ -205,18 +213,8 @@ endif;
 </div>
 <label>Public email<input type="email" name="email" value="<?=h($set['email']??'')?>">
 </label>
-<div class="two-col">
-<label>YouTube<input name="youtube" value="<?=h($set['youtube']??'')?>">
-</label>
-<label>Facebook<input name="facebook" value="<?=h($set['facebook']??'')?>">
-</label>
-</div>
-<div class="two-col">
-<label>TikTok<input name="tiktok" value="<?=h($set['tiktok']??'')?>">
-</label>
 <label>Website<input name="website" value="<?=h($set['website']??'')?>">
 </label>
-</div>
 <label>Business hours<textarea name="business_hours"><?=h($set['business_hours']??'')?>
 </textarea>
 </label>

@@ -42,7 +42,7 @@ final class EmailTemplates
         $name = self::setting($settings, ['company_name', 'site_name', 'business_name'], 'ES MULTISERVICIOS');
         $tagline = self::setting($settings, ['company_tagline', 'tagline', 'site_tagline'], 'Más que servicio, construimos soluciones');
         $phone = self::setting($settings, ['phone', 'company_phone', 'support_phone'], '+504 8913-6844');
-        $email = self::setting($settings, ['contact_email', 'company_email', 'email'], 'administracion@esmultiservicios.com');
+        $email = self::setting($settings, ['contact_email', 'company_email', 'email'], '');
         $website = self::setting($settings, ['site_url', 'website_url', 'website'], 'https://esmultiservicios.com/');
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $email = '';
@@ -154,14 +154,17 @@ final class EmailTemplates
     public static function test(string $method, array $settings): string
     {
         $method = strtoupper(trim($method)) === 'GRAPH' ? 'Microsoft Graph' : 'SMTP';
-        $content = '<p style="margin:0 0 20px;font-size:16px;line-height:1.65;color:'.self::TEXT.';">Your <strong>'.self::esc($method).'</strong> connection is configured correctly and ES MULTISERVICIOS can deliver transactional messages through this channel.</p>
-<div style="padding:18px 20px;background:'.self::SOFT_BLUE.';border:1px solid #D7EAF5;border-left:4px solid '.self::BLUE.';border-radius:12px;">
-<div style="font-size:12px;font-weight:800;letter-spacing:.9px;color:'.self::NAVY.';text-transform:uppercase;">Connection verified</div>
-<div style="margin-top:7px;font-size:14px;line-height:1.55;color:'.self::MUTED.';">This test was generated securely from the ES MULTISERVICIOS administration panel.</div>
+        $content = '<p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:'.self::TEXT.';">The <strong>'.self::esc($method).'</strong> delivery channel completed a successful end-to-end test. This confirms that the CMS can send its transactional and administrative communications through the selected provider.</p>
+<div style="padding:20px;background:'.self::SOFT_BLUE.';border:1px solid #D7EAF5;border-left:4px solid '.self::BLUE.';border-radius:14px;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
+<td style="vertical-align:top;"><div style="font-size:11px;font-weight:800;letter-spacing:1px;color:'.self::BLUE.';text-transform:uppercase;">Delivery status</div><div style="margin-top:6px;font-size:17px;font-weight:800;color:'.self::NAVY.';">Configuration verified</div></td>
+<td align="right" style="vertical-align:top;"><span style="display:inline-block;padding:7px 10px;border-radius:999px;background:#E9F8F2;border:1px solid #B9E4D4;color:#116149;font-size:10px;font-weight:900;letter-spacing:.6px;">OPERATIONAL</span></td>
+</tr></table>
+<div style="margin-top:13px;font-size:13px;line-height:1.6;color:'.self::MUTED.';">No action is required. This message also verifies the corporate email template used by the system.</div>
 </div>
-<p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:'.self::MUTED.';">No action is required. You can return to Email Configuration and continue using this sender.</p>';
+<p style="margin:22px 0 0;font-size:13px;line-height:1.65;color:'.self::MUTED.';">For security, credentials and secrets are never included in test messages.</p>';
 
-        return self::shell('EMAIL DELIVERY', 'Email configuration test', $content, $settings, 'success');
+        return self::shell('SYSTEM EMAIL TEST', 'Email delivery is operational', $content, $settings, 'success');
     }
 
     public static function estimateAdmin(array $request, array $settings): string
@@ -245,4 +248,29 @@ final class EmailTemplates
 
         return self::shell('REQUEST RECEIVED', 'Thank you for contacting us', $content, $settings, 'success');
     }
+    public static function passwordReset(string $name, string $url, array $settings): string
+    {
+        $name = trim($name);
+        $safeUrl = filter_var($url, FILTER_VALIDATE_URL) ? self::esc($url) : '';
+        $greeting = $name !== '' ? 'Hello '.self::esc($name).',' : 'Hello,';
+        $button = $safeUrl !== ''
+            ? '<div style="margin:24px 0;"><a href="'.$safeUrl.'" style="display:inline-block;padding:13px 20px;background:'.self::NAVY.';color:#fff;text-decoration:none;border-radius:10px;font-size:14px;font-weight:800;">Reset administrator password</a></div>'
+            : '';
+        $content = '<p style="margin:0 0 14px;font-size:16px;color:'.self::TEXT.';">'.$greeting.'</p>'
+            .'<p style="margin:0;font-size:15px;line-height:1.7;color:'.self::TEXT.';">A password reset was requested for your ES MULTISERVICIOS administrator account. Use the secure action below only if you initiated this request.</p>'
+            .$button
+            .'<div style="padding:16px 18px;background:#FFF7EE;border:1px solid #F3D2A7;border-radius:12px;font-size:13px;line-height:1.6;color:#76501C;"><strong>Security notice:</strong> If you did not request this change, do not use the link. Your current password remains unchanged.</div>';
+        return self::shell('ACCOUNT SECURITY', 'Reset your administrator password', $content, $settings, 'security');
+    }
+
+    public static function adminReset(string $name, array $settings): string
+    {
+        $name = trim($name);
+        $greeting = $name !== '' ? 'Hello '.self::esc($name).',' : 'Hello,';
+        $content = '<p style="margin:0 0 14px;font-size:16px;color:'.self::TEXT.';">'.$greeting.'</p>'
+            .'<p style="margin:0;font-size:15px;line-height:1.7;color:'.self::TEXT.';">Your administrator access credentials were updated from the CMS. If this change was expected, no further action is required.</p>'
+            .'<div style="margin-top:20px;padding:16px 18px;background:#FFF7EE;border:1px solid #F3D2A7;border-radius:12px;font-size:13px;line-height:1.6;color:#76501C;"><strong>Security notice:</strong> If you do not recognize this change, contact the website administrator immediately and review active administrator accounts.</div>';
+        return self::shell('ACCOUNT SECURITY', 'Administrator access updated', $content, $settings, 'security');
+    }
+
 }

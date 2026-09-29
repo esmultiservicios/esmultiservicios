@@ -13,8 +13,6 @@ $set=settings();
 $favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
 $logo=$set['admin_logo_path']??'';
-$rememberedUsername=remember_username();
-$rememberedEnabled=$rememberedUsername!=='';
 if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $u=trim((string)($_POST['username']??''));
@@ -38,13 +36,8 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         record_login_event((int)$row['id'],$u,true);
         log_activity('login','Administrator signed in');
         admin_notify('info','Administrator login',($row['username']??'Administrator').' signed in to the CMS.','security.php');
-        if(isset($_POST['remember_me'])) {
-            create_remember_token((int)$row['id']);
-            save_remember_username((string)$row['username']);
-        } else {
-            clear_remember_cookie();
-            clear_remember_username();
-        }
+        if(isset($_POST['remember_me'])) create_remember_token((int)$row['id']);
+        else clear_remember_cookie();
         sync_admin_session();
         header('Location: dashboard.php');
         exit;
@@ -64,9 +57,9 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <link rel="shortcut icon" href="../<?=h($favicon)?>">
 <?php endif; ?>
 <title>Admin Login</title>
-<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
-<link rel="stylesheet" href="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
-<link rel="stylesheet" href="<?=h(versioned_asset('admin.css', 'admin/admin.css'))?>">
+<link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
+<link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <main class="auth-wrap">
@@ -79,6 +72,13 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 
 </h1>
 <p>Manage website content, customer requests and system settings.</p><?php
+if(isset($_GET['installed'])):
+?>
+
+<div class="alert success">Instalación completada. Ya puedes iniciar sesión.</div><?php
+endif;
+?>
+<?php
 if(isset($_GET['setup'])):
 ?>
 
@@ -118,13 +118,13 @@ endif;
 
 <form method="post">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<label>Username<input name="username" value="<?=h((string)($_POST['username']??$rememberedUsername))?>" required autocomplete="username" autofocus>
+<label>Username<input name="username" required autocomplete="username" autofocus>
 </label>
 <label>Password<input type="password" name="password" required autocomplete="current-password">
 </label>
 <div class="auth-options">
 <label class="remember-check cr-check">
-<input type="checkbox" name="remember_me" value="1"<?=isset($_POST['remember_me'])||($_SERVER['REQUEST_METHOD']!=='POST'&&$rememberedEnabled)?' checked':''?>>
+<input type="checkbox" name="remember_me" value="1">
 <span class="cr-check-box" aria-hidden="true">
 </span>
 <span class="cr-check-text">Remember me</span>
@@ -136,9 +136,9 @@ endif;
 <div class="auth-footer-note">Protected administrator access · ES CMS Core</div>
 </div>
 </main>
-<script src="<?=h(versioned_asset('../assets/vendor/sweetalert2/sweetalert2.all.min.js', 'assets/vendor/sweetalert2/sweetalert2.all.min.js'))?>">
+<script src="../assets/vendor/sweetalert2/sweetalert2.all.min.js">
 </script>
-<script src="<?=h(versioned_asset('../assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>">
+<script src="../assets/vendor/show-notify/showNotify.js">
 </script>
 <script>document.querySelectorAll(".alert.success,.alert.error,.alert.info,.alert.warning").forEach(function(el){var t=el.classList.contains("error")?"error":el.classList.contains("warning")?"warning":el.classList.contains("success")?"success":"info";if(window.showNotify){showNotify(el.textContent.trim(),t);el.hidden=true;}});</script>
 </body>

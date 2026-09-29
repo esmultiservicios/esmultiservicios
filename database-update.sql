@@ -635,3 +635,83 @@ CREATE TABLE IF NOT EXISTS estimate_reply_attachments (
   KEY idx_estimate_reply_files_estimate (estimate_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+
+-- Administrable social networks (no schema change; values live in generic settings).
+INSERT INTO settings(setting_key,setting_value) VALUES
+('social_networks_json','[{"enabled":false,"platform":"instagram","url":"","sort_order":1},{"enabled":true,"platform":"facebook","url":"https://web.facebook.com/esmultiserv","sort_order":2},{"enabled":false,"platform":"tiktok","url":"","sort_order":3},{"enabled":false,"platform":"youtube","url":"","sort_order":4},{"enabled":false,"platform":"linkedin","url":"","sort_order":5}]'),
+('social_size','medium'),
+('social_style','icon'),
+('social_location','footer_floating_right'),
+('social_show_desktop','1'),
+('social_show_mobile','1')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;
+
+-- ES MULTISERVICIOS Facebook page.
+-- Upgrade only an untouched/empty social configuration so existing custom networks are preserved.
+UPDATE settings
+SET setting_value='[{"enabled":false,"platform":"instagram","url":"","sort_order":1},{"enabled":true,"platform":"facebook","url":"https://web.facebook.com/esmultiserv","sort_order":2},{"enabled":false,"platform":"tiktok","url":"","sort_order":3},{"enabled":false,"platform":"youtube","url":"","sort_order":4},{"enabled":false,"platform":"linkedin","url":"","sort_order":5}]'
+WHERE setting_key='social_networks_json'
+  AND (setting_value IS NULL OR TRIM(setting_value)='' OR setting_value='[{"enabled":false,"platform":"instagram","url":"","sort_order":1},{"enabled":false,"platform":"facebook","url":"","sort_order":2},{"enabled":false,"platform":"tiktok","url":"","sort_order":3},{"enabled":false,"platform":"youtube","url":"","sort_order":4},{"enabled":false,"platform":"linkedin","url":"","sort_order":5}]');
+
+-- =========================================================
+-- PRIVACY-FRIENDLY PUBLIC ANALYTICS
+-- =========================================================
+CREATE TABLE IF NOT EXISTS site_visits (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  visitor_key CHAR(64) NOT NULL,
+  path VARCHAR(500) NOT NULL DEFAULT '/',
+  visited_at DATETIME NOT NULL,
+  visit_date DATE NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_site_visits_date (visit_date, id),
+  KEY idx_site_visits_visitor (visitor_key, visit_date),
+  KEY idx_site_visits_visited_at (visited_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- Sabrosísimo Mix portfolio entry. Image can be uploaded later from Marketing site ES/EN.
+INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
+SELECT 'Sabrosísimo Mix','','','','','', 'https://sabrosisimomix.esmultiservicios.com/',20,1
+WHERE NOT EXISTS (SELECT 1 FROM marketing_projects WHERE title='Sabrosísimo Mix');
+
+
+-- Floating widget settings
+INSERT INTO settings(setting_key,setting_value) VALUES
+('site_timezone','America/Tegucigalpa'),
+('floating_external_enabled','0'),
+('floating_external_name','External widget'),
+('floating_external_snippet',''),
+('floating_external_position','right'),
+('floating_external_order','20'),
+('whatsapp_order','10'),
+('whatsapp_show_desktop','1'),
+('whatsapp_show_mobile','1'),
+('floating_external_show_desktop','1'),
+('floating_external_show_mobile','1'),
+('floating_widget_gap','12')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;
+
+
+-- Permissions for analytics, social networks and floating widgets
+INSERT INTO admin_permissions(permission_key,permission_name,permission_group) VALUES
+('analytics.view','View website analytics','Analytics'),
+('social.manage','Manage social networks','Content'),
+('widgets.manage','Manage floating widgets','Settings')
+ON DUPLICATE KEY UPDATE permission_name=VALUES(permission_name),permission_group=VALUES(permission_group);
+
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
+SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
+WHERE r.role_key IN ('owner','administrator') AND p.permission_key IN ('analytics.view','widgets.manage');
+
+INSERT IGNORE INTO admin_role_permissions(role_id,permission_id)
+SELECT r.id,p.id FROM admin_roles r CROSS JOIN admin_permissions p
+WHERE r.role_key IN ('owner','administrator','editor') AND p.permission_key='social.manage';
+
+
+-- ES MULTISERVICIOS social placement UX update
+UPDATE settings
+SET setting_value='footer_floating_right'
+WHERE setting_key='social_location'
+  AND setting_value IN ('footer','floating_right');

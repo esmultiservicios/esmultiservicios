@@ -3,12 +3,18 @@ declare(strict_types=1);
 const ROOT_DIR = __DIR__ . '/..';
 const UPLOAD_DIR = ROOT_DIR . '/uploads';
 
-
+/**
+ * Return a local asset URL with a content-based cache-busting version.
+ * Falls back to the original URL when the target file does not exist.
+ */
 function versioned_asset(string $url, string $relativePath): string
 {
     $relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
     $fullPath = ROOT_DIR . '/' . $relativePath;
-    if (!is_file($fullPath)) return $url;
+
+    if (!is_file($fullPath)) {
+        return $url;
+    }
 
     static $versions = [];
     if (!isset($versions[$fullPath])) {
@@ -25,17 +31,45 @@ function h($value): string
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
+function installation_locked(): bool {
+    return is_file(__DIR__ . '/install.lock');
+}
+function app_config(): array {
+    static $config = null;
+    if (is_array($config)) return $config;
+    $modern = __DIR__ . '/config.php';
+    $legacy = __DIR__ . '/database.php';
+    $file = is_file($modern) ? $modern : (is_file($legacy) ? $legacy : '');
+    if ($file === '') throw new RuntimeException('System configuration is missing. Open /install/ to start the setup wizard.');
+    $raw = require $file;
+    if (!is_array($raw)) throw new RuntimeException('System configuration is invalid.');
+    if (isset($raw['database']) && is_array($raw['database'])) {
+        $config = $raw;
+    } else {
+        $config = ['database' => $raw, 'site_url' => ''];
+    }
+    return $config;
+}
 function config_ready(): bool {
-    return is_file(__DIR__ . '/database.php');
+    return is_file(__DIR__ . '/config.php') || is_file(__DIR__ . '/database.php');
+}
+function site_url(): string {
+    try { return rtrim((string)(app_config()['site_url'] ?? ''), '/'); }
+    catch (Throwable $e) { return ''; }
 }
 function db(): PDO {
     static $pdo = null;
     if ($pdo instanceof PDO) return $pdo;
-    $configFile = __DIR__ . '/database.php';
-    if (!is_file($configFile)) throw new RuntimeException('Database is not configured. Open /install/ to start the setup wizard.');
-    $cfg = require $configFile;
-    $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', $cfg['host'], $cfg['dbname'], $cfg['charset'] ?? 'utf8mb4');
-    $pdo = new PDO($dsn, $cfg['username'], $cfg['password'], [ PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false, ]);
+    $cfg = app_config()['database'] ?? [];
+    $host = (string)($cfg['host'] ?? 'localhost');
+    $port = (int)($cfg['port'] ?? 3306);
+    $dbname = (string)($cfg['dbname'] ?? '');
+    $charset = (string)($cfg['charset'] ?? 'utf8mb4');
+    if ($dbname === '' || trim((string)($cfg['username'] ?? '')) === '') {
+        throw new RuntimeException('Database configuration is incomplete. Open /install/ to repair the installation.');
+    }
+    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $host, $port, $dbname, $charset);
+    $pdo = new PDO($dsn, (string)$cfg['username'], (string)($cfg['password'] ?? ''), [ PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC, PDO::ATTR_EMULATE_PREPARES => false, ]);
     return $pdo;
 }
 function site_content(): array {
@@ -55,53 +89,30 @@ function setting(string $key, string $default=''): string {
     if($cache===null)$cache=settings();
     return isset($cache[$key])?(string)$cache[$key]:$default;
 }
+function ensure_site_visits_table(): void {
+    db()->exec("CREATE TABLE IF NOT EXISTS site_visits (
+      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+      visitor_key CHAR(64) NOT NULL,
+      path VARCHAR(500) NOT NULL DEFAULT '/',
+      visited_at DATETIME NOT NULL,
+      visit_date DATE NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      KEY idx_site_visits_date (visit_date, id),
+      KEY idx_site_visits_visitor (visitor_key, visit_date),
+      KEY idx_site_visits_visited_at (visited_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+}
+
 function save_setting(string $key, string $value): void {
     $st=db()->prepare('INSERT INTO settings(setting_key,setting_value) VALUES(?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)');
     $st->execute([$key,$value]);
 }
-
-function php_requirement_enable_hint(string $extension): string {
-    $phpSeries = PHP_MAJOR_VERSION . PHP_MINOR_VERSION;
-    return 'WHM → Software → EasyApache 4 → Customize → PHP Extensions → search ea-php' . $phpSeries . '-php-' . $extension . ' → Review → Provision.';
-}
-function fileinfo_requirement_message(): string {
-    return 'Secure file validation is unavailable because PHP Fileinfo is not enabled. Enable it in WHM → Software → EasyApache 4 → Customize → PHP Extensions → search ea-php' . PHP_MAJOR_VERSION . PHP_MINOR_VERSION . '-php-fileinfo → Review → Provision, then try again.';
-}
-function detect_mime_type(string $path, bool $required = true): string {
-    if (!extension_loaded('fileinfo') || !class_exists('finfo')) {
-        if ($required) {
-            throw new RuntimeException(fileinfo_requirement_message());
-        }
-        return '';
-    }
-    if ($path === '' || !is_file($path)) {
-        if ($required) {
-            throw new RuntimeException('The uploaded file could not be inspected. Please try again.');
-        }
-        return '';
-    }
-    try {
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($path);
-    } catch (Throwable $e) {
-        if ($required) {
-            throw new RuntimeException('The server could not validate the uploaded file type. Please contact the website administrator.');
-        }
-        return '';
-    }
-    if (!is_string($mime) || trim($mime) === '') {
-        if ($required) {
-            throw new RuntimeException('The server could not validate the uploaded file type. Please try another file.');
-        }
-        return '';
-    }
-    return strtolower(trim($mime));
-}
-
 function upload_image(array $file, string $subdir, string $prefix, int $maxMb = 8): string {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException('Image upload failed.');
     if (($file['size'] ?? 0) > $maxMb * 1024 * 1024) throw new RuntimeException("Image exceeds {$maxMb} MB.");
-    $mime = detect_mime_type((string)($file['tmp_name'] ?? ''), true);
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime=$finfo->file($file['tmp_name']);
     $allowed=['image/jpeg'=>'jpg',
     'image/png'=>'png',
     'image/webp'=>'webp'];
@@ -116,7 +127,8 @@ function upload_image(array $file, string $subdir, string $prefix, int $maxMb = 
 function upload_media_file(array $file, string $subdir='media', string $prefix='media', int $maxMb = 60): string {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) throw new RuntimeException('Media upload failed.');
     if (($file['size'] ?? 0) > $maxMb * 1024 * 1024) throw new RuntimeException("Media file exceeds {$maxMb} MB.");
-    $mime = detect_mime_type((string)($file['tmp_name'] ?? ''), true);
+    $finfo=new finfo(FILEINFO_MIME_TYPE);
+    $mime=$finfo->file($file['tmp_name']);
     $allowed=[ 'image/jpeg'=>'jpg',
     'image/png'=>'png',
     'image/webp'=>'webp',
@@ -231,7 +243,7 @@ function admin_notify(string $type,string $title,string $message,string $url='')
 function media_add(string $path,string $title=''): void {
     try {
         $full=ROOT_DIR.'/'.$path;
-        $mime = is_file($full) ? detect_mime_type($full, false) : '';
+        $mime=is_file($full)?(mime_content_type($full)?:''):'';
         $size=is_file($full)?filesize($full):0;
         $adminId=!empty($_SESSION['escms_admin_id'])?(int)$_SESSION['escms_admin_id']:null;
         $st=db()->prepare('INSERT INTO media_library(title,file_path,mime_type,file_size,uploaded_by) VALUES(?,?,?,?,?)');

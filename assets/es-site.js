@@ -1,4 +1,17 @@
 (() => {
+    const initPublicSelect2 = () => {
+        if (!window.jQuery || !window.jQuery.fn || typeof window.jQuery.fn.select2 !== 'function') return;
+        window.jQuery('.public-select2').each(function () {
+            const $select = window.jQuery(this);
+            if ($select.data('select2-local')) return;
+            $select.select2({
+                width: '100%',
+                minimumResultsForSearch: 8
+            });
+        });
+    };
+    initPublicSelect2();
+
     const toggle = document.querySelector('[data-nav-toggle]');
     const nav = document.querySelector('[data-nav]');
     const navLinks = nav ? [...nav.querySelectorAll('[data-nav-link]')] : [];
@@ -251,4 +264,40 @@
             }
         });
     }
+})();
+
+(() => {
+    const syncFloatingCollisions = () => {
+        ['left', 'right'].forEach(side => {
+            const stack = document.querySelector(`[data-floating-stack="${side}"]`);
+            const social = document.querySelector(`[data-floating-social-side="${side}"]`);
+            if (!social) return;
+
+            social.removeAttribute('data-floating-collision');
+            social.style.removeProperty('--floating-social-safe-bottom');
+            social.style.removeProperty('--floating-social-shift');
+            if (!stack || stack.offsetParent === null || social.offsetParent === null) return;
+
+            const stackRect = stack.getBoundingClientRect();
+            const socialRect = social.getBoundingClientRect();
+            const overlaps = !(
+                socialRect.right < stackRect.left ||
+                socialRect.left > stackRect.right ||
+                socialRect.bottom < stackRect.top ||
+                socialRect.top > stackRect.bottom
+            );
+
+            if (overlaps) {
+                const overlap = Math.max(0, socialRect.bottom - stackRect.top + 18);
+                const shift = Math.min(96, Math.ceil(overlap));
+                social.setAttribute('data-floating-collision', '1');
+                social.style.setProperty('--floating-social-shift', `${shift}px`);
+            }
+        });
+    };
+
+    window.addEventListener('load', syncFloatingCollisions, { once: true });
+    window.addEventListener('resize', syncFloatingCollisions, { passive: true });
+    window.addEventListener('orientationchange', syncFloatingCollisions, { passive: true });
+    document.addEventListener('DOMContentLoaded', syncFloatingCollisions, { once: true });
 })();

@@ -195,7 +195,7 @@ The update includes the Video module, flexible artwork support, permissions and 
 
 ## Security notes
 
-- Keep `config/database.php` private.
+- Keep `config/config.php` private.
 - Keep `config/app.key` private.
 - Use HTTPS in production.
 - Use unique administrator passwords.

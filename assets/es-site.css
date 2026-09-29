@@ -876,7 +876,7 @@ a {
 .floating-wa {
     position:fixed;
     right:20px;
-    bottom:20px;
+    bottom:var(--floating-bottom,20px);
     z-index:1000;
     width:56px;
     height:56px;
@@ -4306,4 +4306,286 @@ body {
     :root {
         --public-mobile-header-height: 68px;
     }
+}
+
+
+/* ==========================================================
+   ADMINISTRABLE SOCIAL NETWORKS — LOCAL SVG ONLY
+   ========================================================== */
+.social-network-links,
+.social-network-dock {
+    --social-control: 42px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+}
+.social-size-small { --social-control: 36px; }
+.social-size-medium { --social-control: 42px; }
+.social-size-large { --social-control: 50px; }
+.social-network-link {
+    --social-brand:#0b2e59;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    min-width:var(--social-control);
+    height:var(--social-control);
+    padding:0 12px;
+    border:1px solid transparent;
+    border-radius:14px;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:800;
+    line-height:1;
+    box-sizing:border-box;
+    transition:transform .18s ease, box-shadow .18s ease, filter .18s ease, border-color .18s ease;
+}
+.social-style-icon .social-network-link { width:var(--social-control); padding:0; }
+.social-network-link:hover,
+.social-network-link:focus-visible {
+    transform:translateY(-2px);
+    filter:brightness(1.06);
+    box-shadow:0 12px 28px rgba(4,30,58,.22);
+    outline:none;
+}
+.social-network-icon {
+    display:block;
+    width:calc(var(--social-control) * .46);
+    height:calc(var(--social-control) * .46);
+    flex:0 0 auto;
+    margin:0;
+    background:currentColor;
+    -webkit-mask:var(--social-icon) center center / contain no-repeat;
+    mask:var(--social-icon) center center / contain no-repeat;
+}
+.social-instagram { --social-icon:url('social/instagram.svg'); --social-brand:#d62976; }
+.social-facebook { --social-icon:url('social/facebook.svg'); --social-brand:#1877f2; }
+.social-tiktok { --social-icon:url('social/tiktok.svg'); --social-brand:#111827; }
+.social-youtube { --social-icon:url('social/youtube.svg'); --social-brand:#ff0000; }
+.social-linkedin { --social-icon:url('social/linkedin.svg'); --social-brand:#0a66c2; }
+
+/* Hero / light backgrounds */
+.social-network-links--hero {
+    width:min(1180px,calc(100% - 32px));
+    margin:18px auto 0;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+.social-network-links--hero .social-network-link {
+    color:var(--social-brand);
+    background:#fff;
+    border-color:#d8e3ed;
+    box-shadow:0 8px 22px rgba(11,46,89,.08);
+}
+
+/* Footer / dark backgrounds: clean translucent controls with white icons. */
+.social-network-links--footer {
+    margin-top:18px;
+    flex-wrap:wrap;
+}
+.social-network-links--footer .social-network-link {
+    color:#fff;
+    background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.20);
+    box-shadow:none;
+}
+.social-network-links--footer .social-network-link:hover,
+.social-network-links--footer .social-network-link:focus-visible {
+    background:rgba(255,255,255,.15);
+    border-color:rgba(255,255,255,.34);
+}
+
+/* Floating dock / light page backgrounds: brand-colored buttons with centered white SVGs. */
+.social-network-dock {
+    position:fixed;
+    top:50%;
+    z-index:34;
+    flex-direction:column;
+    transform:translateY(-50%);
+    padding:8px;
+    border:1px solid rgba(207,222,234,.9);
+    border-radius:20px;
+    background:rgba(255,255,255,.90);
+    box-shadow:0 18px 48px rgba(11,46,89,.16);
+    backdrop-filter:blur(12px);
+}
+.social-network-dock--left { left:14px; }
+.social-network-dock--right { right:14px; }
+.social-network-dock .social-network-link {
+    color:#fff;
+    background:var(--social-brand);
+    border-color:rgba(255,255,255,.24);
+    box-shadow:0 7px 16px rgba(4,30,58,.14);
+}
+.social-network-dock .social-network-link:hover,
+.social-network-dock .social-network-link:focus-visible {
+    border-color:rgba(255,255,255,.52);
+}
+.social-network-dock.social-style-icon_name { align-items:stretch; }
+.social-network-dock.social-style-icon_name .social-network-link { justify-content:flex-start; min-width:132px; }
+
+@media (max-width:767px) {
+    .social-hide-mobile { display:none !important; }
+    .social-network-dock {
+        top:auto;
+        bottom:calc(92px + env(safe-area-inset-bottom));
+        transform:none;
+        flex-direction:row;
+        flex-wrap:wrap;
+        max-width:calc(100vw - 24px);
+        padding:7px;
+        border-radius:18px;
+    }
+    .social-network-dock--left { left:12px; right:auto; }
+    .social-network-dock--right { right:12px; left:auto; }
+    .social-network-dock.social-style-icon_name { flex-direction:column; }
+    .social-network-links--hero { width:calc(100% - 24px); gap:8px; }
+}
+@media (min-width:768px) {
+    .social-hide-desktop { display:none !important; }
+}
+
+/* Optional externally configured floating widget. */
+.external-floating-widget{position:fixed;bottom:92px;z-index:98;max-width:min(360px,calc(100vw - 28px));}
+.external-floating-widget-left{left:18px;}
+.external-floating-widget-right{right:18px;}
+.external-floating-widget>*{max-width:100%;}
+@media(max-width:640px){.external-floating-widget{bottom:88px;max-width:calc(100vw - 24px)}.external-floating-widget-left{left:12px}.external-floating-widget-right{right:12px}}
+
+.floating-wa-left{left:20px;right:auto}.floating-wa-right{right:20px;left:auto}.floating-wa img{width:27px;height:27px;display:block}.external-floating-widget{bottom:var(--floating-bottom,92px)}
+@media(max-width:640px){.floating-wa-left{left:14px;right:auto}.floating-wa-right{right:14px;left:auto}}
+
+/* ==========================================================
+   MANAGED FLOATING WIDGET STACKS — collision-safe
+   ========================================================== */
+.floating-widget-stack {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 98;
+    display: flex;
+    flex-direction: column;
+    gap: var(--floating-widget-gap, 12px);
+    max-width: min(380px, calc(100vw - 28px));
+    pointer-events: none;
+}
+.floating-widget-stack-left { left: 18px; }
+.floating-widget-stack-right { right: 18px; }
+.floating-widget-item {
+    display: flex;
+    align-items: flex-end;
+    max-width: 100%;
+    pointer-events: auto;
+}
+.floating-widget-stack-left .floating-widget-item { justify-content: flex-start; }
+.floating-widget-stack-right .floating-widget-item { justify-content: flex-end; }
+.floating-widget-stack .floating-wa,
+.floating-widget-stack .external-floating-widget {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    max-width: 100%;
+}
+.floating-widget-stack .external-floating-widget { z-index: auto; }
+.floating-widget-stack .external-floating-widget > * { max-width: 100%; }
+@media (max-width: 767px) {
+    .floating-widget-stack {
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        max-width: calc(100vw - 24px);
+    }
+    .floating-widget-stack-left { left: 12px; }
+    .floating-widget-stack-right { right: 12px; }
+    .floating-hide-mobile { display: none !important; }
+}
+@media (min-width: 768px) {
+    .floating-hide-desktop { display: none !important; }
+}
+.social-network-dock[data-floating-collision="1"] {
+    top: auto !important;
+    transform: none !important;
+    bottom: var(--floating-social-safe-bottom, 110px) !important;
+}
+
+/* Public Select2-style controls: local, premium and responsive */
+.contact-form .es-select2 {
+    width: 100% !important;
+    max-width: 100%;
+}
+.contact-form .es-select2 .select2-selection--single {
+    min-height: 50px;
+    border-color: #c8d8e8;
+    border-radius: 14px;
+    background: #fff;
+    color: #0b2e59;
+    font-weight: 500;
+}
+.contact-form .es-select2 .select2-selection__rendered {
+    color: #0b2e59;
+    line-height: 1.35;
+}
+.contact-form .es-select2.select2-container--open .select2-selection--single,
+.contact-form .es-select2 .select2-selection--single:focus {
+    border-color: #168cc7;
+    box-shadow: 0 0 0 3px rgba(22, 140, 199, .14);
+    outline: none;
+}
+.contact-form label:has(.public-select2) {
+    min-width: 0;
+}
+.es-select2-dropdown-host .select2-dropdown {
+    border-color: #c8d8e8;
+    border-radius: 14px;
+    box-shadow: 0 18px 42px rgba(11,46,89,.16);
+}
+.es-select2-dropdown-host .select2-results__option {
+    font-family: inherit;
+}
+.es-select2-dropdown-host .select2-results__option:hover {
+    background: #168cc7;
+    color: #fff;
+}
+.es-select2-dropdown-host .select2-results__option--selected {
+    background: #e8f4fb;
+    color: #0b2e59;
+}
+@media (max-width: 600px) {
+    .contact-form .es-select2 .select2-selection--single {
+        min-height: 48px;
+        border-radius: 13px;
+    }
+}
+
+/* ==========================================================
+   FOOTER SOCIAL ICON ALIGNMENT — 2026-09-29
+   Keep the social control and its SVG mask perfectly centered
+   despite generic .footer-grid anchor/span rules above.
+   ========================================================== */
+.social-network-links--footer .social-network-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: var(--social-control) !important;
+    min-width: var(--social-control) !important;
+    height: var(--social-control) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 var(--social-control);
+    text-align: center;
+}
+
+.social-network-links--footer .social-network-icon {
+    display: block !important;
+    width: calc(var(--social-control) * .46) !important;
+    height: calc(var(--social-control) * .46) !important;
+    margin: 0 !important;
+    flex: 0 0 auto;
+    position: static;
+}
+
+/* The Facebook glyph is optically asymmetric; compensate without
+   moving the button itself so the mark reads centered to the eye. */
+.social-network-links--footer .social-facebook .social-network-icon {
+    transform: translateX(1px);
 }
