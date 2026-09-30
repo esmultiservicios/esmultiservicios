@@ -143,8 +143,8 @@ if (in_array($requestedLanguage, ['es', 'en'], true)) {
 
 $copy = landing_content($lang);
 $products = marketing_products();
-$plans = marketing_plans();
 $projects = marketing_projects();
+$testimonials = marketing_testimonials();
 
 
 try {
@@ -234,6 +234,7 @@ $whatsApp = static function (string $message) use ($whatsAppBase): string {
 };
 
 $companyName = (string) ($settings['company_name'] ?? 'ES MULTISERVICIOS');
+$publicCorporateLogo = trim((string)($settings['site_logo_path'] ?? '')) ?: 'assets/brand/es-multiservicios-official.png';
 
 
 $socialPlatforms = [
@@ -341,6 +342,25 @@ if ($maintenance && !$adminPreview) {
     <?php if (!empty($turnstileConfigured)): ?>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <?php endif; ?>
+
+<script>
+document.addEventListener('click', function (event) {
+    const trigger = event.target.closest('[data-solution-contact]');
+    if (!trigger) return;
+    const wanted = (trigger.getAttribute('data-solution-contact') || '').trim();
+    if (!wanted) return;
+    window.setTimeout(function () {
+        const select = document.querySelector('#contact select[name="service"], #contact [name="service"]');
+        if (!select) return;
+        const option = Array.from(select.options || []).find(function (item) { return item.value === wanted || item.textContent.trim() === wanted; });
+        if (option) {
+            select.value = option.value;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            if (window.jQuery && window.jQuery(select).data('select2')) window.jQuery(select).trigger('change.select2');
+        }
+    }, 250);
+});
+</script>
 </body>
     </html>
     <?php
@@ -350,8 +370,6 @@ if ($maintenance && !$adminPreview) {
 $navigation = [
     'home' => $lang === 'es' ? 'Inicio' : 'Home',
     'solutions' => $lang === 'es' ? 'Soluciones' : 'Solutions',
-    'izzy' => 'IZZY',
-    'cami' => 'CAMI',
     'services' => $lang === 'es' ? 'Servicios' : 'Services',
     'projects' => $lang === 'es' ? 'Proyectos' : 'Projects',
     'affiliate' => $lang === 'es' ? 'Afiliados' : 'Affiliates',
@@ -507,11 +525,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                 <div class="hero-actions">
                     <a
                         class="btn btn-primary"
-                        href="<?= h($whatsApp(
-                            $lang === 'es'
-                                ? 'Hola, quiero solicitar una demostración de sus soluciones.'
-                                : 'Hello, I would like to request a demo of your solutions.'
-                        )) ?>"
+                        href="#contact"
                     ><?= h($text('hero_primary')) ?></a>
                     <a
                         class="btn btn-whatsapp"
@@ -539,292 +553,98 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                 </div>
             </div>
 
-            <div class="hero-media reveal">
-                <div class="product-window main-shot">
-                    <span class="shot-label">IZZY · Dashboard</span>
-                    <img src="assets/products/izzy-dashboard.png" alt="IZZY dashboard">
+            <div class="hero-media reveal corporate-solution-hero" aria-label="ES MULTISERVICIOS solutions">
+                <div class="corporate-brand-panel">
+                    <img class="corporate-brand-logo" src="<?= h($publicCorporateLogo) ?>" alt="<?= h($companyName) ?>">
+                    <span><?= $lang === 'es' ? 'Tecnología creada para resolver necesidades reales' : 'Technology built to solve real needs' ?></span>
                 </div>
-                <div class="product-window mobile-shot">
-                    <span class="shot-label">Responsive</span>
-                    <img src="assets/products/izzy-mobile.jpeg" alt="IZZY responsive mobile view">
-                </div>
-                <div class="product-window login-shot">
-                    <span class="shot-label">100% Web</span>
-                    <img src="assets/products/izzy-login.png" alt="IZZY login">
+                <div class="hero-solution-stack">
+                    <?php foreach (array_slice($products, 0, 3) as $heroIndex => $heroProduct): ?>
+                        <?php $heroUrl = trim((string)($heroProduct['cta_url'] ?? '')); ?>
+                        <div class="hero-solution-chip hero-solution-chip-<?= (int)$heroIndex + 1 ?> solution-key-<?= h($heroProduct['product_key'] ?? 'solution') ?>" style="--product-accent:<?= h($heroProduct['accent_color']) ?>">
+                            <div class="hero-solution-logo">
+                                <?php if (trim((string)($heroProduct['logo_path'] ?? '')) !== ''): ?>
+                                    <img src="<?= h($heroProduct['logo_path']) ?>" alt="<?= h($heroProduct['name']) ?>">
+                                <?php else: ?>
+                                    <b><?= h(strtoupper(substr((string)$heroProduct['name'], 0, 2))) ?></b>
+                                <?php endif; ?>
+                            </div>
+                            <div>
+                                <?php if ($heroUrl !== ''): ?>
+                                    <a class="hero-solution-name-link" href="<?= h($heroUrl) ?>" target="_blank" rel="noopener noreferrer"><strong><?= h($heroProduct['name']) ?></strong></a>
+                                <?php else: ?>
+                                    <strong><?= h($heroProduct['name']) ?></strong>
+                                <?php endif; ?>
+                                <small><?= $lang === 'es' ? 'Solución corporativa' : 'Corporate solution' ?></small>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
     </section>
     <?= $socialRender('hero') ?>
 
-    <section class="section section-soft" id="solutions">
+    <section class="section section-soft solutions-premium-section" id="solutions">
         <div class="shell">
             <div class="section-heading centered reveal">
-                <span class="eyebrow"><?= $lang === 'es' ? 'PRODUCTOS PROPIOS' : 'OUR PRODUCTS' ?></span>
+                <span class="eyebrow"><?= $lang === 'es' ? 'SOLUCIONES ES MULTISERVICIOS' : 'ES MULTISERVICIOS SOLUTIONS' ?></span>
                 <h2><?= h($text('solutions_title')) ?></h2>
                 <p><?= h($text('solutions_text')) ?></p>
             </div>
 
-            <div class="product-grid">
-                <?php foreach ($products as $product): ?>
+            <div class="solution-directory-grid solution-count-<?= min(count($products), 3) ?>">
+                <?php foreach ($products as $index => $product): ?>
                     <?php $features = $lines($localized($product, 'features')); ?>
-                    <article
-                        class="solution-card reveal"
-                        style="--product-accent:<?= h($product['accent_color']) ?>"
-                    >
-                        <div class="solution-brand">
-                            <img src="<?= h($product['logo_path']) ?>" alt="<?= h($product['name']) ?>">
-                            <span><?= h($product['name']) ?></span>
+                    <article class="solution-directory-card reveal solution-key-<?= h($product['product_key'] ?? 'solution') ?>" style="--product-accent:<?= h($product['accent_color']) ?>">
+                        <div class="solution-directory-top">
+                            <div class="solution-brand" aria-label="<?= h($product['name']) ?>">
+                                <?php if (trim((string)($product['logo_path'] ?? '')) !== ''): ?>
+                                    <img src="<?= h($product['logo_path']) ?>" alt="<?= h($product['name']) ?>">
+                                <?php else: ?>
+                                    <div class="solution-monogram" aria-hidden="true"><?= h(strtoupper(substr((string)$product['name'], 0, 2))) ?></div>
+                                <?php endif; ?>
+                            </div>
+                            <span class="solution-index"><?= str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
                         </div>
-                        <p><?= h($localized($product, 'description')) ?></p>
-                        <div class="feature-pills">
-                            <?php foreach (array_slice($features, 0, 4) as $feature): ?>
-                                <span><?= h($feature) ?></span>
-                            <?php endforeach; ?>
+                        <div class="solution-directory-copy">
+                            <span class="solution-owned"><?= $lang === 'es' ? 'Solución desarrollada por ES MULTISERVICIOS' : 'Solution developed by ES MULTISERVICIOS' ?></span>
+                            <h3><?= h($product['name']) ?></h3>
+                            <?php $solutionTagline = $localized($product, 'tagline'); ?>
+                            <?php if (trim($solutionTagline) !== ''): ?><div class="solution-tagline"><?= h($solutionTagline) ?></div><?php endif; ?>
+                            <p><?= h($localized($product, 'description')) ?></p>
+                            <?php if ($features): ?>
+                                <div class="solution-feature-list">
+                                    <?php foreach (array_slice($features, 0, 4) as $feature): ?><span><?= h($feature) ?></span><?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
-                        <a
-                            class="text-link"
-                            href="<?= h($product['cta_url'] ?: '#' . $product['product_key']) ?>"
-                        >
-                            <?= $lang === 'es' ? 'Conocer' : 'Explore' ?>
-                            <?= h($product['name']) ?> <b>→</b>
-                        </a>
+                        <div class="solution-card-actions">
+                            <a class="solution-action solution-action-info" href="#contact" data-solution-contact="<?= h($product['name']) ?>">
+                                <span><?= $lang === 'es' ? 'Solicitar información' : 'Request information' ?></span><b aria-hidden="true">→</b>
+                            </a>
+                            <?php if (trim((string)$product['cta_url']) !== ''): ?>
+                                <a class="solution-action solution-action-site" href="<?= h($product['cta_url']) ?>" target="_blank" rel="noopener noreferrer">
+                                    <?php $siteLabel = trim($localized($product, 'cta_label')); ?>
+                                    <span><?= h($siteLabel !== '' ? $siteLabel : ($lang === 'es' ? 'Visitar sitio' : 'Visit website')) ?></span><b aria-hidden="true">↗</b>
+                                </a>
+                            <?php else: ?>
+                                <span class="solution-action solution-action-pending" aria-disabled="true">
+                                    <span><?= $lang === 'es' ? 'Sitio próximamente' : 'Website coming soon' ?></span><b aria-hidden="true">…</b>
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </article>
                 <?php endforeach; ?>
             </div>
-        </div>
-    </section>
 
-    <section class="section product-showcase-section" id="izzy">
-        <div class="shell">
-            <div class="product-section-head reveal">
+            <div class="solutions-custom-cta reveal">
                 <div>
-                    <span class="eyebrow product-blue">IZZY</span>
-                    <h2><?= h($text('izzy_title')) ?></h2>
-                    <p><?= h($text('izzy_text')) ?></p>
+                    <span class="eyebrow"><?= $lang === 'es' ? 'SOLUCIONES A LA MEDIDA' : 'CUSTOM SOLUTIONS' ?></span>
+                    <h3><?= $lang === 'es' ? '¿Tu empresa necesita algo diferente?' : 'Does your company need something different?' ?></h3>
+                    <p><?= $lang === 'es' ? 'Diseñamos software, sitios web, automatizaciones e integraciones alineadas a tus procesos reales.' : 'We design software, websites, automations and integrations around your real business processes.' ?></p>
                 </div>
-                <img
-                    class="product-logo product-logo-izzy"
-                    src="assets/brand/izzy.png"
-                    alt="IZZY"
-                >
-            </div>
-
-            <div class="product-experience-grid">
-                <article class="experience-card reveal">
-                    <div class="experience-media landscape-media">
-                        <img
-                            src="assets/products/izzy-classic-billing.png"
-                            alt="IZZY classic billing"
-                        >
-                    </div>
-                    <div class="experience-copy">
-                        <span>01</span>
-                        <h3><?= $lang === 'es' ? 'Facturación clásica' : 'Classic billing' ?></h3>
-                        <p>
-                            <?= $lang === 'es'
-                                ? 'Una experiencia empresarial directa para facturar con productos, cantidades, precios, clientes y líneas de detalle de forma clara.'
-                                : 'A direct business experience for billing with products, quantities, prices, customers and detail lines in a clear workflow.' ?>
-                        </p>
-                    </div>
-                </article>
-
-                <article class="experience-card reveal">
-                    <div class="experience-media landscape-media restaurant-crop">
-                        <img
-                            src="assets/products/izzy-restaurant.png"
-                            alt="IZZY visual configurable interface"
-                        >
-                    </div>
-                    <div class="experience-copy">
-                        <span>02</span>
-                        <h3><?= $lang === 'es' ? 'Experiencia visual configurable' : 'Configurable visual experience' ?></h3>
-                        <p>
-                            <?= $lang === 'es'
-                                ? 'Catálogo visual con imágenes y selección rápida. Puede configurarse para restaurantes y para otros negocios que trabajan mejor con productos visuales.'
-                                : 'A visual catalog with images and fast selection. It can be configured for restaurants and other businesses that work better with visual products.' ?>
-                        </p>
-                    </div>
-                </article>
-            </div>
-
-            <article class="responsive-experience reveal">
-                <div class="responsive-experience-copy">
-                    <span class="experience-number">03</span>
-                    <h3>
-                        <?= $lang === 'es'
-                            ? 'Web, responsive y sin instalar una app'
-                            : 'Web, responsive and no app installation' ?>
-                    </h3>
-                    <p>
-                        <?= $lang === 'es'
-                            ? 'IZZY se utiliza desde el navegador y se adapta a computadora, tablet y teléfono. La experiencia móvil forma parte de la misma plataforma web.'
-                            : 'IZZY runs in the browser and adapts to desktop, tablet and phone. The mobile experience is part of the same web platform.' ?>
-                    </p>
-
-                    <div class="izzy-benefits">
-                        <span>100% Web</span>
-                        <span>Responsive</span>
-                        <span><?= $lang === 'es' ? 'Facturación e inventario' : 'Billing & inventory' ?></span>
-                        <span><?= $lang === 'es' ? 'Restaurante según plan' : 'Restaurant by plan' ?></span>
-                        <span><?= $lang === 'es' ? 'Reportes y gestión' : 'Reports & management' ?></span>
-                    </div>
-                </div>
-
-                <div class="responsive-phone-frame">
-                    <img src="assets/products/izzy-mobile.jpeg" alt="IZZY responsive mobile view">
-                </div>
-            </article>
-        </div>
-    </section>
-
-    <?php if ($plans): ?>
-        <section class="section izzy-plans-section" id="plans" aria-labelledby="izzy-plans-title">
-            <div class="shell">
-                <div class="section-heading centered plans-heading reveal">
-                    <span class="eyebrow"><?= $lang === 'es' ? 'PLANES DE IZZY' : 'IZZY PLANS' ?></span>
-                    <h2 id="izzy-plans-title">
-                        <?= $lang === 'es'
-                            ? 'Un plan para cada etapa de tu negocio'
-                            : 'A plan for every stage of your business' ?>
-                    </h2>
-                    <p>
-                        <?= $lang === 'es'
-                            ? 'Comienza con lo esencial, aumenta capacidad cuando lo necesites o elige la experiencia visual para restaurantes y otros negocios que venden mejor con un catálogo por imágenes.'
-                            : 'Start with the essentials, add capacity as you grow, or choose the visual experience for restaurants and other businesses that sell better with an image-based catalog.' ?>
-                    </p>
-                </div>
-
-                <div class="plans-grid premium-plans-grid">
-                    <?php foreach ($plans as $plan): ?>
-                        <?php $isVisualPlan = stripos((string) $localized($plan, 'name'), 'restaurant') !== false || stripos((string) $localized($plan, 'name'), 'restaurante') !== false; ?>
-                        <article class="plan-card <?= $plan['featured'] ? 'featured' : '' ?> <?= $isVisualPlan ? 'visual-plan' : '' ?> reveal">
-                            <div class="plan-topline">
-                                <small>IZZY</small>
-                                <?php if ($localized($plan, 'badge')): ?>
-                                    <span class="plan-badge"><?= h($localized($plan, 'badge')) ?></span>
-                                <?php endif; ?>
-                            </div>
-                            <h3><?= h($localized($plan, 'name')) ?></h3>
-                            <strong class="plan-price"><?= h($localized($plan, 'price_label')) ?></strong>
-                            <p class="plan-description"><?= h($localized($plan, 'description')) ?></p>
-
-                            <div class="plan-features">
-                                <?php foreach ($lines($localized($plan, 'features')) as $feature): ?>
-                                    <span><i aria-hidden="true">✓</i><?= h($feature) ?></span>
-                                <?php endforeach; ?>
-                            </div>
-
-                            <a
-                                class="btn <?= $isVisualPlan ? 'btn-whatsapp' : 'btn-primary' ?>"
-                                href="<?= h(
-                                    $plan['cta_url']
-                                    ?: $whatsApp(
-                                        ($lang === 'es'
-                                            ? 'Hola, quiero información del plan '
-                                            : 'Hello, I need information about the plan ')
-                                        . $localized($plan, 'name')
-                                    )
-                                ) ?>"
-                            ><?= $lang === 'es' ? 'Quiero este plan' : 'I want this plan' ?></a>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-
-                <p class="plans-note reveal">
-                    <?= $lang === 'es'
-                        ? 'Los equipos mostrados en material promocional son únicamente de referencia. IZZY funciona desde el navegador y el alcance final depende del plan contratado.'
-                        : 'Devices shown in promotional material are for reference only. IZZY runs in the browser and final scope depends on the selected plan.' ?>
-                </p>
-            </div>
-        </section>
-    <?php endif; ?>
-
-
-    <section class="section cami-section product-showcase-section" id="cami">
-        <div class="shell">
-            <div class="product-section-head reveal">
-                <div>
-                    <span class="eyebrow product-green">CAMI</span>
-                    <h2><?= h($text('cami_title')) ?></h2>
-                    <p><?= h($text('cami_text')) ?></p>
-                </div>
-                <img
-                    class="product-logo product-logo-cami"
-                    src="assets/brand/cami-display.png"
-                    alt="CAMI"
-                >
-            </div>
-
-            <div class="cami-experience-grid">
-                <article class="experience-card cami-card reveal">
-                    <div class="experience-media landscape-media contain-media">
-                        <img src="assets/products/cami-dashboard.png" alt="CAMI dashboard">
-                    </div>
-                    <div class="experience-copy">
-                        <span>01</span>
-                        <h3>
-                            <?= $lang === 'es'
-                                ? 'Control y seguimiento desde un solo lugar'
-                                : 'Control and follow-up in one place' ?>
-                        </h3>
-                        <p>
-                            <?= $lang === 'es'
-                                ? 'Panel de trabajo para visualizar información clave de pacientes, atenciones, pendientes, productos y actividad de la clínica.'
-                                : 'A working dashboard to review key information about patients, visits, pending items, products and clinic activity.' ?>
-                        </p>
-                    </div>
-                </article>
-
-                <article class="experience-card cami-card reveal">
-                    <div class="experience-media landscape-media contain-media">
-                        <img
-                            src="assets/products/cami-medical-attention.png"
-                            alt="CAMI medical attention"
-                        >
-                    </div>
-                    <div class="experience-copy">
-                        <span>02</span>
-                        <h3><?= $lang === 'es' ? 'Atención clínica organizada' : 'Organized clinical care' ?></h3>
-                        <p>
-                            <?= $lang === 'es'
-                                ? 'Registro de atenciones, historia clínica, tratamiento y datos del paciente dentro de una experiencia web centralizada.'
-                                : 'Visits, clinical history, treatment and patient data organized inside one centralized web experience.' ?>
-                        </p>
-                    </div>
-                </article>
-            </div>
-
-            <div class="cami-summary reveal">
-                <div class="cami-summary-copy">
-                    <h3>
-                        <?= $lang === 'es'
-                            ? 'Pensado para clínicas y consultorios que necesitan orden'
-                            : 'Built for clinics and practices that need organization' ?>
-                    </h3>
-
-                    <div class="cami-features">
-                        <div><?= $lang === 'es' ? 'Pacientes' : 'Patients' ?></div>
-                        <div><?= $lang === 'es' ? 'Atenciones' : 'Visits' ?></div>
-                        <div><?= $lang === 'es' ? 'Expedientes' : 'Records' ?></div>
-                        <div><?= $lang === 'es' ? 'Seguimiento' : 'Follow-up' ?></div>
-                        <div><?= $lang === 'es' ? 'Documentos' : 'Documents' ?></div>
-                        <div><?= $lang === 'es' ? 'Gestión' : 'Management' ?></div>
-                    </div>
-
-                    <a
-                        class="btn btn-cami"
-                        href="<?= h($whatsApp(
-                            $lang === 'es'
-                                ? 'Hola, quiero información y una demostración de CAMI.'
-                                : 'Hello, I would like information and a CAMI demo.'
-                        )) ?>"
-                    ><?= $lang === 'es' ? 'Solicitar demo de CAMI' : 'Request CAMI demo' ?></a>
-                </div>
-
-                <div class="cami-login-preview">
-                    <img src="assets/products/cami-login.png" alt="CAMI login">
-                </div>
+                <a class="btn btn-primary" href="#contact"><?= $lang === 'es' ? 'Hablemos de tu proyecto' : 'Tell us about your project' ?></a>
             </div>
         </div>
     </section>
@@ -941,14 +761,19 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             <small><?= h($localized($project, 'category')) ?></small>
                             <h3><?= h($project['title']) ?></h3>
                             <p><?= h($localized($project, 'description')) ?></p>
-                            <?php if ($project['project_url']): ?>
-                                <a
-                                    class="text-link"
-                                    href="<?= h($project['project_url']) ?>"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                ><?= $lang === 'es' ? 'Ver proyecto' : 'View project' ?> →</a>
-                            <?php endif; ?>
+                            <div class="project-card-actions">
+                                <a class="project-action project-action-info" href="#contact">
+                                    <?= $lang === 'es' ? 'Consultar proyecto' : 'Ask about project' ?> <span aria-hidden="true">→</span>
+                                </a>
+                                <?php if (trim((string)($project['project_url'] ?? '')) !== ''): ?>
+                                    <a
+                                        class="project-action project-action-site"
+                                        href="<?= h($project['project_url']) ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    ><?= $lang === 'es' ? 'Visitar sitio' : 'Visit website' ?> <span aria-hidden="true">↗</span></a>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -992,7 +817,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                 </div>
 
                 <div class="affiliate-steps">
-                    <span><b>1</b><strong><?= $lang === 'es' ? 'Recomienda' : 'Recommend' ?></strong><small><?= $lang === 'es' ? 'Presenta IZZY o CAMI.' : 'Introduce IZZY or CAMI.' ?></small></span>
+                    <span><b>1</b><strong><?= $lang === 'es' ? 'Recomienda' : 'Recommend' ?></strong><small><?= $lang === 'es' ? 'Presenta nuestras soluciones.' : 'Introduce our solutions.' ?></small></span>
                     <span><b>2</b><strong><?= $lang === 'es' ? 'Conecta' : 'Connect' ?></strong><small><?= $lang === 'es' ? 'Nos compartes el prospecto.' : 'Share the lead with us.' ?></small></span>
                     <span><b>3</b><strong><?= $lang === 'es' ? 'Gana' : 'Earn' ?></strong><small><?= $lang === 'es' ? 'Recibe tu beneficio según las condiciones.' : 'Earn according to the program terms.' ?></small></span>
                 </div>
@@ -1060,7 +885,59 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         </div>
     </section>
 
-
+    <?php if (!empty($testimonials)): ?>
+        <section class="section testimonials-section" id="testimonials">
+            <div class="shell">
+                <div class="section-heading centered reveal">
+                    <span class="eyebrow"><?= $lang === 'es' ? 'OPINIONES DE CLIENTES' : 'CLIENT REVIEWS' ?></span>
+                    <h2><?= $lang === 'es' ? 'Experiencias alrededor de nuestras soluciones' : 'Experiences around our solutions' ?></h2>
+                    <p><?= $lang === 'es' ? 'Conoce cómo nuestras soluciones pueden acompañar distintos tipos de operación, desde facturación y gestión clínica hasta atención omnicanal y desarrollos a la medida.' : 'See how our solutions can support different operations, from billing and clinical management to omnichannel service and custom development.' ?></p>
+                </div>
+                <div class="testimonials-grid">
+                    <?php foreach ($testimonials as $testimonial): ?>
+                        <?php
+                        $testimonialSolution = trim((string)($testimonial['solution_name'] ?? ''));
+                        $testimonialLogo = '';
+                        $testimonialAccent = '#16b89a';
+                        foreach ($products as $testimonialProduct) {
+                            $candidateName = trim((string)($testimonialProduct['name'] ?? ''));
+                            $candidateKey = trim((string)($testimonialProduct['product_key'] ?? ''));
+                            if (strcasecmp($testimonialSolution, $candidateName) === 0 || strcasecmp($testimonialSolution, $candidateKey) === 0) {
+                                $testimonialLogo = trim((string)($testimonialProduct['logo_path'] ?? ''));
+                                $testimonialAccent = trim((string)($testimonialProduct['accent_color'] ?? '')) ?: '#16b89a';
+                                break;
+                            }
+                        }
+                        if ($testimonialLogo === '' && in_array(strtolower($testimonialSolution), ['soluciones a la medida','custom solutions','desarrollo a la medida','custom development'], true)) {
+                            $testimonialLogo = 'assets/brand/custom-solutions.svg';
+                            $testimonialAccent = '#ff8a00';
+                        }
+                        if ($testimonialLogo === '') {
+                            $testimonialLogo = $publicCorporateLogo;
+                        }
+                        ?>
+                        <article class="testimonial-card reveal" style="--testimonial-accent:<?= h($testimonialAccent) ?>">
+                            <div class="testimonial-card-head">
+                                <div class="testimonial-solution-logo">
+                                    <img src="<?= h($testimonialLogo) ?>" alt="<?= h($testimonialSolution !== '' ? $testimonialSolution : $companyName) ?>">
+                                </div>
+                                <?php if ($testimonialSolution !== ''): ?>
+                                    <span class="testimonial-solution-name"><?= h($testimonialSolution) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="testimonial-quote" aria-hidden="true">“</div>
+                            <p><?= h($localized($testimonial, 'quote')) ?></p>
+                            <footer>
+                                <strong><?= h((string)$testimonial['client_name']) ?></strong>
+                                <?php $meta = trim($localized($testimonial, 'client_role')); ?>
+                                <?php if ($meta !== ''): ?><span><?= h($meta) ?></span><?php endif; ?>
+                            </footer>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </section>
+    <?php endif; ?>
 
     <?php if ($showPublicServiceMap): ?>
         <?php $serviceMapGoogleUrl = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode($serviceMapQuery); ?>
@@ -1186,8 +1063,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                                 <select class="public-select2" name="service" data-select2-placeholder="<?= h($lang === 'es' ? 'Selecciona una opción' : 'Select an option') ?>" <?= $contactRequired['service'] ? 'required' : '' ?>>
                                     <option value="" selected><?= $lang === 'es' ? 'Selecciona una opción' : 'Select an option' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Información general' : 'General information' ?>"><?= $lang === 'es' ? 'Información general' : 'General information' ?></option>
-                                    <option value="IZZY">IZZY</option>
-                                    <option value="CAMI">CAMI</option>
+                                    <?php foreach ($products as $solutionOption): ?>
+                                        <option value="<?= h((string)$solutionOption['name']) ?>"><?= h((string)$solutionOption['name']) ?></option>
+                                    <?php endforeach; ?>
                                     <option value="<?= $lang === 'es' ? 'Sitio web' : 'Website' ?>"><?= $lang === 'es' ? 'Sitio web' : 'Website' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Software a la medida' : 'Custom software' ?>"><?= $lang === 'es' ? 'Software a la medida' : 'Custom software' ?></option>
                                     <option value="<?= $lang === 'es' ? 'Soporte' : 'Support' ?>"><?= $lang === 'es' ? 'Soporte' : 'Support' ?></option>
@@ -1212,7 +1090,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                         </div>
                         <label>
                             <span><?= $lang === 'es' ? 'Mensaje' : 'Message' ?><?= $contactRequired['message'] ? $requiredMark : '' ?></span>
-                            <textarea name="message" rows="5" maxlength="5000" <?= $contactRequired['message'] ? 'required' : '' ?> data-meaningful-message data-min-meaningful-chars="<?= $messageMinChars ?>" data-min-meaningful-words="<?= $messageMinWords ?>" aria-describedby="contact-message-help" placeholder="<?= $lang === 'es' ? 'Ejemplo: Me interesa IZZY para mi negocio y necesito información sobre planes, facturación e inventario.' : 'Example: I am interested in IZZY for my business and need information about plans, billing and inventory.' ?>"></textarea>
+                            <textarea name="message" rows="5" maxlength="5000" <?= $contactRequired['message'] ? 'required' : '' ?> data-meaningful-message data-min-meaningful-chars="<?= $messageMinChars ?>" data-min-meaningful-words="<?= $messageMinWords ?>" aria-describedby="contact-message-help" placeholder="<?= $lang === 'es' ? 'Ejemplo: Me interesa una de sus soluciones y necesito información, una demostración o una propuesta para mi empresa.' : 'Example: I am interested in one of your solutions and need information, a demo or a proposal for my company.' ?>"></textarea>
                             <small id="contact-message-help" class="field-requirement-hint message-help <?= $contactRequired['message'] ? '' : 'optional-hint' ?>"><?= $contactRequired['message'] ? ($lang === 'es' ? 'Describe lo que necesitas con al menos ' . $messageMinChars . ' caracteres útiles y ' . $messageMinWords . ' palabras. Un “Hola” o solo signos no cuentan como detalle suficiente.' : 'Describe what you need using at least ' . $messageMinChars . ' meaningful characters and ' . $messageMinWords . ' words. A simple “Hello” or only punctuation is not enough.') : ($lang === 'es' ? 'Si escribes un mensaje, incluye detalles reales de lo que necesitas.' : 'If you enter a message, include real details about what you need.') ?></small>
                         </label>
                         <?php if ($turnstileConfigured): ?>
@@ -1273,7 +1151,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <footer class="site-footer">
     <div class="shell footer-grid">
         <div class="footer-brand">
-            <img src="assets/brand/es-multiservicios.png" alt="ES MULTISERVICIOS">
+            <img src="<?= h($publicCorporateLogo) ?>" alt="<?= h($companyName) ?>">
             <span class="footer-kicker">TECHNOLOGY · SOFTWARE · WEB</span>
             <p>
                 <?= $lang === 'es'
@@ -1285,8 +1163,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
         <div>
             <strong><?= $lang === 'es' ? 'Soluciones' : 'Solutions' ?></strong>
-            <a href="#izzy">IZZY</a>
-            <a href="#cami">CAMI</a>
+            <?php foreach (array_slice($products, 0, 4) as $footerSolution): ?>
+                <a href="<?= h(trim((string)$footerSolution['cta_url']) !== '' ? $footerSolution['cta_url'] : '#solutions') ?>" <?= trim((string)$footerSolution['cta_url']) !== '' ? 'target="_blank" rel="noopener noreferrer"' : '' ?>><?= h((string)$footerSolution['name']) ?></a>
+            <?php endforeach; ?>
             <a href="#services"><?= $lang === 'es' ? 'Servicios' : 'Services' ?></a>
         </div>
 
@@ -1324,6 +1203,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <?php
     $externalWidgetEnabled = (string)($settings['floating_external_enabled'] ?? '0') === '1';
     $externalWidgetSnippet = trim((string)($settings['floating_external_snippet'] ?? ''));
+    $externalWidgetUrl = trim((string)($settings['floating_external_url'] ?? ''));
+    $externalWidgetUrlValid = $externalWidgetUrl !== '' && filter_var($externalWidgetUrl, FILTER_VALIDATE_URL);
     $externalWidgetPosition = in_array(($settings['floating_external_position'] ?? 'right'), ['left','right'], true)
         ? (string)$settings['floating_external_position'] : 'right';
     $waPosition = in_array(($settings['whatsapp_position'] ?? 'right'), ['left','right'], true)
@@ -1351,11 +1232,11 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         ];
     }
 
-    if ($externalWidgetEnabled && $externalWidgetSnippet !== '') {
+    if ($externalWidgetEnabled && ($externalWidgetSnippet !== '' || $externalWidgetUrlValid)) {
         $visibility = (!$externalShowDesktop ? ' floating-hide-desktop' : '') . (!$externalShowMobile ? ' floating-hide-mobile' : '');
         $managedFloating[$externalWidgetPosition][] = [
             'order' => (int)($settings['floating_external_order'] ?? 20),
-            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($settings['floating_external_name'] ?? 'External chat').'">'.$externalWidgetSnippet.'</div>',
+            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($settings['floating_external_name'] ?? 'NIVO Web Chat').'">'.($externalWidgetSnippet !== '' ? $externalWidgetSnippet : '<iframe class="nivo-widget-frame" src="'.h($externalWidgetUrl).'" title="NIVO Web Chat" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>').'</div>',
         ];
     }
 

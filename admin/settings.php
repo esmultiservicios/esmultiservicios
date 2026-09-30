@@ -24,6 +24,8 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         if($action==='identity') {
             foreach(['admin_brand_name','company_name','phone','phone_digits','email','website','business_hours','contact_map_query','developer_credit_text'] as $k)save_setting($k,trim((string)($_POST[$k]??'')));
             if(!empty($_FILES['admin_logo']['name']))save_setting('admin_logo_path',upload_image($_FILES['admin_logo'],'branding','admin-logo',5));
+            if(!empty($_FILES['site_logo']['name']))save_setting('site_logo_path',upload_image($_FILES['site_logo'],'branding','site-logo',8));
+            if(isset($_POST['remove_site_logo']))save_setting('site_logo_path','');
             if(!empty($_FILES['favicon']['name']))save_setting('favicon_path',upload_image($_FILES['favicon'],'branding','favicon',3));
             if(isset($_POST['remove_favicon']))save_setting('favicon_path','');
             save_setting('developer_credit_enabled',isset($_POST['developer_credit_enabled'])?'1':'0');
@@ -179,6 +181,14 @@ endif;
 <div class="upload-preview" data-upload-preview>
 </div>
 </div>
+<div class="upload-zone" data-upload-zone tabindex="0">
+<div class="upload-icon"><?=icon('image')?>
+</div>
+<strong>Public corporate logo</strong>
+<small data-upload-name>Used in the corporate hero and footer · drag, paste, or choose image</small>
+<input type="file" name="site_logo" accept="image/jpeg,image/png,image/webp">
+<div class="upload-preview" data-upload-preview></div>
+</div>
 <div class="upload-zone favicon-zone" data-upload-zone tabindex="0">
 <div class="upload-icon"><?=icon('image')?>
 </div>
@@ -188,7 +198,14 @@ endif;
 <div class="upload-preview" data-upload-preview>
 </div>
 </div>
-</div><?php
+</div><?php if(!empty($set['site_logo_path'])): ?>
+<div class="saved-favicon">
+<img src="../<?=h($set['site_logo_path'])?>" alt="Current public corporate logo">
+<div><strong>Current public corporate logo</strong><small><?=h($set['site_logo_path'])?></small></div>
+<label class="premium-check"><input type="checkbox" name="remove_site_logo" value="1"><span>Use bundled corporate logo instead</span></label>
+</div>
+<?php endif; ?>
+<?php
 if(!empty($set['favicon_path'])):
 ?>
 <div class="saved-favicon">
@@ -408,7 +425,7 @@ endif;
 <label class="premium-switch">
 <input type="checkbox" name="contact_required_service" <?=($set['contact_required_service']??'1')==='1'?'checked':''?>>
 <span class="switch-ui" aria-hidden="true"></span>
-<span><b>Request type required</b><small>Visitors must choose IZZY, CAMI, Website, Custom software, Support or another listed option.</small></span>
+<span><b>Request type required</b><small>Visitors must choose one of the published solutions or another listed request type.</small></span>
 </label>
 <label class="premium-switch">
 <input type="checkbox" name="contact_required_message" <?=($set['contact_required_message']??'1')==='1'?'checked':''?>>

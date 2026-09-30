@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" role="img" aria-labelledby="title desc">
+  <title id="title">Soluciones a la medida</title>
+  <desc id="desc">Identidad gráfica para desarrollos personalizados de ES MULTISERVICIOS</desc>
+  <rect x="2" y="2" width="416" height="156" rx="34" fill="#f7fbff" stroke="#d8e7f1" stroke-width="4"/>
+  <g transform="translate(28 28)">
+    <rect width="104" height="104" rx="26" fill="#0b315b"/>
+    <path d="M33 31h14v12H36v20h11v12H33c-5 0-9-4-9-9V40c0-5 4-9 9-9Zm38 0h-14v12h11v20H57v12h14c5 0 9-4 9-9V40c0-5-4-9-9-9Z" fill="#fff"/>
+    <path d="m52 22 11 10-22 50-11-10 22-50Z" fill="#20c7ac"/>
+  </g>
+  <text x="154" y="71" font-family="Arial,Helvetica,sans-serif" font-size="29" font-weight="800" fill="#0b315b">A LA MEDIDA</text>
+  <text x="154" y="104" font-family="Arial,Helvetica,sans-serif" font-size="16" font-weight="700" fill="#61778d">ES MULTISERVICIOS</text>
+</svg>

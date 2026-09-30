@@ -10060,3 +10060,75 @@ form > .form-actions,
 .social-dashboard-summary span{font-size:12px;font-weight:800;color:#667b91;text-transform:uppercase;letter-spacing:.04em;}
 .social-dashboard-summary strong{font-size:17px;color:#0b2e59;overflow-wrap:anywhere;}
 @media(max-width:760px){.social-dashboard-panel .section-heading{align-items:stretch}.social-dashboard-panel .section-heading .button{width:100%;justify-content:center}.social-dashboard-summary{grid-template-columns:1fr}}
+
+/* Solution logo management */
+.solution-admin-logo{display:grid;place-items:center;width:118px;height:76px;padding:8px 10px;border:1px solid #dce6ef;border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 20px rgba(9,42,74,.06)}
+.solution-admin-logo img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.solution-logo-upload{margin:16px 0 20px}
+@media(max-width:720px){.solution-admin-logo{width:100px;height:68px}}
+
+/* ES MULTISERVICIOS — client opinions admin */
+.testimonial-admin-create{margin-bottom:24px}
+.testimonial-admin-grid{margin-top:24px}
+.marketing-empty-state{margin-top:18px;padding:24px;border:1px dashed #cbd9e6;border-radius:18px;background:#f8fbfd;color:#51677d}
+.marketing-empty-state strong{display:block;margin-bottom:6px;color:#0b315b}
+
+/* =========================================================
+   ES MULTISERVICIOS — final admin action-button policy
+   Action buttons must never render as plain white surfaces.
+   Form fields/select controls are intentionally excluded.
+   ========================================================= */
+.button:not(.danger):not(.danger-text),
+a.button:not(.danger):not(.danger-text),
+.marketing-preview-toolbar button,
+.preview-device-buttons button,
+.rich-mail-toolbar button,
+.compact-search button,
+.mini-content button,
+.icon-btn,
+.quick-link,
+.bell-button,
+.action-menu>summary,
+.profile-menu>summary{
+  background:#0b315b!important;
+  border-color:#0b315b!important;
+  color:#fff!important;
+  box-shadow:0 9px 22px rgba(9,42,74,.15);
+}
+.button:not(.danger):not(.danger-text):hover,
+a.button:not(.danger):not(.danger-text):hover,
+.marketing-preview-toolbar button:hover,
+.preview-device-buttons button:hover,
+.rich-mail-toolbar button:hover,
+.compact-search button:hover,
+.mini-content button:hover,
+.icon-btn:hover,
+.quick-link:hover,
+.bell-button:hover,
+.action-menu>summary:hover,
+.profile-menu>summary:hover{
+  background:#124b7d!important;
+  border-color:#124b7d!important;
+  color:#fff!important;
+}
+.button.secondary,.button.ghost,a.button.secondary,a.button.ghost{
+  background:#0f7898!important;
+  border-color:#0f7898!important;
+  color:#fff!important;
+}
+.button.secondary:hover,.button.ghost:hover,a.button.secondary:hover,a.button.ghost:hover{
+  background:#0b607b!important;
+  border-color:#0b607b!important;
+}
+.marketing-preview-toolbar button.active,.preview-device-buttons button.is-active{
+  background:#159dbb!important;
+  border-color:#159dbb!important;
+  color:#fff!important;
+}
+.solution-admin-logo{
+  width:156px;
+  height:102px;
+  padding:8px 12px;
+  background:#f4f8fb;
+}
+.solution-admin-logo img{max-width:100%;max-height:94px;width:auto;height:auto;object-fit:contain}

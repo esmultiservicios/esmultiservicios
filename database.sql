@@ -234,7 +234,7 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('phone_digits','10000000000'),
 ('email','administracion@esmultiservicios.com'),
 ('youtube','#'),('facebook','#'),('tiktok','#'),('website','example.com'),('business_hours',''),
-('admin_brand_name','ES MULTISERVICIOS Admin'),('admin_logo_path','assets/brand/es-mark.png'),('favicon_path','assets/brand/favicon.png'),
+('admin_brand_name','ES MULTISERVICIOS Admin'),('admin_logo_path','assets/brand/es-mark.png'),('site_logo_path','assets/brand/es-multiservicios-official.png'),('favicon_path','assets/brand/favicon.png'),
 ('maintenance_mode','0'),('maintenance_title','We are improving our website.'),
 ('maintenance_text','We will be back shortly. For immediate assistance, use the contact information provided by the company.'),
 ('maintenance_image_path',''),
@@ -554,10 +554,14 @@ CREATE TABLE IF NOT EXISTS marketing_products (
   name VARCHAR(100) NOT NULL,
   logo_path VARCHAR(500) NULL,
   accent_color VARCHAR(20) NOT NULL DEFAULT '#0A9ED0',
+  tagline_es VARCHAR(180) NULL,
+  tagline_en VARCHAR(180) NULL,
   description_es TEXT NULL,
   description_en TEXT NULL,
   features_es TEXT NULL,
   features_en TEXT NULL,
+  cta_label_es VARCHAR(100) NULL,
+  cta_label_en VARCHAR(100) NULL,
   cta_url VARCHAR(500) NULL,
   sort_order INT NOT NULL DEFAULT 0,
   active TINYINT(1) NOT NULL DEFAULT 1,
@@ -632,23 +636,27 @@ INSERT INTO landing_content(content_key,lang,content_value) VALUES
 ('projects_title','es','Soluciones que ya hemos construido'),('projects_title','en','Solutions we have already built'),
 ('why_title','es','¿Por qué ES MULTISERVICIOS?'),('why_title','en','Why ES MULTISERVICIOS?'),
 ('contact_title','es','Hablemos de lo que tu negocio necesita'),('contact_title','en','Let’s talk about what your business needs'),
-('contact_text','es','Cuéntanos qué quieres resolver. Podemos orientarte sobre IZZY, CAMI, desarrollo web o un sistema a la medida.'),
-('contact_text','en','Tell us what you need to solve. We can guide you on IZZY, CAMI, web development or custom software.'),
+('contact_text','es','Cuéntanos qué quieres resolver. Podemos orientarte sobre IZZY, CAMI, ZYNKO, desarrollo web o una solución a la medida.'),
+('contact_text','en','Tell us what you need to solve. We can guide you on IZZY, CAMI, ZYNKO, web development or a custom solution.'),
 ('support_cta','es','Necesito soporte'),('support_cta','en','I need support')
 ON DUPLICATE KEY UPDATE content_value=VALUES(content_value);
 
-INSERT INTO marketing_products(product_key,name,logo_path,accent_color,description_es,description_en,features_es,features_en,cta_url,sort_order,active) VALUES
-('izzy','IZZY','assets/brand/izzy.png','#0A9ED0',
+INSERT INTO marketing_products(product_key,name,logo_path,accent_color,tagline_es,tagline_en,description_es,description_en,features_es,features_en,cta_label_es,cta_label_en,cta_url,sort_order,active) VALUES
+('izzy','IZZY','assets/brand/izzy-solution.png','#0A9ED0',
+'Facturación y gestión empresarial','Billing and business management',
 'Sistema web de facturación y gestión para empresas y comercios.','Web-based billing and management system for companies and businesses.',
 'Facturación y ventas\nInventario, compras y reportes\nFacturación clásica\nExperiencia visual configurable\nModo restaurante según plan\nAcceso responsive desde navegador',
 'Billing and sales\nInventory, purchases and reports\nClassic billing\nConfigurable visual experience\nRestaurant mode depending on plan\nResponsive browser access',
-'#izzy',10,1),
-('cami','CAMI','assets/brand/cami-display.png','#16CDB7',
+'Conocer IZZY','Explore IZZY',
+'',10,1),
+('cami','CAMI','assets/brand/cami-solution.png','#16CDB7',
+'Gestión clínica y seguimiento del paciente','Clinical management and patient follow-up',
 'Sistema web para clínicas y consultorios que centraliza la información y el seguimiento del paciente.','Web system for clinics and practices that centralizes patient information and follow-up.',
 'Pacientes\nAtenciones\nExpedientes e historial\nSeguimiento clínico\nDocumentos y reportes\nGestión administrativa',
 'Patients\nVisits\nRecords and history\nClinical follow-up\nDocuments and reports\nAdministrative management',
-'#cami',20,1)
-ON DUPLICATE KEY UPDATE name=VALUES(name),logo_path=VALUES(logo_path),accent_color=VALUES(accent_color),description_es=VALUES(description_es),description_en=VALUES(description_en),features_es=VALUES(features_es),features_en=VALUES(features_en),cta_url=VALUES(cta_url),sort_order=VALUES(sort_order),active=VALUES(active);
+'Conocer CAMI','Explore CAMI',
+'',20,1)
+ON DUPLICATE KEY UPDATE name=VALUES(name),logo_path=VALUES(logo_path),accent_color=VALUES(accent_color),tagline_es=VALUES(tagline_es),tagline_en=VALUES(tagline_en),description_es=VALUES(description_es),description_en=VALUES(description_en),features_es=VALUES(features_es),features_en=VALUES(features_en),cta_label_es=VALUES(cta_label_es),cta_label_en=VALUES(cta_label_en),cta_url=VALUES(cta_url),sort_order=VALUES(sort_order),active=VALUES(active);
 
 INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
 SELECT 'Castro''s Ready','Sitio corporativo + CMS personalizado','Corporate website + custom CMS',
@@ -670,6 +678,7 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('company_name','ES MULTISERVICIOS'),
 ('admin_brand_name','ES MULTISERVICIOS Admin'),
 ('admin_logo_path','assets/brand/es-mark.png'),
+('site_logo_path','assets/brand/es-multiservicios-official.png'),
 ('favicon_path','assets/brand/favicon.png'),
 ('phone','+504 8913-6844'),
 ('phone_digits','50489136844'),
@@ -876,3 +885,198 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('social_show_desktop','1'),
 ('social_show_mobile','1')
 ON DUPLICATE KEY UPDATE setting_value=setting_value;
+
+
+-- =========================================================
+-- ES MULTISERVICIOS CORPORATE SOLUTIONS DIRECTORY
+-- IZZY + CAMI + ZYNKO, no pricing cards / no product screenshots
+-- =========================================================
+INSERT INTO marketing_products(product_key,name,logo_path,accent_color,description_es,description_en,features_es,features_en,cta_url,sort_order,active)
+SELECT 'zynko','ZYNKO','assets/brand/zynko-solution.png', '#16B89A',
+       'Plataforma omnicanal multiempresa para centralizar conversaciones, clientes, equipos y canales en una sola operación. Integra NIVO Web Chat y NIVO IA para automatizar atención, trabajar con conocimiento aprobado y transferir conversaciones a personas cuando sea necesario.',
+       'Multi-company omnichannel platform that centralizes conversations, customers, teams and channels in one operation. It includes NIVO Web Chat and NIVO AI for assisted service, approved knowledge and human handoff when needed.',
+       'Conversaciones centralizadas\nNIVO Web Chat\nNIVO IA y automatización\nUsuarios y permisos\nAPI y webhooks\nNotificaciones\nGestión multiempresa',
+       'Centralized conversations\nNIVO Web Chat\nNIVO AI and automation\nUsers and permissions\nAPI and webhooks\nNotifications\nMulti-company management',
+       '',30,1
+WHERE NOT EXISTS (SELECT 1 FROM marketing_products WHERE product_key='zynko');
+
+UPDATE marketing_products SET
+  description_es='Sistema web de facturación y gestión para empresas y comercios, diseñado para centralizar operaciones y adaptarse a distintos modelos de negocio.',
+  description_en='Web-based billing and management solution for companies and shops, designed to centralize operations and adapt to different business models.',
+  features_es='Facturación\nInventario\nGestión empresarial\nExperiencias configurables',
+  features_en='Billing\nInventory\nBusiness management\nConfigurable experiences',
+  sort_order=10,active=1
+WHERE product_key='izzy';
+
+UPDATE marketing_products SET
+  description_es='Sistema web para clínicas y consultorios que organiza pacientes, expedientes, atenciones, seguimiento y procesos clínicos en una sola plataforma.',
+  description_en='Web solution for clinics and medical practices that organizes patients, records, visits, follow-up and clinical workflows in one platform.',
+  features_es='Pacientes\nExpedientes\nAtenciones\nSeguimiento clínico',
+  features_en='Patients\nRecords\nVisits\nClinical follow-up',
+  sort_order=20,active=1
+WHERE product_key='cami';
+
+UPDATE marketing_products SET cta_url='' WHERE product_key IN ('izzy','cami') AND cta_url IN ('#izzy','#cami');
+DELETE FROM marketing_plans;
+
+INSERT INTO landing_content(content_key,lang,content_value) VALUES
+('solutions_title','es','Soluciones digitales creadas para resolver necesidades reales'),
+('solutions_title','en','Digital solutions built to solve real business needs'),
+('solutions_text','es','IZZY, CAMI y ZYNKO son soluciones desarrolladas por ES MULTISERVICIOS. Conoce qué hace cada una y visita su sitio dedicado para obtener más información.'),
+('solutions_text','en','IZZY, CAMI and ZYNKO are solutions developed by ES MULTISERVICIOS. Discover what each one does and visit its dedicated website for more information.'),
+('contact_text','es','Cuéntanos qué quieres resolver. Podemos orientarte sobre IZZY, CAMI, ZYNKO, desarrollo web o una solución a la medida.'),
+('contact_text','en','Tell us what you need to solve. We can guide you on IZZY, CAMI, ZYNKO, web development or a custom solution.'),
+('affiliate_text','es','Nuestro programa de afiliados permite recomendar las soluciones y servicios de ES MULTISERVICIOS y obtener beneficios según las condiciones vigentes.'),
+('affiliate_text','en','Our affiliate program lets you recommend ES MULTISERVICIOS solutions and services and earn benefits under the current program terms.')
+ON DUPLICATE KEY UPDATE content_value=VALUES(content_value);
+
+INSERT INTO settings(setting_key,setting_value) VALUES
+('whatsapp_position','left'),
+('whatsapp_enabled','1'),
+('floating_external_name','NIVO Web Chat'),
+('floating_external_position','right'),
+('floating_external_enabled','1'),
+('floating_external_url','')
+ON DUPLICATE KEY UPDATE setting_value=CASE
+  WHEN setting_key='whatsapp_position' THEN 'left'
+  WHEN setting_key='floating_external_name' THEN 'NIVO Web Chat'
+  WHEN setting_key='floating_external_position' THEN 'right'
+  ELSE setting_value
+END;
+
+
+-- ES MULTISERVICIOS SOLUTION LOGOS 2026-09-30
+
+UPDATE marketing_products
+SET logo_path='assets/brand/izzy-solution.png'
+WHERE product_key='izzy' AND (logo_path IS NULL OR logo_path='' OR logo_path='assets/brand/izzy.png');
+
+UPDATE marketing_products
+SET logo_path='assets/brand/cami-solution.png'
+WHERE product_key='cami' AND (logo_path IS NULL OR logo_path='' OR logo_path='assets/brand/cami-display.png' OR logo_path='assets/brand/cami.png');
+
+UPDATE marketing_products
+SET logo_path='assets/brand/zynko-solution.png', accent_color='#16B89A'
+WHERE product_key='zynko' AND (logo_path IS NULL OR logo_path='');
+
+UPDATE marketing_products
+SET description_es='Plataforma omnicanal multiempresa para centralizar conversaciones, clientes, equipos y canales en una sola operación. Integra NIVO Web Chat y NIVO IA para automatizar atención, trabajar con conocimiento aprobado y transferir conversaciones a personas cuando sea necesario.',
+    description_en='Multi-company omnichannel platform that centralizes conversations, customers, teams and channels in one operation. It includes NIVO Web Chat and NIVO AI for assisted service, approved knowledge and human handoff when needed.',
+    features_es='Conversaciones centralizadas\nNIVO Web Chat\nNIVO IA y automatización\nUsuarios y permisos\nAPI y webhooks\nNotificaciones\nGestión multiempresa',
+    features_en='Centralized conversations\nNIVO Web Chat\nNIVO AI and automation\nUsers and permissions\nAPI and webhooks\nNotifications\nMulti-company management',
+    sort_order=30,
+    active=1
+WHERE product_key='zynko';
+
+INSERT INTO landing_content(content_key,lang,content_value) VALUES
+('contact_text','es','Cuéntanos qué quieres resolver. Podemos orientarte sobre IZZY, CAMI, ZYNKO, desarrollo web o una solución a la medida.'),
+('contact_text','en','Tell us what you need to solve. We can guide you on IZZY, CAMI, ZYNKO, web development or a custom solution.')
+ON DUPLICATE KEY UPDATE content_value=VALUES(content_value);
+
+
+-- =========================================================
+-- CORPORATE SOLUTIONS ADMIN EXTENSION 2026-09-30
+-- Logos, taglines and configurable CTA labels for every solution
+-- =========================================================
+SET @db_name = DATABASE();
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='marketing_products' AND COLUMN_NAME='tagline_es');
+SET @sql = IF(@col_exists=0,'ALTER TABLE marketing_products ADD COLUMN tagline_es VARCHAR(180) NULL AFTER accent_color','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='marketing_products' AND COLUMN_NAME='tagline_en');
+SET @sql = IF(@col_exists=0,'ALTER TABLE marketing_products ADD COLUMN tagline_en VARCHAR(180) NULL AFTER tagline_es','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='marketing_products' AND COLUMN_NAME='cta_label_es');
+SET @sql = IF(@col_exists=0,'ALTER TABLE marketing_products ADD COLUMN cta_label_es VARCHAR(100) NULL AFTER features_en','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+SET @col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='marketing_products' AND COLUMN_NAME='cta_label_en');
+SET @sql = IF(@col_exists=0,'ALTER TABLE marketing_products ADD COLUMN cta_label_en VARCHAR(100) NULL AFTER cta_label_es','SELECT 1'); PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+INSERT INTO settings(setting_key,setting_value) VALUES ('site_logo_path','assets/brand/es-multiservicios-official.png')
+ON DUPLICATE KEY UPDATE setting_value=CASE WHEN setting_value IS NULL OR TRIM(setting_value)='' THEN VALUES(setting_value) ELSE setting_value END;
+
+-- Use the official logos supplied for the corporate directory.
+UPDATE marketing_products SET logo_path='assets/brand/izzy-solution.png', tagline_es='Facturación y gestión empresarial', tagline_en='Billing and business management', cta_label_es='Conocer IZZY', cta_label_en='Explore IZZY' WHERE product_key='izzy';
+UPDATE marketing_products SET logo_path='assets/brand/cami-solution.png', tagline_es='Gestión clínica y seguimiento del paciente', tagline_en='Clinical management and patient follow-up', cta_label_es='Conocer CAMI', cta_label_en='Explore CAMI' WHERE product_key='cami';
+
+INSERT INTO marketing_products(product_key,name,logo_path,accent_color,tagline_es,tagline_en,description_es,description_en,features_es,features_en,cta_label_es,cta_label_en,cta_url,sort_order,active)
+SELECT 'zynko','ZYNKO','assets/brand/zynko-solution.png','#16B89A',
+       'Omnicanal, multiempresa y atención inteligente','Omnichannel, multi-company and intelligent customer service',
+       'Plataforma omnicanal multiempresa que centraliza conversaciones, clientes, equipos y canales. Integra NIVO Web Chat y NIVO IA para automatizar atención, trabajar con conocimiento aprobado y transferir conversaciones a personas cuando sea necesario.',
+       'Multi-company omnichannel platform that centralizes conversations, customers, teams and channels. It includes NIVO Web Chat and NIVO AI for automation, approved knowledge and human handoff when needed.',
+       'Conversaciones centralizadas\nNIVO Web Chat\nNIVO IA y automatización\nUsuarios y permisos\nAPI y webhooks\nNotificaciones\nGestión multiempresa',
+       'Centralized conversations\nNIVO Web Chat\nNIVO AI and automation\nUsers and permissions\nAPI and webhooks\nNotifications\nMulti-company management',
+       'Conocer ZYNKO','Explore ZYNKO','https://zynko.esmultiservicios.com/',30,1
+WHERE NOT EXISTS (SELECT 1 FROM marketing_products WHERE product_key='zynko');
+
+UPDATE marketing_products SET
+  logo_path='assets/brand/zynko-solution.png', accent_color='#16B89A',
+  tagline_es='Omnicanal, multiempresa y atención inteligente',
+  tagline_en='Omnichannel, multi-company and intelligent customer service',
+  description_es='Plataforma omnicanal multiempresa que centraliza conversaciones, clientes, equipos y canales. Integra NIVO Web Chat y NIVO IA para automatizar atención, trabajar con conocimiento aprobado y transferir conversaciones a personas cuando sea necesario.',
+  description_en='Multi-company omnichannel platform that centralizes conversations, customers, teams and channels. It includes NIVO Web Chat and NIVO AI for automation, approved knowledge and human handoff when needed.',
+  features_es='Conversaciones centralizadas\nNIVO Web Chat\nNIVO IA y automatización\nUsuarios y permisos\nAPI y webhooks\nNotificaciones\nGestión multiempresa',
+  features_en='Centralized conversations\nNIVO Web Chat\nNIVO AI and automation\nUsers and permissions\nAPI and webhooks\nNotifications\nMulti-company management',
+  cta_label_es='Conocer ZYNKO', cta_label_en='Explore ZYNKO', sort_order=30, active=1
+WHERE product_key='zynko';
+
+
+-- =========================================================
+-- CUSTOMER OPINIONS / TESTIMONIALS
+-- Only real, approved opinions should be published.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS marketing_testimonials (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  client_name VARCHAR(180) NOT NULL,
+  client_role_es VARCHAR(180) NULL,
+  client_role_en VARCHAR(180) NULL,
+  solution_name VARCHAR(120) NULL,
+  quote_es TEXT NULL,
+  quote_en TEXT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_marketing_testimonials_public (active,sort_order,id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Improve the corporate hero CTA without overriding later custom copy.
+UPDATE landing_content SET content_value='Solicitar asesoría' WHERE content_key='hero_primary' AND lang='es' AND content_value='Solicitar demo';
+UPDATE landing_content SET content_value='Request consultation' WHERE content_key='hero_primary' AND lang='en' AND content_value='Request a demo';
+
+UPDATE marketing_products SET cta_url='https://zynko.esmultiservicios.com/' WHERE product_key='zynko' AND (cta_url IS NULL OR TRIM(cta_url)='');
+
+
+-- =========================================================
+-- OPINIONES / CASOS ILUSTRATIVOS INICIALES
+-- Los nombres son ficticios y se identifican como tales para
+-- no presentar testimonios inventados como clientes reales.
+-- Se pueden editar o sustituir completamente desde Admin.
+-- =========================================================
+INSERT INTO marketing_testimonials
+(client_name,client_role_es,client_role_en,solution_name,quote_es,quote_en,sort_order,active)
+SELECT seed.client_name,seed.client_role_es,seed.client_role_en,seed.solution_name,seed.quote_es,seed.quote_en,seed.sort_order,1
+FROM (
+    SELECT 'Carlos Méndez' AS client_name,
+           'Gerente administrativo · Perfil demostrativo' AS client_role_es,
+           'Administrative manager · Demo profile' AS client_role_en,
+           'IZZY' AS solution_name,
+           'Centralizar ventas, inventario y facturación en una sola solución permite trabajar con mayor orden y tener información más clara para la operación diaria.' AS quote_es,
+           'Centralizing sales, inventory and billing in one solution helps teams work with better organization and clearer day-to-day information.' AS quote_en,
+           10 AS sort_order
+    UNION ALL
+    SELECT 'Andrea Castillo','Coordinadora clínica · Perfil demostrativo','Clinical coordinator · Demo profile','CAMI',
+           'Tener pacientes, expedientes, visitas y seguimiento clínico organizados en un mismo entorno facilita la continuidad de la atención y reduce tareas dispersas.',
+           'Keeping patients, records, visits and clinical follow-up organized in one environment supports continuity of care and reduces scattered tasks.',20
+    UNION ALL
+    SELECT 'José Rivera','Coordinador de servicio · Perfil demostrativo','Customer service coordinator · Demo profile','ZYNKO',
+           'Una bandeja centralizada con NIVO Web Chat y NIVO IA ayuda a ordenar conversaciones, automatizar respuestas y transferir a una persona cuando la atención lo requiere.',
+           'A centralized inbox with NIVO Web Chat and NIVO AI helps organize conversations, automate responses and hand off to a person when needed.',30
+    UNION ALL
+    SELECT 'Melissa Hernández','Administración y operaciones · Perfil demostrativo','Administration and operations · Demo profile','IZZY',
+           'Contar con una plataforma web adaptable permite consultar la operación desde distintos dispositivos y mantener procesos comerciales en un solo lugar.',
+           'An adaptable web platform makes it possible to review operations from different devices and keep commercial processes in one place.',40
+    UNION ALL
+    SELECT 'Daniel Flores','Proyecto a la medida · Perfil demostrativo','Custom project · Demo profile','Soluciones a la medida',
+           'Cuando el proceso no encaja en un sistema estándar, una solución desarrollada a la medida permite digitalizar el flujo real de trabajo sin obligar al equipo a cambiar su operación.',
+           'When a process does not fit a standard system, a custom solution can digitize the real workflow without forcing the team to reshape its operation.',50
+) AS seed
+WHERE NOT EXISTS (SELECT 1 FROM marketing_testimonials LIMIT 1);
+

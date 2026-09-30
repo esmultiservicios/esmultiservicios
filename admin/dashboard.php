@@ -117,7 +117,7 @@ $cards=[['content.view','content.php','edit','Visual content editor','Draft, pre
 ['services.manage','services.php','tools','Services','Add, edit, order or hide services.'],
 ['gallery.manage','gallery.php','image','Gallery','Manage project images and public gallery.'],
 ['videos.manage','videos.php','eye','Videos','Manage YouTube, Vimeo and uploaded website videos with real preview.'],
-['marketing.manage','marketing.php','eye','Marketing site ES/EN','Manage bilingual ES MULTISERVICIOS landing content, plans, products and projects.'],
+['marketing.manage','marketing.php','eye','Marketing site ES/EN','Manage bilingual ES MULTISERVICIOS landing content, corporate solutions and projects.'],
 ['social.manage','social.php','share','Social networks','Manage public social profiles, placement and visibility.'],
 ['widgets.manage','widgets.php','api','Floating Widgets','Manage WhatsApp and optional external widgets.'],
 ['analytics.view','analytics.php','dashboard','Analytics','Review public visits and anonymous visitor trends.'],

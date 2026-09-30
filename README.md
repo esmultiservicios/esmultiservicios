@@ -183,7 +183,6 @@ The update includes the Video module, flexible artwork support, permissions and 
 /admin/                  CMS administration
 /assets/                 Public styles, scripts, brand assets and product screenshots
 /assets/brand/           ES MULTISERVICIOS, IZZY and CAMI branding
-/assets/products/        Real product screenshots used by the landing page
 /assets/projects/        Project / case-study brand assets
 /config/                 Application configuration
 /core/                   Shared services and email logic
@@ -210,3 +209,12 @@ The update includes the Video module, flexible artwork support, permissions and 
 This package intentionally keeps PHP, HTML, CSS, JavaScript and SQL readable and maintainable. Source files should not be minified as part of normal project delivery.
 
 The website remains a dedicated ES MULTISERVICIOS implementation built on the reusable CMS architecture. Client-specific material should appear only where it is intentionally presented as a project or case study.
+
+## Corporate solutions UX update — 2026-09-30
+- Solution cards include separate premium actions for information and the dedicated product website.
+- ZYNKO defaults to `https://zynko.esmultiservicios.com/`; all solution URLs remain editable in **Marketing site ES/EN → Solutions**.
+- The main hero uses a contact-form CTA plus a distinct WhatsApp action and subtle solution motion.
+- **Marketing site ES/EN → Client opinions** manages real approved testimonials. The public section stays hidden until at least one published opinion exists.
+- `database-update.sql` creates the testimonial table and safely applies the new defaults to an existing installation.
+
+- Final hero composition fix: component-aware stacking, larger readable solution logos, no clipping/overflow, and preserved named testimonial profiles.

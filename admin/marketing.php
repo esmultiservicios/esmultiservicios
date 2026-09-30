@@ -15,10 +15,6 @@ $copyKeys = [
     'hero_secondary',
     'solutions_title',
     'solutions_text',
-    'izzy_title',
-    'izzy_text',
-    'cami_title',
-    'cami_text',
     'services_title',
     'services_text',
     'affiliate_title',
@@ -63,68 +59,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Bilingual marketing content saved.';
         }
 
-        if ($action === 'product') {
+        if ($action === 'product_save') {
             $id = (int) ($_POST['id'] ?? 0);
-            $statement = db()->prepare(
-                'UPDATE marketing_products
-                 SET description_es=?,description_en=?,features_es=?,features_en=?,cta_url=?,sort_order=?,active=?
-                 WHERE id=?'
-            );
-            $statement->execute([
-                trim((string) ($_POST['description_es'] ?? '')),
-                trim((string) ($_POST['description_en'] ?? '')),
-                trim((string) ($_POST['features_es'] ?? '')),
-                trim((string) ($_POST['features_en'] ?? '')),
-                trim((string) ($_POST['cta_url'] ?? '')),
-                (int) ($_POST['sort_order'] ?? 0),
-                isset($_POST['active']) ? 1 : 0,
-                $id,
-            ]);
-            $message = 'Product updated.';
-        }
+            $name = trim((string) ($_POST['name'] ?? ''));
+            $productKey = strtolower(trim((string) ($_POST['product_key'] ?? '')));
+            $productKey = preg_replace('/[^a-z0-9_-]+/', '-', $productKey ?: $name) ?: '';
+            $productKey = trim($productKey, '-');
+            if ($name === '' || $productKey === '') {
+                throw new RuntimeException('Solution name and key are required.');
+            }
 
-        if ($action === 'plan_save') {
-            $id = (int) ($_POST['id'] ?? 0);
+            $logoPath = trim((string) ($_POST['current_logo_path'] ?? ''));
+            if (isset($_POST['remove_solution_logo'])) {
+                $logoPath = '';
+            }
+            if (!empty($_FILES['solution_logo']['name'])) {
+                $logoPath = upload_image($_FILES['solution_logo'], 'solutions', $productKey . '-logo', 8);
+            }
+
             $values = [
-                trim((string) ($_POST['product_key'] ?? 'izzy')),
-                trim((string) ($_POST['name_es'] ?? '')),
-                trim((string) ($_POST['name_en'] ?? '')),
+                $productKey,
+                $name,
+                $logoPath,
+                trim((string) ($_POST['accent_color'] ?? '#0A9ED0')) ?: '#0A9ED0',
+                trim((string) ($_POST['tagline_es'] ?? '')),
+                trim((string) ($_POST['tagline_en'] ?? '')),
                 trim((string) ($_POST['description_es'] ?? '')),
                 trim((string) ($_POST['description_en'] ?? '')),
-                trim((string) ($_POST['price_label_es'] ?? '')),
-                trim((string) ($_POST['price_label_en'] ?? '')),
                 trim((string) ($_POST['features_es'] ?? '')),
                 trim((string) ($_POST['features_en'] ?? '')),
-                trim((string) ($_POST['badge_es'] ?? '')),
-                trim((string) ($_POST['badge_en'] ?? '')),
+                trim((string) ($_POST['cta_label_es'] ?? '')),
+                trim((string) ($_POST['cta_label_en'] ?? '')),
                 trim((string) ($_POST['cta_url'] ?? '')),
-                isset($_POST['featured']) ? 1 : 0,
                 (int) ($_POST['sort_order'] ?? 0),
                 isset($_POST['active']) ? 1 : 0,
             ];
-
             if ($id > 0) {
-                $statement = db()->prepare(
-                    'UPDATE marketing_plans
-                     SET product_key=?,name_es=?,name_en=?,description_es=?,description_en=?,price_label_es=?,price_label_en=?,features_es=?,features_en=?,badge_es=?,badge_en=?,cta_url=?,featured=?,sort_order=?,active=?
-                     WHERE id=?'
-                );
-                $statement->execute([...$values, $id]);
+                db()->prepare('UPDATE marketing_products SET product_key=?,name=?,logo_path=?,accent_color=?,tagline_es=?,tagline_en=?,description_es=?,description_en=?,features_es=?,features_en=?,cta_label_es=?,cta_label_en=?,cta_url=?,sort_order=?,active=? WHERE id=?')->execute([...$values, $id]);
             } else {
-                $statement = db()->prepare(
-                    'INSERT INTO marketing_plans(product_key,name_es,name_en,description_es,description_en,price_label_es,price_label_en,features_es,features_en,badge_es,badge_en,cta_url,featured,sort_order,active)
-                     VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
-                );
-                $statement->execute($values);
+                db()->prepare('INSERT INTO marketing_products(product_key,name,logo_path,accent_color,tagline_es,tagline_en,description_es,description_en,features_es,features_en,cta_label_es,cta_label_en,cta_url,sort_order,active) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')->execute($values);
             }
-
-            $message = 'Plan saved.';
+            $message = 'Solution saved.';
         }
 
-        if ($action === 'plan_delete') {
-            db()->prepare('DELETE FROM marketing_plans WHERE id=?')
-                ->execute([(int) ($_POST['id'] ?? 0)]);
-            $message = 'Plan deleted.';
+        if ($action === 'product_delete') {
+            db()->prepare('DELETE FROM marketing_products WHERE id=?')->execute([(int)($_POST['id'] ?? 0)]);
+            $message = 'Solution deleted.';
+        }
+
+        if ($action === 'testimonial_save') {
+            $id = (int) ($_POST['id'] ?? 0);
+            $clientName = trim((string) ($_POST['client_name'] ?? ''));
+            $quoteEs = trim((string) ($_POST['quote_es'] ?? ''));
+            $quoteEn = trim((string) ($_POST['quote_en'] ?? ''));
+            if ($clientName === '' || ($quoteEs === '' && $quoteEn === '')) {
+                throw new RuntimeException('Client name and at least one testimonial text are required.');
+            }
+            if ($quoteEs === '') $quoteEs = $quoteEn;
+            if ($quoteEn === '') $quoteEn = $quoteEs;
+            $values = [
+                $clientName,
+                trim((string) ($_POST['client_role_es'] ?? '')),
+                trim((string) ($_POST['client_role_en'] ?? '')),
+                trim((string) ($_POST['solution_name'] ?? '')),
+                $quoteEs,
+                $quoteEn,
+                (int) ($_POST['sort_order'] ?? 0),
+                isset($_POST['active']) ? 1 : 0,
+            ];
+            if ($id > 0) {
+                db()->prepare('UPDATE marketing_testimonials SET client_name=?,client_role_es=?,client_role_en=?,solution_name=?,quote_es=?,quote_en=?,sort_order=?,active=? WHERE id=?')->execute([...$values, $id]);
+            } else {
+                db()->prepare('INSERT INTO marketing_testimonials(client_name,client_role_es,client_role_en,solution_name,quote_es,quote_en,sort_order,active) VALUES(?,?,?,?,?,?,?,?)')->execute($values);
+            }
+            $message = 'Client testimonial saved.';
+        }
+
+        if ($action === 'testimonial_delete') {
+            db()->prepare('DELETE FROM marketing_testimonials WHERE id=?')->execute([(int)($_POST['id'] ?? 0)]);
+            $message = 'Client testimonial deleted.';
         }
 
         if ($action === 'project_save') {
@@ -185,8 +198,8 @@ $copy = [
     'en' => landing_content('en'),
 ];
 $products = db()->query('SELECT * FROM marketing_products ORDER BY sort_order,id')->fetchAll();
-$plans = db()->query('SELECT * FROM marketing_plans ORDER BY product_key,sort_order,id')->fetchAll();
 $projects = db()->query('SELECT * FROM marketing_projects ORDER BY sort_order,id')->fetchAll();
+try { $testimonials = db()->query('SELECT * FROM marketing_testimonials ORDER BY sort_order,id')->fetchAll(); } catch (Throwable $e) { $testimonials = []; }
 
 $labels = [
     'hero_kicker' => 'Hero eyebrow',
@@ -196,10 +209,6 @@ $labels = [
     'hero_secondary' => 'WhatsApp CTA',
     'solutions_title' => 'Solutions title',
     'solutions_text' => 'Solutions intro',
-    'izzy_title' => 'IZZY title',
-    'izzy_text' => 'IZZY intro',
-    'cami_title' => 'CAMI title',
-    'cami_text' => 'CAMI intro',
     'services_title' => 'Services title',
     'services_text' => 'Services intro',
     'affiliate_title' => 'Affiliate title',
@@ -247,11 +256,9 @@ require __DIR__ . '/_header.php';
         $previewSections = [
             'home' => 'Home',
             'solutions' => 'Solutions',
-            'izzy' => 'IZZY',
-            'cami' => 'CAMI',
             'services' => 'Services',
-            'plans' => 'IZZY Plans',
             'projects' => 'Projects',
+            'testimonials' => 'Client opinions',
             'affiliate' => 'Affiliates',
             'contact' => 'Contact',
         ];
@@ -273,8 +280,8 @@ require __DIR__ . '/_header.php';
 
 <div class="admin-marketing-tabs">
     <a href="#copy">ES / EN content</a>
-    <a href="#products">Products</a>
-    <a href="#plans">Plans</a>
+    <a href="#products">Solutions</a>
+    <a href="#testimonials">Client opinions</a>
     <a href="#projects">Projects</a>
 </div>
 
@@ -320,174 +327,200 @@ require __DIR__ . '/_header.php';
 <section class="panel" id="products">
     <div class="panel-head">
         <div>
-            <span class="eyebrow">PRODUCTS</span>
-            <h2>IZZY & CAMI</h2>
-            <p>Edit the public descriptions and feature lists. The real public product presentation is visible in the preview above.</p>
+            <span class="eyebrow">SOLUTIONS</span>
+            <h2>Corporate solutions directory</h2>
+            <p>Create, edit, order and publish the solutions shown on the public website. Each solution can point to its own dedicated website.</p>
         </div>
     </div>
 
+    <form class="marketing-card solution-admin-create" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+        <input type="hidden" name="action" value="product_save">
+        <input type="hidden" name="id" value="0">
+        <div class="form-grid">
+            <label>Solution name<input name="name" required placeholder="Example: ZYNKO"></label>
+            <label>Key / slug<input name="product_key" placeholder="zynko"></label>
+            <label>Accent color<input type="color" name="accent_color" value="#0A9ED0"></label>
+            <label>Order<input type="number" name="sort_order" value="10"></label>
+        </div>
+        <div class="upload-zone premium-media-zone solution-logo-upload" data-upload-zone>
+            <input type="file" name="solution_logo" accept="image/jpeg,image/png,image/webp" data-empty-label="Drop, paste or choose the solution logo">
+            <div class="upload-icon" aria-hidden="true">◈</div>
+            <strong>Solution logo</strong>
+            <small>Upload the official logo. Drag & drop, paste from clipboard, or choose JPG, PNG or WEBP.</small>
+            <span class="upload-zone-action">Choose logo</span>
+            <div class="upload-selection-name" data-upload-name>Drop, paste or choose the solution logo</div>
+            <div class="upload-preview premium-upload-preview" data-upload-preview></div>
+        </div>
+        <div class="bilingual-grid">
+            <label>Short tagline ES<input name="tagline_es" maxlength="180" placeholder="Example: Facturación y gestión empresarial"></label>
+            <label>Short tagline EN<input name="tagline_en" maxlength="180" placeholder="Example: Billing and business management"></label>
+            <label>Description ES<textarea name="description_es" rows="4" required></textarea></label>
+            <label>Description EN<textarea name="description_en" rows="4"></textarea></label>
+            <label>Highlights ES<textarea name="features_es" rows="5" placeholder="One item per line"></textarea></label>
+            <label>Highlights EN<textarea name="features_en" rows="5" placeholder="One item per line"></textarea></label>
+            <label>CTA text ES<input name="cta_label_es" maxlength="100" placeholder="Conocer IZZY"></label>
+            <label>CTA text EN<input name="cta_label_en" maxlength="100" placeholder="Explore IZZY"></label>
+        </div>
+        <label>Dedicated website / CTA URL<input type="url" name="cta_url" placeholder="https://..."><small>Leave it empty until the dedicated website is ready. The public card will show “Website coming soon”. As soon as you save a URL, that message disappears and the website button becomes active.</small></label>
+        <label class="toggle-line"><input type="checkbox" name="active" checked><span>Published</span></label>
+        <button class="button" type="submit">Add solution</button>
+    </form>
+
     <div class="marketing-card-grid">
         <?php foreach ($products as $product): ?>
-            <form class="marketing-card" method="post">
-                <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-                <input type="hidden" name="action" value="product">
-                <input type="hidden" name="id" value="<?= (int) $product['id'] ?>">
-
-                <div class="marketing-brand-row">
-                    <img src="../<?= h($product['logo_path']) ?>" alt="<?= h($product['name']) ?>">
-                    <div>
-                        <span class="eyebrow">PRODUCT</span>
-                        <h3><?= h($product['name']) ?></h3>
+            <div class="project-editor-shell">
+                <form class="marketing-card" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
+                    <input type="hidden" name="action" value="product_save">
+                    <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
+                    <input type="hidden" name="current_logo_path" value="<?= h($product['logo_path'] ?? '') ?>">
+                    <div class="marketing-brand-row solution-admin-heading">
+                        <?php if (!empty($product['logo_path'])): ?>
+                            <div class="solution-admin-logo"><img src="../<?= h($product['logo_path']) ?>" alt="<?= h($product['name']) ?>"></div>
+                        <?php else: ?>
+                            <div class="solution-admin-monogram" style="--product-accent:<?= h($product['accent_color']) ?>"><?= h(strtoupper(substr((string)$product['name'],0,2))) ?></div>
+                        <?php endif; ?>
+                        <div><span class="eyebrow">SOLUTION</span><h3><?= h($product['name']) ?></h3></div>
                     </div>
-                </div>
-
-                <label>
-                    Descripción ES
-                    <textarea name="description_es" rows="3"><?= h($product['description_es']) ?></textarea>
-                </label>
-                <label>
-                    Description EN
-                    <textarea name="description_en" rows="3"><?= h($product['description_en']) ?></textarea>
-                </label>
-                <label>
-                    Funciones ES
-                    <textarea name="features_es" rows="7"><?= h($product['features_es']) ?></textarea>
-                </label>
-                <label>
-                    Features EN
-                    <textarea name="features_en" rows="7"><?= h($product['features_en']) ?></textarea>
-                </label>
-
-                <div class="form-grid">
-                    <label>
-                        CTA / anchor
-                        <input name="cta_url" value="<?= h($product['cta_url']) ?>">
-                    </label>
-                    <label>
-                        Order
-                        <input type="number" name="sort_order" value="<?= (int) $product['sort_order'] ?>">
-                    </label>
-                </div>
-
-                <label class="toggle-line">
-                    <input type="checkbox" name="active" <?= $product['active'] ? 'checked' : '' ?>>
-                    <span>Published</span>
-                </label>
-
-                <button class="button" type="submit">Save <?= h($product['name']) ?></button>
-            </form>
+                    <div class="form-grid">
+                        <label>Name<input name="name" value="<?= h($product['name']) ?>" required></label>
+                        <label>Key / slug<input name="product_key" value="<?= h($product['product_key']) ?>" required></label>
+                        <label>Accent color<input type="color" name="accent_color" value="<?= h($product['accent_color'] ?: '#0A9ED0') ?>"></label>
+                        <label>Order<input type="number" name="sort_order" value="<?= (int)$product['sort_order'] ?>"></label>
+                    </div>
+                    <div class="upload-zone premium-media-zone solution-logo-upload" data-upload-zone>
+                        <input type="file" name="solution_logo" accept="image/jpeg,image/png,image/webp" data-empty-label="Keep current logo or choose a replacement">
+                        <div class="upload-icon" aria-hidden="true">◈</div>
+                        <strong><?= !empty($product['logo_path']) ? 'Replace solution logo' : 'Add solution logo' ?></strong>
+                        <small>Drag & drop, paste from clipboard, or choose JPG, PNG or WEBP.</small>
+                        <span class="upload-zone-action">Choose logo</span>
+                        <div class="upload-selection-name" data-upload-name><?= !empty($product['logo_path']) ? 'Current logo will be kept' : 'No logo uploaded yet' ?></div>
+                        <div class="upload-preview premium-upload-preview" data-upload-preview></div>
+                    </div>
+                    <?php if (!empty($product['logo_path'])): ?>
+                        <label class="check-row remove-media-check"><input type="checkbox" name="remove_solution_logo"> Remove current solution logo when saving</label>
+                    <?php endif; ?>
+                    <div class="bilingual-grid">
+                        <label>Short tagline ES<input name="tagline_es" maxlength="180" value="<?= h($product['tagline_es'] ?? '') ?>"></label>
+                        <label>Short tagline EN<input name="tagline_en" maxlength="180" value="<?= h($product['tagline_en'] ?? '') ?>"></label>
+                        <label>Description ES<textarea name="description_es" rows="4"><?= h($product['description_es']) ?></textarea></label>
+                        <label>Description EN<textarea name="description_en" rows="4"><?= h($product['description_en']) ?></textarea></label>
+                        <label>Highlights ES<textarea name="features_es" rows="6"><?= h($product['features_es']) ?></textarea></label>
+                        <label>Highlights EN<textarea name="features_en" rows="6"><?= h($product['features_en']) ?></textarea></label>
+                        <label>CTA text ES<input name="cta_label_es" maxlength="100" value="<?= h($product['cta_label_es'] ?? '') ?>" placeholder="Conocer la solución"></label>
+                        <label>CTA text EN<input name="cta_label_en" maxlength="100" value="<?= h($product['cta_label_en'] ?? '') ?>" placeholder="Explore solution"></label>
+                    </div>
+                    <label>Dedicated website / CTA URL<input type="url" name="cta_url" value="<?= h($product['cta_url']) ?>" placeholder="https://..."><small>Change this whenever the solution website changes. Empty = “Website coming soon”. Saving a valid URL immediately activates the public website button.</small></label>
+                    <label class="toggle-line"><input type="checkbox" name="active" <?= $product['active'] ? 'checked' : '' ?>><span>Published</span></label>
+                    <button class="button" type="submit">Save <?= h($product['name']) ?></button>
+                </form>
+                <form method="post" class="project-delete-form" data-swal-confirm="Delete this solution?" data-swal-text="It will be removed from the public website and contact selector.">
+                    <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><input type="hidden" name="action" value="product_delete"><input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
+                    <button class="button danger" type="submit">Delete solution</button>
+                </form>
+            </div>
         <?php endforeach; ?>
     </div>
 </section>
 
-<section class="panel" id="plans">
+<section class="panel" id="testimonials">
     <div class="panel-head">
         <div>
-            <span class="eyebrow">PLANS</span>
-            <h2>Commercial plans</h2>
-            <p>Manage IZZY pricing and plan features. Keep one plan marked as Featured to give it stronger visual emphasis on the public website.</p>
+            <span class="eyebrow">CLIENT OPINIONS</span>
+            <h2>Real customer experiences</h2>
+            <p>Manage client experiences here. The initial demonstration profiles keep the section visually complete. Replace them with approved real customer testimonials whenever you have them.</p>
         </div>
     </div>
 
-    <form class="marketing-card plan-editor" method="post">
+    <form class="marketing-card testimonial-admin-create" method="post">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-        <input type="hidden" name="action" value="plan_save">
+        <input type="hidden" name="action" value="testimonial_save">
         <input type="hidden" name="id" value="0">
-
         <div class="form-grid">
-            <label>
-                Product
-                <select name="product_key">
-                    <option value="izzy">IZZY</option>
-                    <option value="cami">CAMI</option>
+            <label>Client / company name<input name="client_name" required placeholder="Company or approved client name"></label>
+            <label>Related solution
+                <select name="solution_name">
+                    <option value="">General / ES MULTISERVICIOS</option>
+                    <?php foreach ($products as $productOption): ?>
+                        <option value="<?= h($productOption['name']) ?>"><?= h($productOption['name']) ?></option>
+                    <?php endforeach; ?>
+                    <option value="Soluciones a la medida">Soluciones a la medida</option>
                 </select>
             </label>
             <label>Order<input type="number" name="sort_order" value="10"></label>
-            <label>Name ES<input name="name_es" required></label>
-            <label>Name EN<input name="name_en" required></label>
-            <label>Price label ES<input name="price_label_es"></label>
-            <label>Price label EN<input name="price_label_en"></label>
-            <label>Badge ES<input name="badge_es"></label>
-            <label>Badge EN<input name="badge_en"></label>
         </div>
-
         <div class="bilingual-grid">
-            <label>Description ES<textarea name="description_es" rows="3"></textarea></label>
-            <label>Description EN<textarea name="description_en" rows="3"></textarea></label>
-            <label>Features ES<textarea name="features_es" rows="6" placeholder="One feature per line"></textarea></label>
-            <label>Features EN<textarea name="features_en" rows="6" placeholder="One feature per line"></textarea></label>
+            <div>
+                <h3>Español</h3>
+                <label>Role / context<input name="client_role_es" placeholder="Ej. Gerencia / Clínica / Comercio"></label>
+                <label>Opinión<textarea name="quote_es" rows="5" placeholder="Escribe únicamente una opinión real autorizada por el cliente."></textarea></label>
+            </div>
+            <div>
+                <h3>English</h3>
+                <label>Role / context<input name="client_role_en" placeholder="Example: Management / Clinic / Retail"></label>
+                <label>Opinion<textarea name="quote_en" rows="5" placeholder="Use only a real customer opinion approved for publication."></textarea></label>
+            </div>
         </div>
-
-        <label>CTA URL / WhatsApp URL<input name="cta_url"></label>
-
-        <div class="check-row">
-            <label><input type="checkbox" name="featured"> Featured</label>
-            <label><input type="checkbox" name="active" checked> Published</label>
-        </div>
-
-        <button class="button" type="submit">Add plan</button>
+        <label class="toggle-line"><input type="checkbox" name="active" checked><span>Published</span></label>
+        <button class="button" type="submit">Add client opinion</button>
     </form>
 
-    <?php if ($plans): ?>
-        <div class="marketing-plan-admin-grid">
-            <?php foreach ($plans as $plan): ?>
-                <article class="marketing-plan-admin-card <?= $plan['featured'] ? 'is-featured' : '' ?>">
-                    <div class="marketing-plan-admin-head">
-                        <div>
-                            <span class="eyebrow"><?= h(strtoupper($plan['product_key'])) ?></span>
-                            <h3><?= h($plan['name_es']) ?></h3>
-                            <strong><?= h($plan['price_label_es']) ?></strong>
-                        </div>
-                        <?php if ($plan['featured']): ?>
-                            <span class="status-pill">Featured</span>
-                        <?php endif; ?>
-                    </div>
-
-                    <form class="marketing-plan-edit-form" method="post">
+    <?php if (!$testimonials): ?>
+        <div class="empty-state marketing-empty-state">
+            <strong>No client opinions available yet.</strong>
+            <p>This section stays hidden on the public website until you add a real approved testimonial.</p>
+        </div>
+    <?php else: ?>
+        <div class="marketing-card-grid testimonial-admin-grid">
+            <?php foreach ($testimonials as $testimonial): ?>
+                <div class="project-editor-shell">
+                    <form class="marketing-card" method="post">
                         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-                        <input type="hidden" name="action" value="plan_save">
-                        <input type="hidden" name="id" value="<?= (int) $plan['id'] ?>">
-
+                        <input type="hidden" name="action" value="testimonial_save">
+                        <input type="hidden" name="id" value="<?= (int)$testimonial['id'] ?>">
                         <div class="form-grid">
-                            <label>Product
-                                <select name="product_key">
-                                    <option value="izzy" <?= $plan['product_key'] === 'izzy' ? 'selected' : '' ?>>IZZY</option>
-                                    <option value="cami" <?= $plan['product_key'] === 'cami' ? 'selected' : '' ?>>CAMI</option>
+                            <label>Client / company name<input name="client_name" required value="<?= h($testimonial['client_name']) ?>"></label>
+                            <label>Related solution
+                                <?php $testimonialSolutionCurrent = trim((string)($testimonial['solution_name'] ?? '')); ?>
+                                <select name="solution_name">
+                                    <option value="" <?= $testimonialSolutionCurrent === '' ? 'selected' : '' ?>>General / ES MULTISERVICIOS</option>
+                                    <?php $knownTestimonialSolution = false; ?>
+                                    <?php foreach ($products as $productOption): ?>
+                                        <?php $isSelected = strcasecmp($testimonialSolutionCurrent, (string)$productOption['name']) === 0; if ($isSelected) $knownTestimonialSolution = true; ?>
+                                        <option value="<?= h($productOption['name']) ?>" <?= $isSelected ? 'selected' : '' ?>><?= h($productOption['name']) ?></option>
+                                    <?php endforeach; ?>
+                                    <?php $isCustomSolution = strcasecmp($testimonialSolutionCurrent, 'Soluciones a la medida') === 0; if ($isCustomSolution) $knownTestimonialSolution = true; ?>
+                                    <option value="Soluciones a la medida" <?= $isCustomSolution ? 'selected' : '' ?>>Soluciones a la medida</option>
+                                    <?php if ($testimonialSolutionCurrent !== '' && !$knownTestimonialSolution): ?>
+                                        <option value="<?= h($testimonialSolutionCurrent) ?>" selected><?= h($testimonialSolutionCurrent) ?></option>
+                                    <?php endif; ?>
                                 </select>
                             </label>
-                            <label>Order<input type="number" name="sort_order" value="<?= (int) $plan['sort_order'] ?>"></label>
-                            <label>Name ES<input name="name_es" value="<?= h($plan['name_es']) ?>" required></label>
-                            <label>Name EN<input name="name_en" value="<?= h($plan['name_en']) ?>" required></label>
-                            <label>Price label ES<input name="price_label_es" value="<?= h($plan['price_label_es']) ?>"></label>
-                            <label>Price label EN<input name="price_label_en" value="<?= h($plan['price_label_en']) ?>"></label>
-                            <label>Badge ES<input name="badge_es" value="<?= h($plan['badge_es']) ?>"></label>
-                            <label>Badge EN<input name="badge_en" value="<?= h($plan['badge_en']) ?>"></label>
+                            <label>Order<input type="number" name="sort_order" value="<?= (int)$testimonial['sort_order'] ?>"></label>
                         </div>
-
                         <div class="bilingual-grid">
-                            <label>Description ES<textarea name="description_es" rows="3"><?= h($plan['description_es']) ?></textarea></label>
-                            <label>Description EN<textarea name="description_en" rows="3"><?= h($plan['description_en']) ?></textarea></label>
-                            <label>Features ES<textarea name="features_es" rows="8"><?= h($plan['features_es']) ?></textarea></label>
-                            <label>Features EN<textarea name="features_en" rows="8"><?= h($plan['features_en']) ?></textarea></label>
+                            <div>
+                                <h3>Español</h3>
+                                <label>Role / context<input name="client_role_es" value="<?= h($testimonial['client_role_es'] ?? '') ?>"></label>
+                                <label>Opinión<textarea name="quote_es" rows="5"><?= h($testimonial['quote_es'] ?? '') ?></textarea></label>
+                            </div>
+                            <div>
+                                <h3>English</h3>
+                                <label>Role / context<input name="client_role_en" value="<?= h($testimonial['client_role_en'] ?? '') ?>"></label>
+                                <label>Opinion<textarea name="quote_en" rows="5"><?= h($testimonial['quote_en'] ?? '') ?></textarea></label>
+                            </div>
                         </div>
-
-                        <label>CTA URL / WhatsApp URL<input name="cta_url" value="<?= h($plan['cta_url']) ?>"></label>
-
-                        <div class="check-row">
-                            <label><input type="checkbox" name="featured" <?= $plan['featured'] ? 'checked' : '' ?>> Featured</label>
-                            <label><input type="checkbox" name="active" <?= $plan['active'] ? 'checked' : '' ?>> Published</label>
-                        </div>
-
-                        <button class="button" type="submit">Save plan</button>
+                        <label class="toggle-line"><input type="checkbox" name="active" <?= $testimonial['active'] ? 'checked' : '' ?>><span>Published</span></label>
+                        <button class="button" type="submit">Save opinion</button>
                     </form>
-
-                    <form method="post" data-swal-confirm="Delete this plan?" data-swal-text="This plan will stop appearing on the public website.">
+                    <form method="post" class="project-delete-form" data-swal-confirm="Delete this client opinion?" data-swal-text="It will disappear from the public website.">
                         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-                        <input type="hidden" name="action" value="plan_delete">
-                        <input type="hidden" name="id" value="<?= (int) $plan['id'] ?>">
-                        <button class="button danger" type="submit">Delete plan</button>
+                        <input type="hidden" name="action" value="testimonial_delete">
+                        <input type="hidden" name="id" value="<?= (int)$testimonial['id'] ?>">
+                        <button class="button danger" type="submit">Delete opinion</button>
                     </form>
-                </article>
+                </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
@@ -546,7 +579,7 @@ require __DIR__ . '/_header.php';
                 <?php endif; ?>
 
                 <div class="form-grid">
-                    <label>Project URL<input name="project_url" value="<?= h($project['project_url']) ?>"></label>
+                    <label>Public project website URL<input type="url" name="project_url" value="<?= h($project['project_url']) ?>" placeholder="https://..."><small>This powers the “Visit website” button on the public project card and can be changed at any time.</small></label>
                     <label>Order<input type="number" name="sort_order" value="<?= (int) $project['sort_order'] ?>"></label>
                 </div>
 

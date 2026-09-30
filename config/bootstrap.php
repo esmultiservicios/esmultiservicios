@@ -275,3 +275,7 @@ function marketing_projects(): array {
     try { return db()->query('SELECT * FROM marketing_projects WHERE active=1 ORDER BY sort_order,id')->fetchAll(); }
     catch(Throwable $e) { return []; }
 }
+function marketing_testimonials(): array {
+    try { return db()->query('SELECT * FROM marketing_testimonials WHERE active=1 ORDER BY sort_order,id')->fetchAll(); }
+    catch(Throwable $e) { return []; }
+}
