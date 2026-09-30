@@ -671,10 +671,22 @@ CREATE TABLE IF NOT EXISTS site_visits (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
--- Sabrosísimo Mix portfolio entry. Image can be uploaded later from Marketing site ES/EN.
+-- Sabrosísimo Mix portfolio entry. The public card is fully populated and remains editable from Marketing site ES/EN.
 INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
-SELECT 'Sabrosísimo Mix','','','','','', 'https://sabrosisimomix.esmultiservicios.com/',20,1
+SELECT 'Sabrosísimo Mix','Sitio comercial + CMS administrable','Business website + custom CMS',
+'Sitio web responsive para servicios gastronómicos y eventos, con contenido administrable, servicios, galería, cotizaciones, redes sociales y contacto directo por WhatsApp.',
+'Responsive website for food services and events, with manageable content, services, gallery, quote requests, social networks and direct WhatsApp contact.',
+'assets/projects/sabrosisimo-mix-logo.jpg','https://sabrosisimomix.esmultiservicios.com/',20,1
 WHERE NOT EXISTS (SELECT 1 FROM marketing_projects WHERE title='Sabrosísimo Mix');
+
+UPDATE marketing_projects
+SET category_es=CASE WHEN TRIM(COALESCE(category_es,''))='' THEN 'Sitio comercial + CMS administrable' ELSE category_es END,
+    category_en=CASE WHEN TRIM(COALESCE(category_en,''))='' THEN 'Business website + custom CMS' ELSE category_en END,
+    description_es=CASE WHEN TRIM(COALESCE(description_es,''))='' THEN 'Sitio web responsive para servicios gastronómicos y eventos, con contenido administrable, servicios, galería, cotizaciones, redes sociales y contacto directo por WhatsApp.' ELSE description_es END,
+    description_en=CASE WHEN TRIM(COALESCE(description_en,''))='' THEN 'Responsive website for food services and events, with manageable content, services, gallery, quote requests, social networks and direct WhatsApp contact.' ELSE description_en END,
+    image_path=CASE WHEN TRIM(COALESCE(image_path,''))='' THEN 'assets/projects/sabrosisimo-mix-logo.jpg' ELSE image_path END,
+    project_url=CASE WHEN TRIM(COALESCE(project_url,''))='' THEN 'https://sabrosisimomix.esmultiservicios.com/' ELSE project_url END
+WHERE title='Sabrosísimo Mix';
 
 
 -- Floating widget settings
