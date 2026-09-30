@@ -532,3 +532,73 @@ window.CMSDialog = (() => {
     });
     return { open, close };
 })();
+
+/* Premium action icons -----------------------------------------------------
+   Adds a consistent semantic icon to text action buttons across the admin.
+   This keeps every module uniform without requiring per-page icon markup. */
+(() => {
+  const icons = {
+    save:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5V3Zm2 2v5h8V5H7Zm1 10v4h8v-4H8Z"/></svg>',
+    add:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z"/></svg>',
+    delete:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10l-1 14H8L7 7Zm2-4h6l1 2h4v2H4V5h4l1-2Z"/></svg>',
+    edit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16.5-.5 4 4-.5L19 8.5 15.5 5 4 16.5Zm12.6-12.6 1.2-1.2a1.4 1.4 0 0 1 2 0l1.5 1.5a1.4 1.4 0 0 1 0 2L20.1 7.4l-3.5-3.5Z"/></svg>',
+    search:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 1 1-4.9 12L2 18.1 3.9 20l3.1-3.1A7 7 0 0 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>',
+    send:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 20 18-8L3 4v6l12 2-12 2v6Z"/></svg>',
+    upload:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 16h2V8l3 3 1.4-1.4L12 4.2 6.6 9.6 8 11l3-3v8Zm-6 3h14v2H5v-2Z"/></svg>',
+    download:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4h2v8l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3V4ZM5 19h14v2H5v-2Z"/></svg>',
+    view:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.3 9.2 1 12c1.3 2.8 5.5 7 11 7s9.7-4.2 11-7c-1.3-2.8-5.5-7-11-7Zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>',
+    publish:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7l-9.2 9.2Z"/></svg>',
+    restore:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.7 9H3.2A9 9 0 1 0 5 6.3V3H3v7h7V8H6.4A7 7 0 0 1 12 5Z"/></svg>',
+    archive:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v4H4V4Zm1 6h14v10H5V10Zm4 3v2h6v-2H9Z"/></svg>',
+    lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3h2v11H5V10h2Zm2 0h6V7a3 3 0 0 0-6 0v3Z"/></svg>',
+    test:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v2l-1 1v4l5 8a2 2 0 0 1-1.7 3H6.7A2 2 0 0 1 5 18l5-8V6L9 5V3Zm1 12h4l-2-3-2 3Z"/></svg>',
+    back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-7 7 7 7 1.4-1.4L6.8 13H21v-2H6.8l4.6-4.6L10 5Z"/></svg>',
+    next:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-1.4 1.4 4.6 4.6H3v2h14.2l-4.6 4.6L14 19l7-7-7-7Z"/></svg>',
+    cancel:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6.3 4.9 5.7 5.7 5.7-5.7 1.4 1.4-5.7 5.7 5.7 5.7-1.4 1.4-5.7-5.7-5.7 5.7-1.4-1.4 5.7-5.7-5.7-5.7 1.4-1.4Z"/></svg>',
+    approve:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7l-9.2 9.2Z"/></svg>',
+    login:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4h10v16H10v-2h8V6h-8V4Zm1.4 4.6L14.8 12l-3.4 3.4L10 14l1-1H4v-2h7l-1-1 1.4-1.4Z"/></svg>',
+    settings:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.9 7.9 0 0 0 0-2l2-1.5-2-3.4-2.4 1a8.1 8.1 0 0 0-1.7-1L15 3.5h-4l-.3 2.6a8.1 8.1 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.5a7.9 7.9 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a8.1 8.1 0 0 0 1.7 1l.3 2.6h4l.3-2.6a8.1 8.1 0 0 0 1.7-1l2.4 1 2-3.4-2-1.5ZM13 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/></svg>'
+  };
+  function actionFor(el){
+    const t=(el.textContent||'').trim().toLowerCase();
+    if(!t) return null;
+    if(/delete|remove|eliminar|borrar|reset/.test(t)) return 'delete';
+    if(/add|create|new|agregar|crear/.test(t)) return 'add';
+    if(/edit|editar/.test(t)) return 'edit';
+    if(/search|find|buscar/.test(t)) return 'search';
+    if(/upload|subir|cargar/.test(t)) return 'upload';
+    if(/download|descargar/.test(t)) return 'download';
+    if(/preview|view|ver sitio|ver |vista/.test(t)) return 'view';
+    if(/publish|publicar/.test(t)) return 'publish';
+    if(/approve|aprobar/.test(t)) return 'approve';
+    if(/restore|restaurar/.test(t)) return 'restore';
+    if(/archive|archivar/.test(t)) return 'archive';
+    if(/send|enviar/.test(t)) return 'send';
+    if(/test|probar/.test(t)) return 'test';
+    if(/login|log in|iniciar sesión|verify|verificar|enable 2fa/.test(t)) return 'login';
+    if(/previous|back|atrás|volver|cancel/.test(t)) return /cancel/.test(t)?'cancel':'back';
+    if(/next|continue|continuar|siguiente/.test(t)) return 'next';
+    if(/save|guardar|update|actualizar|apply|aplicar|set up|configur/.test(t)) return 'save';
+    if(/sign out|cerrar sesión|revoke/.test(t)) return 'lock';
+    if(/request|solicitar/.test(t)) return 'send';
+    return 'settings';
+  }
+  function decorate(root=document){
+    root.querySelectorAll('button, a.button, .button').forEach(el=>{
+      if(el.dataset.noActionIcon==='1' || el.classList.contains('icon-btn') || el.classList.contains('media-preview') || el.classList.contains('zoom-btn') || el.closest('.rich-toolbar') || el.querySelector('.ui-icon,.action-icon')) return;
+      const txt=(el.textContent||'').trim();
+      if(!txt || txt.length===1 || (/^[BIU×+−]$/i).test(txt)) return;
+      const key=actionFor(el); if(!key) return;
+      const span=document.createElement('span');
+      span.className='action-icon';
+      span.innerHTML=icons[key]||icons.settings;
+      el.prepend(span);
+      el.classList.add('has-action-icon');
+    });
+  }
+  const start=()=>{
+    decorate();
+    new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches?.('button,.button,a.button')) decorate(n.parentElement||document); else decorate(n);}}))).observe(document.body,{childList:true,subtree:true});
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+})();

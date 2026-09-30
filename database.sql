@@ -670,20 +670,8 @@ SET image_path='assets/projects/castros-ready-logo.jpg'
 WHERE title='Castro''s Ready' AND (image_path IS NULL OR image_path='');
 
 INSERT INTO marketing_projects(title,category_es,category_en,description_es,description_en,image_path,project_url,sort_order,active)
-SELECT 'Sabrosísimo Mix','Sitio comercial + CMS administrable','Business website + custom CMS',
-'Sitio web responsive para servicios gastronómicos y eventos, con contenido administrable, servicios, galería, cotizaciones, redes sociales y contacto directo por WhatsApp.',
-'Responsive website for food services and events, with manageable content, services, gallery, quote requests, social networks and direct WhatsApp contact.',
-'assets/projects/sabrosisimo-mix-logo.jpg','https://sabrosisimomix.esmultiservicios.com/',20,1
+SELECT 'Sabrosísimo Mix','','','','','', 'https://sabrosisimomix.esmultiservicios.com/',20,1
 WHERE NOT EXISTS (SELECT 1 FROM marketing_projects WHERE title='Sabrosísimo Mix');
-
-UPDATE marketing_projects
-SET category_es='Sitio comercial + CMS administrable',
-    category_en='Business website + custom CMS',
-    description_es='Sitio web responsive para servicios gastronómicos y eventos, con contenido administrable, servicios, galería, cotizaciones, redes sociales y contacto directo por WhatsApp.',
-    description_en='Responsive website for food services and events, with manageable content, services, gallery, quote requests, social networks and direct WhatsApp contact.',
-    image_path='assets/projects/sabrosisimo-mix-logo.jpg',
-    project_url='https://sabrosisimomix.esmultiservicios.com/'
-WHERE title='Sabrosísimo Mix';
 
 
 INSERT INTO settings(setting_key,setting_value) VALUES
@@ -1092,3 +1080,12 @@ FROM (
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM marketing_testimonials LIMIT 1);
 
+
+-- Multi floating widget manager defaults (safe when applied after base schema)
+INSERT INTO settings(setting_key,setting_value) VALUES
+('floating_widgets_json',''),
+('whatsapp_order','10'),
+('whatsapp_show_desktop','1'),
+('whatsapp_show_mobile','1'),
+('floating_widget_gap','12')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;

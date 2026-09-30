@@ -1201,21 +1201,11 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 <?= $socialRender('right') ?>
 
 <?php
-    $externalWidgetEnabled = (string)($settings['floating_external_enabled'] ?? '0') === '1';
-    $externalWidgetSnippet = trim((string)($settings['floating_external_snippet'] ?? ''));
-    $externalWidgetUrl = trim((string)($settings['floating_external_url'] ?? ''));
-    $externalWidgetUrlValid = $externalWidgetUrl !== '' && filter_var($externalWidgetUrl, FILTER_VALIDATE_URL);
-    $externalWidgetPosition = in_array(($settings['floating_external_position'] ?? 'right'), ['left','right'], true)
-        ? (string)$settings['floating_external_position'] : 'right';
-    $waPosition = in_array(($settings['whatsapp_position'] ?? 'right'), ['left','right'], true)
-        ? (string)$settings['whatsapp_position'] : 'right';
-
-    $widgetGap = max(8, min(32, (int)($settings['floating_widget_gap'] ?? 12)));
+    $waPosition = in_array(($settings['whatsapp_position'] ?? 'left'), ['left','right'], true)
+        ? (string)$settings['whatsapp_position'] : 'left';
+    $widgetGap = max(8, min(40, (int)($settings['floating_widget_gap'] ?? 12)));
     $waShowDesktop = ($settings['whatsapp_show_desktop'] ?? '1') === '1';
     $waShowMobile = ($settings['whatsapp_show_mobile'] ?? '1') === '1';
-    $externalShowDesktop = ($settings['floating_external_show_desktop'] ?? '1') === '1';
-    $externalShowMobile = ($settings['floating_external_show_mobile'] ?? '1') === '1';
-
     $managedFloating = ['left' => [], 'right' => []];
 
     if (($settings['whatsapp_enabled'] ?? '1') === '1') {
@@ -1232,16 +1222,54 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         ];
     }
 
-    if ($externalWidgetEnabled && ($externalWidgetSnippet !== '' || $externalWidgetUrlValid)) {
-        $visibility = (!$externalShowDesktop ? ' floating-hide-desktop' : '') . (!$externalShowMobile ? ' floating-hide-mobile' : '');
-        $managedFloating[$externalWidgetPosition][] = [
+    $externalWidgets = [];
+    $externalRaw = trim((string)($settings['floating_widgets_json'] ?? ''));
+    if ($externalRaw !== '') {
+        $decoded = json_decode($externalRaw, true);
+        if (is_array($decoded)) $externalWidgets = $decoded;
+    }
+    if (!$externalWidgets) {
+        // Backward compatibility with packages that only had one external/NIVO widget.
+        $externalWidgets[] = [
+            'name' => $settings['floating_external_name'] ?? 'NIVO Web Chat',
+            'enabled' => (($settings['floating_external_enabled'] ?? '0') === '1') ? 1 : 0,
+            'kind' => trim((string)($settings['floating_external_snippet'] ?? '')) !== '' ? 'embed' : 'url',
+            'position' => $settings['floating_external_position'] ?? 'right',
             'order' => (int)($settings['floating_external_order'] ?? 20),
-            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($settings['floating_external_name'] ?? 'NIVO Web Chat').'">'.($externalWidgetSnippet !== '' ? $externalWidgetSnippet : '<iframe class="nivo-widget-frame" src="'.h($externalWidgetUrl).'" title="NIVO Web Chat" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>').'</div>',
+            'show_desktop' => (($settings['floating_external_show_desktop'] ?? '1') === '1') ? 1 : 0,
+            'show_mobile' => (($settings['floating_external_show_mobile'] ?? '1') === '1') ? 1 : 0,
+            'url' => $settings['floating_external_url'] ?? '',
+            'snippet' => $settings['floating_external_snippet'] ?? '',
+        ];
+    }
+
+    foreach ($externalWidgets as $widget) {
+        if (!is_array($widget) || empty($widget['enabled'])) continue;
+        $name = trim((string)($widget['name'] ?? 'External widget')) ?: 'External widget';
+        $position = in_array(($widget['position'] ?? 'right'), ['left','right'], true) ? (string)$widget['position'] : 'right';
+        $kind = ($widget['kind'] ?? 'embed') === 'url' ? 'url' : 'embed';
+        $snippet = trim((string)($widget['snippet'] ?? ''));
+        $url = trim((string)($widget['url'] ?? ''));
+        $showDesktop = !array_key_exists('show_desktop', $widget) || !empty($widget['show_desktop']);
+        $showMobile = !array_key_exists('show_mobile', $widget) || !empty($widget['show_mobile']);
+        $visibility = (!$showDesktop ? ' floating-hide-desktop' : '') . (!$showMobile ? ' floating-hide-mobile' : '');
+        $content = '';
+        if ($kind === 'embed' && $snippet !== '') {
+            $content = $snippet; // trusted administrator-provided integration code
+        } elseif ($kind === 'url' && $url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
+            $content = '<iframe class="nivo-widget-frame" src="'.h($url).'" title="'.h($name).'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+        }
+        if ($content === '') continue;
+        $managedFloating[$position][] = [
+            'order' => max(0, (int)($widget['order'] ?? 20)),
+            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($name).'">'.$content.'</div>',
         ];
     }
 
     foreach (['left', 'right'] as $floatingSide):
         if (!$managedFloating[$floatingSide]) continue;
+        // Lower order stays closer to the bottom edge. Because the stack grows upward,
+        // larger values render first and lower values render last.
         usort($managedFloating[$floatingSide], static fn(array $a, array $b): int => $b['order'] <=> $a['order']);
 ?>
     <div class="floating-widget-stack floating-widget-stack-<?= h($floatingSide) ?>"

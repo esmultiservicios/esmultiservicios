@@ -29,10 +29,3 @@ WHAT THIS PATCH CORRECTS
 - database-update.sql no longer uses ADD COLUMN IF NOT EXISTS, INFORMATION_SCHEMA,
   or stored-procedure requirements. It is suitable for the existing ES MULTISERVICIOS
   schema and can be re-run safely after the previous partial failed attempt.
-
-SABROSÍSIMO MIX PORTFOLIO UPDATE
---------------------------------
-- Adds the Sabrosísimo Mix project logo to assets/projects/.
-- Completes its ES/EN category and project description.
-- Keeps the project URL and public card fully populated.
-- All project fields, including image, remain editable from Admin > Marketing site ES/EN > Projects.

@@ -1,0 +1,14 @@
+ES MULTISERVICIOS - ICONOS DE ACCIONES PREMIUM
+
+Cambios aplicados:
+- Sistema global de iconos semánticos para botones de administración.
+- Iconos según la acción: guardar, crear, editar, eliminar, buscar, enviar, subir, descargar, visualizar, publicar, aprobar, restaurar, archivar, probar, volver, continuar, iniciar sesión y configurar.
+- Los iconos se aplican automáticamente también a botones agregados dinámicamente.
+- Se respetan botones que ya poseen iconos propios para evitar duplicados.
+- Se añadieron iconos coherentes a los CTA principales del sitio público: contacto, WhatsApp, visitar sitio/proyecto, soporte y formularios.
+- Ajustes responsive para mantener icono + texto alineados sin desbordamientos.
+- No se agregaron dependencias externas ni CDN.
+
+Validación:
+- JavaScript validado con node --check.
+- 48 archivos PHP validados con php -l sin errores.

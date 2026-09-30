@@ -10132,3 +10132,142 @@ a.button:not(.danger):not(.danger-text):hover,
   background:#f4f8fb;
 }
 .solution-admin-logo img{max-width:100%;max-height:94px;width:auto;height:auto;object-fit:contain}
+
+/* ==========================================================
+   MULTI FLOATING WIDGET MANAGER
+   ========================================================== */
+.widget-section-heading{align-items:center;gap:18px;}
+.widget-add-button{flex:0 0 auto;}
+.external-widget-list{display:grid;gap:18px;}
+.external-widget-editor{border:1px solid #d8e3ee;border-radius:20px;padding:20px;background:#f8fbfd;box-shadow:0 10px 24px rgba(15,45,68,.05);min-width:0;}
+.external-widget-editor-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.external-widget-editor-head>div{min-width:0;}
+.external-widget-editor-head strong{display:block;color:#0b3152;font-size:17px;overflow-wrap:anywhere;}
+.external-widget-editor-head small{display:block;margin-top:3px;color:var(--muted);}
+.widget-enabled-row{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:16px;}
+.widget-master-toggle{margin-bottom:18px;}
+.widget-remove-button{background:#a72c3a!important;border-color:#a72c3a!important;color:#fff!important;}
+.settings-widget-handoff .settings-module-link{padding:2px 0 0;}
+@media(max-width:900px){.widget-enabled-row{grid-template-columns:1fr 1fr;}.widget-section-heading{align-items:flex-start;flex-direction:column;}.widget-add-button{width:100%;justify-content:center;}}
+@media(max-width:640px){.external-widget-editor{padding:16px;border-radius:16px;}.external-widget-editor-head{align-items:flex-start;flex-direction:column;}.external-widget-editor-head .button{width:100%;justify-content:center;}.widget-enabled-row{grid-template-columns:1fr;}}
+
+
+/* ==========================================================
+   FLOATING WIDGETS — PROFESSIONAL NON-TECHNICAL UX
+   ========================================================== */
+.widget-manager .premium-switch{
+  min-height:76px;
+  padding:14px 16px;
+  background:#f5faf9;
+  border-color:#cfe2dc;
+  box-shadow:0 8px 20px rgba(10,49,75,.04);
+}
+.widget-manager .premium-switch:hover{
+  background:#eef8f5;
+  border-color:#9fcabd;
+}
+.widget-manager .premium-switch .switch-ui{
+  width:46px;
+  height:26px;
+  flex-basis:46px;
+}
+.widget-manager .premium-switch .switch-ui:after{
+  width:18px;
+  height:18px;
+}
+.widget-manager .premium-switch input:checked + .switch-ui:after{
+  transform:translateX(20px);
+}
+.widget-manager .premium-switch b{
+  color:#0b3152;
+  font-size:14px;
+  line-height:1.25;
+}
+.widget-manager .premium-switch small{
+  color:#61768a;
+  font-size:12px;
+}
+.widget-help-callout{
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  margin:4px 0 18px;
+  padding:16px 18px;
+  border:1px solid #b9ded4;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f3fbf8,#eef8fc);
+  color:#29465f;
+  box-shadow:0 10px 26px rgba(10,49,75,.06);
+}
+.widget-help-callout .widget-help-icon{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  border-radius:50%;
+  background:#128675;
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+}
+.widget-help-callout strong{
+  display:block;
+  margin-bottom:5px;
+  color:#0b3152;
+  font-size:15px;
+}
+.widget-help-callout p{
+  margin:0;
+  line-height:1.6;
+}
+.widget-help-callout code{
+  display:inline-block;
+  padding:1px 6px;
+  border-radius:6px;
+  background:#0b3152;
+  color:#fff;
+  font-size:12px;
+}
+.widget-snippet-field textarea{
+  min-height:132px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:13px;
+  line-height:1.55;
+  background:#fbfdff;
+}
+.widget-snippet-field > small{
+  display:block;
+  margin-top:8px;
+  color:#567086;
+  line-height:1.55;
+}
+.widget-snippet-field > small strong{color:#0b3152;}
+.widget-manager .form-grid > label > small{line-height:1.45;}
+@media(max-width:640px){
+  .widget-help-callout{padding:14px;}
+  .widget-manager .premium-switch{min-height:70px;}
+}
+
+/* Premium semantic action icons */
+button.has-action-icon,.button.has-action-icon,a.button.has-action-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    white-space:normal;
+}
+.action-icon{
+    width:18px;
+    height:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 18px;
+    line-height:1;
+}
+.action-icon svg{width:100%;height:100%;display:block;fill:currentColor}
+.button.small .action-icon,button.small .action-icon{width:15px;height:15px;flex-basis:15px}
+@media (max-width:640px){
+    button.has-action-icon,.button.has-action-icon,a.button.has-action-icon{gap:7px}
+}

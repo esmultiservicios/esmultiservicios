@@ -468,43 +468,18 @@ $defaultReferralEn = "Google or another search engine\nFacebook\nTikTok\nInstagr
 </div>
 </form>
 </section>
-<section class="panel wide animate-in">
+<section class="panel wide animate-in settings-widget-handoff">
 <div class="panel-heading">
 <div class="panel-icon">💬</div>
 <div>
-<h2>Floating WhatsApp contact</h2>
-<p>A discreet floating contact button that respects the page content on desktop and mobile.</p>
+<h2>Floating contact widgets</h2>
+<p>WhatsApp, NIVO Web Chat and any future external widget are managed from one dedicated screen so their side, order and spacing stay organized.</p>
 </div>
 </div>
-<form method="post">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<input type="hidden" name="action" value="whatsapp">
-<label class="premium-switch">
-<input type="checkbox" name="whatsapp_enabled" <?=($set['whatsapp_enabled']??'1')==='1'?'checked':''?>
->
-<span class="switch-ui" aria-hidden="true">
-</span>
-<span>
-<b>Floating WhatsApp</b>
-<small>Show a compact WhatsApp contact button on the public website.</small>
-</span>
-</label>
-<div class="two-col">
-<label>Default message<textarea name="whatsapp_message"><?=h($set['whatsapp_message']??'')?>
-</textarea>
-</label>
-<label>Position<select name="whatsapp_position">
-<option value="right" <?=($set['whatsapp_position']??'right')==='right'?'selected':''?>
->Bottom right</option>
-<option value="left" <?=($set['whatsapp_position']??'right')==='left'?'selected':''?>
->Bottom left</option>
-</select>
-</label>
+<div class="settings-module-link">
+<p class="muted">Recommended setup: WhatsApp on the left and NIVO Web Chat on the right. You can add more external widgets later, choose left/right independently and control their order without editing frontend code.</p>
+<div class="settings-module-actions"><a class="button" href="widgets.php">Open Floating Widgets</a></div>
 </div>
-<div class="form-actions">
-<button>Save WhatsApp widget</button>
-</div>
-</form>
 </section>
 </div><?php
 require __DIR__.'/_footer.php';

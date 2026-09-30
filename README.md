@@ -218,3 +218,9 @@ The website remains a dedicated ES MULTISERVICIOS implementation built on the re
 - `database-update.sql` creates the testimonial table and safely applies the new defaults to an existing installation.
 
 - Final hero composition fix: component-aware stacking, larger readable solution logos, no clipping/overflow, and preserved named testimonial profiles.
+
+## Floating Widgets Manager
+- Admin > Floating Widgets manages WhatsApp, NIVO Web Chat and additional external widgets.
+- Each external widget can be enabled/disabled, placed left/right, ordered, and shown on desktop/mobile independently.
+- NIVO accepts the complete ZYNKO installation `<script>` snippet.
+- Site Settings now links to the dedicated widget manager instead of exposing a second, conflicting WhatsApp-only form.
