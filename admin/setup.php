@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/bootstrap.php';
 if(admin_count()>0) {
-    header('Location: login.php');
+    header('Location: /admin/login.php');
     exit;
 }
 $error='';
@@ -24,7 +24,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         $role=(int)db()->query("SELECT id FROM admin_roles WHERE role_key='owner' LIMIT 1")->fetchColumn();
         $st=db()->prepare('INSERT INTO admin_users(username,full_name,email,password_hash,role_id,active) VALUES(?,?,?,?,?,1)');
         $st->execute([$u,$full,$email,password_hash($p,PASSWORD_DEFAULT),$role]);
-        header('Location: login.php?setup=1');
+        header('Location: /admin/login.php?setup=1');
         exit;
     }
 }

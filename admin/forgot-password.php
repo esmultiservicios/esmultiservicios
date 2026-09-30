@@ -1,11 +1,11 @@
 <?php
 require __DIR__.'/bootstrap.php';
 if(admin_count()===0) {
-    header('Location: setup.php');
+    header('Location: /admin/setup.php');
     exit;
 }
 if(is_logged_in()) {
-    header('Location: dashboard.php');
+    header('Location: /admin/dashboard.php');
     exit;
 }
 require_once __DIR__.'/../core/EmailService.php';

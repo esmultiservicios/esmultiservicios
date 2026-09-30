@@ -1,15 +1,21 @@
 Options -Indexes
 DirectoryIndex index.php
 
+# Canonical production URL: never expose the physical Git/domain folder.
+# Works even when mod_rewrite rules are not reached.
+<IfModule mod_alias.c>
+  RedirectMatch 301 ^/esmultiservicios\.com/?$ /
+  RedirectMatch 301 ^/esmultiservicios\.com/(.*)$ /$1
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  # Canonical public URLs. If a cPanel Git checkout folder named like the
-  # domain appears in the request, remove it from the browser URL.
+  # Fallback canonicalization for Apache installations using mod_rewrite.
   RewriteCond %{HTTP_HOST} ^(?:www\.)?esmultiservicios\.com$ [NC]
   RewriteRule ^esmultiservicios\.com(?:/(.*))?$ /$1 [R=301,L,NE]
 </IfModule>
 
-<FilesMatch "^(database\.sql|database-update\.sql|README\.txt|\.gitignore|\.cpanel\.yml)$">
+<FilesMatch "^(database\.sql|database-update\.sql|\.gitignore|\.cpanel\.yml)$">
   Require all denied
 </FilesMatch>

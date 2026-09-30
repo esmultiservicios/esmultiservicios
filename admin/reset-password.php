@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/bootstrap.php';
 if(admin_count()===0) {
-    header('Location: setup.php');
+    header('Location: /admin/setup.php');
     exit;
 }
 $error='';
@@ -33,7 +33,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             $pdo->prepare('DELETE FROM admin_remember_tokens WHERE admin_id=?')->execute([(int)$reset['admin_id']]);
             $pdo->commit();
             clear_remember_cookie();
-            header('Location: login.php?reset=1');
+            header('Location: /admin/login.php?reset=1');
             exit;
         } catch(Throwable $e) {
             $pdo->rollBack();

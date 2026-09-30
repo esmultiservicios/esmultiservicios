@@ -1,11 +1,11 @@
 <?php
 require __DIR__.'/bootstrap.php';
 if(admin_count()===0) {
-    header('Location: setup.php');
+    header('Location: /admin/setup.php');
     exit;
 }
 if(is_logged_in()) {
-    header('Location: dashboard.php');
+    header('Location: /admin/dashboard.php');
     exit;
 }
 $error='';
@@ -26,7 +26,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             $_SESSION['escms_2fa_pending_id']=(int)$row['id'];
             $_SESSION['escms_2fa_pending_user']=$row['username'];
             $_SESSION['escms_2fa_remember']=isset($_POST['remember_me'])?1:0;
-            header('Location: two-factor.php');
+            header('Location: /admin/two-factor.php');
             exit;
         }
         session_regenerate_id(true);
@@ -39,7 +39,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         if(isset($_POST['remember_me'])) create_remember_token((int)$row['id']);
         else clear_remember_cookie();
         sync_admin_session();
-        header('Location: dashboard.php');
+        header('Location: /admin/dashboard.php');
         exit;
     }
     record_login_event($row?(int)$row['id']:null,$u,false);

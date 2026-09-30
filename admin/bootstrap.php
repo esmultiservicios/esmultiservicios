@@ -1,9 +1,26 @@
 <?php
 declare(strict_types=1);
+
+// Production canonical URL guard. cPanel may keep the Git checkout inside a
+// physical folder called esmultiservicios.com, but that folder must never be
+// visible in public URLs. Any legacy/duplicate admin URL is redirected to
+// https://esmultiservicios.com/admin/... before sessions or HTML output.
+(function (): void {
+    $host = strtolower(preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')) ?? '');
+    if (!in_array($host, ['esmultiservicios.com', 'www.esmultiservicios.com'], true)) return;
+    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+    if (preg_match('~^/esmultiservicios\.com(?=/|$)(.*)$~i', $uri, $m)) {
+        $target = $m[1] !== '' ? $m[1] : '/';
+        if ($target[0] !== '/') $target = '/' . $target;
+        header('Location: ' . $target, true, 301);
+        exit;
+    }
+})();
+
 session_start();
 require_once __DIR__ . '/../config/bootstrap.php';
 if (!installation_locked()) {
-    header('Location: ../install/');
+    header('Location: /install/');
     exit;
 }
 if (!config_ready()) {
@@ -88,7 +105,7 @@ function sync_admin_session(): void {
             $_SESSION=[];
             clear_remember_cookie();
             session_destroy();
-            header('Location: login.php?revoked=1');
+            header('Location: /admin/login.php?revoked=1');
             exit;
         }
         db()->prepare('INSERT INTO admin_sessions(admin_id,session_hash,ip_address,user_agent,last_seen_at) VALUES(?,?,?,?,NOW()) ON DUPLICATE KEY UPDATE admin_id=VALUES(admin_id),ip_address=VALUES(ip_address),user_agent=VALUES(user_agent),last_seen_at=NOW()')->execute([(int)$_SESSION['escms_admin_id'],$hash,request_ip(),request_user_agent()]);
@@ -106,7 +123,7 @@ function is_logged_in(): bool {
 }
 function require_login(): void {
     if(!is_logged_in()) {
-        header('Location: login.php');
+        header('Location: /admin/login.php');
         exit;
     }
     try {
@@ -116,7 +133,7 @@ function require_login(): void {
             $_SESSION=[];
             clear_remember_cookie();
             session_destroy();
-            header('Location: login.php?disabled=1');
+            header('Location: /admin/login.php?disabled=1');
             exit;
         }
     } catch(Throwable $e) {

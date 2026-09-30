@@ -1,12 +1,12 @@
 <?php
 require __DIR__.'/bootstrap.php';
 if(is_logged_in()) {
-    header('Location: dashboard.php');
+    header('Location: /admin/dashboard.php');
     exit;
 }
 $id=(int)($_SESSION['escms_2fa_pending_id']??0);
 if(!$id) {
-    header('Location: login.php');
+    header('Location: /admin/login.php');
     exit;
 }
 $error='';
@@ -19,7 +19,7 @@ $st->execute([$id]);
 $row=$st->fetch();
 if(!$row||(int)$row['active']!==1||(int)$row['two_factor_enabled']!==1) {
     unset($_SESSION['escms_2fa_pending_id'],$_SESSION['escms_2fa_pending_user'],$_SESSION['escms_2fa_remember']);
-    header('Location: login.php');
+    header('Location: /admin/login.php');
     exit;
 }
 if($_SERVER['REQUEST_METHOD']==='POST') {
@@ -39,7 +39,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         if($remember)create_remember_token((int)$row['id']);
         else clear_remember_cookie();
         sync_admin_session();
-        header('Location: dashboard.php');
+        header('Location: /admin/dashboard.php');
         exit;
     }
     $error='The verification code is not valid. Try the current code from your authenticator app.';
