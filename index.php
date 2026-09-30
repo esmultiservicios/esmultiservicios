@@ -740,11 +740,23 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
             <div class="projects-grid">
                 <?php foreach ($projects as $project): ?>
+                    <?php
+                        $projectImage = trim((string)($project['image_path'] ?? ''));
+                        $projectImageAvailable = false;
+                        if ($projectImage !== '') {
+                            if (preg_match('~^https?://~i', $projectImage)) {
+                                $projectImageAvailable = true;
+                            } else {
+                                $projectImageAvailable = is_file(__DIR__ . '/' . ltrim($projectImage, '/'));
+                            }
+                        }
+                    ?>
                     <article class="project-card reveal">
-                        <?php if (!empty($project['image_path'])): ?>
+                        <?php if ($projectImageAvailable): ?>
                             <img
-                                src="<?= h($project['image_path']) ?>"
+                                src="<?= h($projectImage) ?>"
                                 alt="<?= h($project['title']) ?>"
+                                loading="lazy"
                             >
                         <?php else: ?>
                             <div class="project-placeholder"><span><?php

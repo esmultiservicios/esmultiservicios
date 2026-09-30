@@ -46,7 +46,18 @@ function install_detect_site_url(): string
     $script = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? '/install/index.php'));
     $basePath = preg_replace('~/install(?:/index\.php)?$~i', '', $script) ?? '';
     $basePath = rtrim($basePath, '/');
-    return $scheme . '://' . $host . ($basePath !== '' ? $basePath : '');
+
+    // cPanel can keep the Git checkout in a folder named like the domain while
+    // the public domain itself points at /public_html. Never persist that
+    // physical checkout folder as part of the public URL.
+    if ($basePath !== '') {
+        $segments = array_values(array_filter(explode('/', trim($basePath, '/')), static fn($v) => $v !== ''));
+        $hostOnly = strtolower(preg_replace('/:\d+$/', '', $host) ?? $host);
+        $plainHost = preg_replace('/^www\./i', '', $hostOnly);
+        while ($segments && strcasecmp((string)$segments[0], (string)$plainHost) === 0) array_shift($segments);
+        $basePath = $segments ? '/' . implode('/', $segments) : '';
+    }
+    return $scheme . '://' . $host . $basePath;
 }
 
 function install_normalize_db_config(array $raw): array

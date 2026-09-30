@@ -17,8 +17,8 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $u=trim((string)($_POST['username']??''));
     $p=(string)($_POST['password']??'');
-    $st=db()->prepare('SELECT id,username,password_hash,active,two_factor_enabled,two_factor_secret_enc FROM admin_users WHERE username=? LIMIT 1');
-    $st->execute([$u]);
+    $st=db()->prepare('SELECT id,username,password_hash,active,two_factor_enabled,two_factor_secret_enc FROM admin_users WHERE LOWER(username)=LOWER(?) OR LOWER(email)=LOWER(?) LIMIT 1');
+    $st->execute([$u,$u]);
     $row=$st->fetch();
     if($row&&(int)$row['active']===1&&password_verify($p,$row['password_hash'])) {
         if((int)($row['two_factor_enabled']??0)===1&&!empty($row['two_factor_secret_enc'])) {
@@ -118,7 +118,7 @@ endif;
 
 <form method="post">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<label>Username<input name="username" required autocomplete="username" autofocus>
+<label>Username or email<input name="username" required autocomplete="username" autofocus placeholder="Username or email">
 </label>
 <label>Password<input type="password" name="password" required autocomplete="current-password">
 </label>

@@ -224,3 +224,16 @@ The website remains a dedicated ES MULTISERVICIOS implementation built on the re
 - Each external widget can be enabled/disabled, placed left/right, ordered, and shown on desktop/mobile independently.
 - NIVO accepts the complete ZYNKO installation `<script>` snippet.
 - Site Settings now links to the dedicated widget manager instead of exposing a second, conflicting WhatsApp-only form.
+
+## 2026-09-30 Mobile responsive + login identity fix
+- Corporate hero is explicitly stacked on phones; IZZY, CAMI and ZYNKO remain fully readable without clipping.
+- Solution/project CTAs are compact touch targets on mobile; desktop flex-basis no longer creates oversized vertical buttons.
+- Sabrosísimo Mix project logo restored to the package and default SQL data.
+- Missing local project images now fall back cleanly instead of rendering a broken-image icon.
+- Admin login accepts either username or email address.
+
+## Producción en dominio raíz (cPanel)
+- El dominio `esmultiservicios.com` debe publicar desde `/public_html`.
+- `.cpanel.yml` despliega el contenido del checkout Git directamente a `$HOME/public_html/`, aunque el repositorio esté clonado dentro de una subcarpeta.
+- El despliegue no sobrescribe `config/database.php`, `config/config.php`, `config/app.key`, `config/install.lock` ni `uploads/`.
+- El instalador y `site_url()` eliminan automáticamente un segmento accidental igual al nombre del dominio, evitando URLs como `/esmultiservicios.com/admin/`.

@@ -65,8 +65,25 @@ function app_config(): array {
 function config_ready(): bool {
     return is_file(__DIR__ . '/config.php') || is_file(__DIR__ . '/database.php');
 }
+function normalize_site_url(string $url): string {
+    $url = trim($url);
+    if ($url === '') return '';
+    $parts = parse_url($url);
+    if (!is_array($parts) || empty($parts['host'])) return rtrim($url, '/');
+    $scheme = strtolower((string)($parts['scheme'] ?? 'https'));
+    $host = strtolower((string)$parts['host']);
+    $port = isset($parts['port']) ? ':' . (int)$parts['port'] : '';
+    $path = trim((string)($parts['path'] ?? ''), '/');
+    if ($path !== '') {
+        $segments = array_values(array_filter(explode('/', $path), static fn($v) => $v !== ''));
+        $plainHost = preg_replace('/^www\./i', '', $host);
+        while ($segments && strcasecmp((string)$segments[0], (string)$plainHost) === 0) array_shift($segments);
+        $path = implode('/', $segments);
+    }
+    return $scheme . '://' . $host . $port . ($path !== '' ? '/' . $path : '');
+}
 function site_url(): string {
-    try { return rtrim((string)(app_config()['site_url'] ?? ''), '/'); }
+    try { return normalize_site_url((string)(app_config()['site_url'] ?? '')); }
     catch (Throwable $e) { return ''; }
 }
 function db(): PDO {

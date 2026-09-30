@@ -5292,3 +5292,146 @@ body {
   font-size:17px!important;
   line-height:1.25!important;
 }
+
+/* =========================================================
+   MOBILE FINAL — readable corporate hero + compact CTAs
+   2026-09-30
+   ========================================================= */
+@media (max-width: 760px) {
+  /* Do not rely on container queries on phones: stack the entire composition. */
+  .corporate-solution-hero{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    min-height:0!important;
+    height:auto!important;
+    gap:18px!important;
+    padding:22px 16px 26px!important;
+    overflow:hidden!important;
+  }
+  .corporate-solution-hero::before{inset:0!important;border-radius:28px!important}
+  .corporate-brand-panel{
+    width:100%!important;
+    min-height:0!important;
+    padding:18px 14px 8px!important;
+  }
+  .corporate-brand-logo{
+    width:min(100%,280px)!important;
+    max-width:280px!important;
+    max-height:180px!important;
+  }
+  .corporate-brand-panel>span{
+    max-width:300px!important;
+    margin:8px auto 0!important;
+    font-size:15px!important;
+    line-height:1.45!important;
+  }
+  .hero-solution-stack{
+    width:100%!important;
+    max-width:100%!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  .hero-solution-chip{
+    width:100%!important;
+    min-height:108px!important;
+    display:grid!important;
+    grid-template-columns:minmax(118px,42%) minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:14px!important;
+    padding:12px 14px!important;
+    border-radius:20px!important;
+    text-align:left!important;
+    overflow:hidden!important;
+  }
+  .hero-solution-logo{
+    width:100%!important;
+    height:82px!important;
+    min-width:0!important;
+    padding:4px!important;
+  }
+  .hero-solution-logo img,
+  .hero-solution-chip.solution-key-izzy .hero-solution-logo img,
+  .hero-solution-chip.solution-key-cami .hero-solution-logo img,
+  .hero-solution-chip.solution-key-zynko .hero-solution-logo img{
+    width:100%!important;
+    height:100%!important;
+    max-width:100%!important;
+    max-height:100%!important;
+    object-fit:contain!important;
+  }
+  .hero-solution-chip > div:last-child{min-width:0!important}
+  .hero-solution-chip strong{
+    font-size:18px!important;
+    line-height:1.2!important;
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    word-break:keep-all!important;
+  }
+  .hero-solution-chip small{
+    font-size:12px!important;
+    line-height:1.35!important;
+    white-space:normal!important;
+  }
+
+  /* Compact, touch-friendly buttons. Do not let desktop flex-basis become mobile height. */
+  .solution-card-actions,
+  .project-card-actions{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+    margin-top:22px!important;
+    padding-top:0!important;
+  }
+  .solution-action,
+  .solution-action-info,
+  .solution-action-site,
+  .solution-action-pending,
+  .project-action,
+  .project-action-info,
+  .project-action-site{
+    width:100%!important;
+    height:auto!important;
+    min-height:52px!important;
+    max-height:none!important;
+    flex:0 0 auto!important;
+    padding:12px 15px!important;
+    border-radius:14px!important;
+    font-size:16px!important;
+    line-height:1.25!important;
+  }
+  .solution-action b{width:30px!important;height:30px!important;flex:0 0 30px!important}
+
+  /* Project artwork stays readable and never shows a broken-image icon. */
+  .project-card>img,
+  .project-placeholder{
+    width:100%!important;
+    height:220px!important;
+    min-height:220px!important;
+  }
+  .project-card>img{
+    padding:24px!important;
+    object-fit:contain!important;
+    object-position:center!important;
+  }
+  .project-card>div:last-child{padding:24px!important}
+}
+
+@media (max-width: 420px) {
+  .corporate-solution-hero{padding:18px 12px 22px!important}
+  .corporate-brand-logo{max-width:235px!important;max-height:150px!important}
+  .hero-solution-chip{
+    grid-template-columns:minmax(108px,40%) minmax(0,1fr)!important;
+    min-height:102px!important;
+    gap:10px!important;
+    padding:10px 12px!important;
+  }
+  .hero-solution-logo{height:76px!important}
+  .hero-solution-chip strong{font-size:17px!important}
+  .hero-solution-chip small{font-size:11px!important}
+  .solution-action,.project-action{font-size:15px!important;min-height:50px!important}
+}
