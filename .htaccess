@@ -1,5 +1,13 @@
 Options -Indexes
 DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Prevent accidental public URLs such as /esmultiservicios.com/admin/
+  # when the domain itself is already esmultiservicios.com.
+  RewriteRule ^esmultiservicios\.com(?:/(.*))?$ /$1 [R=301,L,NE]
+</IfModule>
+
 <FilesMatch "^(database\.sql|database-update\.sql|README\.txt|\.gitignore)$">
   Require all denied
 </FilesMatch>

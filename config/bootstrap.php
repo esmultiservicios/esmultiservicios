@@ -41,7 +41,19 @@ function app_config(): array {
     $legacy = __DIR__ . '/database.php';
     $file = is_file($modern) ? $modern : (is_file($legacy) ? $legacy : '');
     if ($file === '') throw new RuntimeException('System configuration is missing. Open /install/ to start the setup wizard.');
-    $raw = require $file;
+    // Load local configuration without allowing an accidental BOM/blank line
+    // before <?php to send output and break redirects/headers in production.
+    ob_start();
+    try {
+        $raw = require $file;
+        $unexpectedOutput = (string)ob_get_clean();
+    } catch (Throwable $e) {
+        ob_end_clean();
+        throw $e;
+    }
+    if (trim($unexpectedOutput) !== '') {
+        throw new RuntimeException('System configuration produced unexpected output. Remove any text outside PHP tags.');
+    }
     if (!is_array($raw)) throw new RuntimeException('System configuration is invalid.');
     if (isset($raw['database']) && is_array($raw['database'])) {
         $config = $raw;
