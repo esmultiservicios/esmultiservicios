@@ -157,8 +157,8 @@ final class EmailTemplates
         $content = '<p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:'.self::TEXT.';">The <strong>'.self::esc($method).'</strong> delivery channel completed a successful end-to-end test. This confirms that the CMS can send its transactional and administrative communications through the selected provider.</p>
 <div style="padding:20px;background:'.self::SOFT_BLUE.';border:1px solid #D7EAF5;border-left:4px solid '.self::BLUE.';border-radius:14px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr>
-<td style="vertical-align:top;"><div style="font-size:11px;font-weight:800;letter-spacing:1px;color:'.self::BLUE.';text-transform:uppercase;">Delivery status</div><div style="margin-top:6px;font-size:17px;font-weight:800;color:'.self::NAVY.';">Configuration verified</div></td>
-<td align="right" style="vertical-align:top;"><span style="display:inline-block;padding:7px 10px;border-radius:999px;background:#E9F8F2;border:1px solid #B9E4D4;color:#116149;font-size:10px;font-weight:900;letter-spacing:.6px;">OPERATIONAL</span></td>
+<td style="vertical-align:top;padding-right:12px;"><div style="font-size:11px;font-weight:800;letter-spacing:1px;color:'.self::BLUE.';text-transform:uppercase;">Delivery status</div><div style="margin-top:6px;font-size:17px;font-weight:800;color:'.self::NAVY.';">Configuration verified</div></td>
+<td align="right" width="112" style="vertical-align:top;width:112px;white-space:nowrap;"><span style="display:inline-block;white-space:nowrap;padding:7px 9px;border-radius:999px;background:#E9F8F2;border:1px solid #B9E4D4;color:#116149;font-size:9px;line-height:1;font-weight:900;letter-spacing:.45px;">OPERATIONAL</span></td>
 </tr></table>
 <div style="margin-top:13px;font-size:13px;line-height:1.6;color:'.self::MUTED.';">No action is required. This message also verifies the corporate email template used by the system.</div>
 </div>

@@ -43,6 +43,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
 <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
 <link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="../assets/action-icons.css">
 </head>
 <body>
 <main class="auth-wrap">
@@ -92,5 +93,6 @@ endif;
 <script src="../assets/vendor/show-notify/showNotify.js">
 </script>
 <script>document.querySelectorAll(".alert.success,.alert.error,.alert.info,.alert.warning").forEach(function(el){var t=el.classList.contains("error")?"error":el.classList.contains("warning")?"warning":el.classList.contains("success")?"success":"info";if(window.showNotify){showNotify(el.textContent.trim(),t);el.hidden=true;}});</script>
+<script src="../assets/action-icons.js"></script>
 </body>
 </html>

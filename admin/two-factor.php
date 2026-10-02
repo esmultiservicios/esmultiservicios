@@ -55,6 +55,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
 <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
 <link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="../assets/action-icons.css">
 </head>
 <body>
 <main class="auth-wrap">
@@ -83,5 +84,6 @@ endif;
 </main>
 <script src="../assets/vendor/show-notify/showNotify.js">
 </script>
+<script src="../assets/action-icons.js"></script>
 </body>
 </html>

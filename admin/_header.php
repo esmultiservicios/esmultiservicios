@@ -26,7 +26,9 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
     <?php endif; ?>
     <link rel="stylesheet" href="../assets/vendor/sweetalert2/sweetalert2.min.css">
     <link rel="stylesheet" href="../assets/vendor/show-notify/showNotify.css">
+    <link rel="stylesheet" href="../assets/vendor/select2/select2.local.css">
     <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="../assets/action-icons.css">
 </head>
 <body>
 <header class="admin-header">

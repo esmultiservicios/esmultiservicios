@@ -1,0 +1,8 @@
+(function(w,d){
+  const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6S2.5 12 2.5 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+  const eyeOff='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.2A10.3 10.3 0 0 1 12 6c6 0 9.5 6 9.5 6a15.4 15.4 0 0 1-2.7 3.4M6.2 6.3C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6c1 0 2-.2 2.9-.5M9.8 9.8a3.1 3.1 0 0 0 4.4 4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  function enhancePasswords(root){(root||d).querySelectorAll('input[type="password"]:not([data-no-toggle])').forEach(input=>{if(input.dataset.eyeReady)return;input.dataset.eyeReady='1';const wrap=d.createElement('div');wrap.className='password-control';input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);const b=d.createElement('button');b.type='button';b.className='password-toggle';b.tabIndex=-1;b.setAttribute('aria-label','Mostrar contraseña');b.innerHTML=eye;b.onclick=()=>{const show=input.type==='password';input.type=show?'text':'password';b.setAttribute('aria-label',show?'Ocultar contraseña':'Mostrar contraseña');b.innerHTML=show?eyeOff:eye;input.focus()};wrap.appendChild(b)})}
+  function enhanceSelects(root){if(w.jQuery&&w.jQuery.fn&&w.jQuery.fn.select2){w.jQuery((root||d).querySelectorAll('select:not([data-native-select])')).select2({minimumResultsForSearch:7,width:'100%'})}}
+  w.UI={enhancePasswords,enhanceSelects};
+  d.addEventListener('DOMContentLoaded',()=>{enhancePasswords(d);enhanceSelects(d)});
+})(window,document);

@@ -362,7 +362,7 @@ require __DIR__ . '/_header.php';
             <label>CTA text ES<input name="cta_label_es" maxlength="100" placeholder="Conocer IZZY"></label>
             <label>CTA text EN<input name="cta_label_en" maxlength="100" placeholder="Explore IZZY"></label>
         </div>
-        <label>Dedicated website / CTA URL<input type="url" name="cta_url" placeholder="https://..."><small>Leave it empty until the dedicated website is ready. The public card will show “Website coming soon”. As soon as you save a URL, that message disappears and the website button becomes active.</small></label>
+        <label>Dedicated website / CTA URL<input type="url" name="cta_url" placeholder="https://..."><small>This is the single website URL used by the solution everywhere: the IZZY / CAMI / ZYNKO card in the home hero and the public “Visit site” action. Leave it empty until the dedicated website is ready.</small></label>
         <label class="toggle-line"><input type="checkbox" name="active" checked><span>Published</span></label>
         <button class="button" type="submit">Add solution</button>
     </form>
@@ -411,7 +411,7 @@ require __DIR__ . '/_header.php';
                         <label>CTA text ES<input name="cta_label_es" maxlength="100" value="<?= h($product['cta_label_es'] ?? '') ?>" placeholder="Conocer la solución"></label>
                         <label>CTA text EN<input name="cta_label_en" maxlength="100" value="<?= h($product['cta_label_en'] ?? '') ?>" placeholder="Explore solution"></label>
                     </div>
-                    <label>Dedicated website / CTA URL<input type="url" name="cta_url" value="<?= h($product['cta_url']) ?>" placeholder="https://..."><small>Change this whenever the solution website changes. Empty = “Website coming soon”. Saving a valid URL immediately activates the public website button.</small></label>
+                    <label>Dedicated website / CTA URL<input type="url" name="cta_url" value="<?= h($product['cta_url']) ?>" placeholder="https://..."><small>Single URL for this solution. It powers both the clickable home hero card and the public “Visit site” action. Change it here whenever the dedicated website changes.</small></label>
                     <label class="toggle-line"><input type="checkbox" name="active" <?= $product['active'] ? 'checked' : '' ?>><span>Published</span></label>
                     <button class="button" type="submit">Save <?= h($product['name']) ?></button>
                 </form>

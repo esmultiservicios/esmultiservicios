@@ -71,10 +71,7 @@
   function closeModal() {
     modal?.classList.remove('open');modal?.setAttribute('aria-hidden','true');if(mimg)mimg.src=''
   }
-  qa('[data-preview-src]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.previewSrc||'',b.dataset.previewCaption||'')));q('[data-modal-close]')?.addEventListener('click',closeModal);modal?.addEventListener('click',e=> {
-    if(e.target===modal)closeModal()
-  }
-  );document.addEventListener('keydown',e=> {
+  qa('[data-preview-src]').forEach(b=>b.addEventListener('click',()=>openModal(b.dataset.previewSrc||'',b.dataset.previewCaption||'')));q('[data-modal-close]')?.addEventListener('click',closeModal);document.addEventListener('keydown',e=> {
     if(e.key==='Escape')closeModal()
   }
   ); function initUpload(zone) {
@@ -522,8 +519,6 @@ window.CMSDialog = (() => {
     document.addEventListener('click', (event) => {
         const closeBtn = event.target.closest('[data-dialog-close]');
         if (closeBtn) close(closeBtn.closest('[data-cms-dialog]'));
-        const backdrop = event.target.matches('[data-cms-dialog-backdrop]') ? event.target : null;
-        if (backdrop && backdrop.dataset.closeOnBackdrop === '1') close(backdrop.closest('[data-cms-dialog]'));
     });
     document.addEventListener('keydown', (event) => {
         if (event.key !== 'Escape') return;

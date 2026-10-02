@@ -323,8 +323,11 @@ if ($maintenance && !$adminPreview) {
         <link rel="icon" type="image/png" href="<?= h($maintenanceFavicon) ?>">
         <link rel="shortcut icon" href="<?= h($maintenanceFavicon) ?>">
         <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/select2/select2.local.css', 'assets/vendor/select2/select2.local.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
     <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
-    </head>
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/action-icons.css', 'assets/action-icons.css'))?>">
+</head>
     <body class="maintenance-page">
         <main class="maintenance-card">
             <img src="assets/brand/es-mark.png" alt="ES MULTISERVICIOS">
@@ -459,6 +462,8 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         rel="stylesheet"
     >
     <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/select2/select2.local.css', 'assets/vendor/select2/select2.local.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/sweetalert2/sweetalert2.min.css', 'assets/vendor/sweetalert2/sweetalert2.min.css'))?>">
+    <link rel="stylesheet" href="<?=h(versioned_asset('assets/vendor/show-notify/showNotify.css', 'assets/vendor/show-notify/showNotify.css'))?>">
     <link rel="stylesheet" href="<?=h(versioned_asset('assets/es-site.css', 'assets/es-site.css'))?>">
 </head>
 <body>
@@ -560,24 +565,50 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                 </div>
                 <div class="hero-solution-stack">
                     <?php foreach (array_slice($products, 0, 3) as $heroIndex => $heroProduct): ?>
-                        <?php $heroUrl = trim((string)($heroProduct['cta_url'] ?? '')); ?>
-                        <div class="hero-solution-chip hero-solution-chip-<?= (int)$heroIndex + 1 ?> solution-key-<?= h($heroProduct['product_key'] ?? 'solution') ?>" style="--product-accent:<?= h($heroProduct['accent_color']) ?>">
-                            <div class="hero-solution-logo">
-                                <?php if (trim((string)($heroProduct['logo_path'] ?? '')) !== ''): ?>
-                                    <img src="<?= h($heroProduct['logo_path']) ?>" alt="<?= h($heroProduct['name']) ?>">
-                                <?php else: ?>
-                                    <b><?= h(strtoupper(substr((string)$heroProduct['name'], 0, 2))) ?></b>
-                                <?php endif; ?>
-                            </div>
-                            <div>
-                                <?php if ($heroUrl !== ''): ?>
-                                    <a class="hero-solution-name-link" href="<?= h($heroUrl) ?>" target="_blank" rel="noopener noreferrer"><strong><?= h($heroProduct['name']) ?></strong></a>
-                                <?php else: ?>
+                        <?php
+                        $heroUrl = trim((string) ($heroProduct['cta_url'] ?? ''));
+                        $heroChipClass = 'hero-solution-chip hero-solution-chip-' . ((int) $heroIndex + 1)
+                            . ' solution-key-' . h($heroProduct['product_key'] ?? 'solution');
+                        ?>
+                        <?php if ($heroUrl !== ''): ?>
+                            <a
+                                class="<?= $heroChipClass ?> hero-solution-chip-link"
+                                href="<?= h($heroUrl) ?>"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="<?= h(($lang === 'es' ? 'Visitar ' : 'Visit ') . (string) $heroProduct['name']) ?>"
+                                style="--product-accent:<?= h($heroProduct['accent_color']) ?>"
+                            >
+                                <div class="hero-solution-logo">
+                                    <?php if (trim((string) ($heroProduct['logo_path'] ?? '')) !== ''): ?>
+                                        <img src="<?= h($heroProduct['logo_path']) ?>" alt="<?= h($heroProduct['name']) ?>">
+                                    <?php else: ?>
+                                        <b><?= h(strtoupper(substr((string) $heroProduct['name'], 0, 2))) ?></b>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
                                     <strong><?= h($heroProduct['name']) ?></strong>
-                                <?php endif; ?>
-                                <small><?= $lang === 'es' ? 'Solución corporativa' : 'Corporate solution' ?></small>
+                                    <small><?= $lang === 'es' ? 'Solución corporativa' : 'Corporate solution' ?></small>
+                                </div>
+                            </a>
+                        <?php else: ?>
+                            <div
+                                class="<?= $heroChipClass ?>"
+                                style="--product-accent:<?= h($heroProduct['accent_color']) ?>"
+                            >
+                                <div class="hero-solution-logo">
+                                    <?php if (trim((string) ($heroProduct['logo_path'] ?? '')) !== ''): ?>
+                                        <img src="<?= h($heroProduct['logo_path']) ?>" alt="<?= h($heroProduct['name']) ?>">
+                                    <?php else: ?>
+                                        <b><?= h(strtoupper(substr((string) $heroProduct['name'], 0, 2))) ?></b>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <strong><?= h($heroProduct['name']) ?></strong>
+                                    <small><?= $lang === 'es' ? 'Solución corporativa' : 'Corporate solution' ?></small>
+                                </div>
                             </div>
-                        </div>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -595,7 +626,24 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
             <div class="solution-directory-grid solution-count-<?= min(count($products), 3) ?>">
                 <?php foreach ($products as $index => $product): ?>
-                    <?php $features = $lines($localized($product, 'features')); ?>
+                    <?php
+                        $features = $lines($localized($product, 'features'));
+                        $productKey = strtolower(trim((string)($product['product_key'] ?? '')));
+                        $fitCopy = match ($productKey) {
+                            'izzy' => $lang === 'es'
+                                ? 'Ideal para comercios, restaurantes y empresas que necesitan facturación, inventario y control operativo en una sola plataforma.'
+                                : 'Ideal for retailers, restaurants and companies that need billing, inventory and operational control in one platform.',
+                            'cami' => $lang === 'es'
+                                ? 'Ideal para clínicas, consultorios y centros médicos que necesitan organizar pacientes, expedientes y procesos clínicos.'
+                                : 'Ideal for clinics, practices and medical centers that need to organize patients, records and clinical workflows.',
+                            'zynko' => $lang === 'es'
+                                ? 'Ideal para empresas que atienden clientes por varios canales y necesitan centralizar conversaciones, agentes y automatización.'
+                                : 'Ideal for companies serving customers across multiple channels that need centralized conversations, agents and automation.',
+                            default => $lang === 'es'
+                                ? 'Una solución adaptable para organizaciones que buscan digitalizar y simplificar sus procesos.'
+                                : 'An adaptable solution for organizations looking to digitize and simplify their processes.',
+                        };
+                    ?>
                     <article class="solution-directory-card reveal solution-key-<?= h($product['product_key'] ?? 'solution') ?>" style="--product-accent:<?= h($product['accent_color']) ?>">
                         <div class="solution-directory-top">
                             <div class="solution-brand" aria-label="<?= h($product['name']) ?>">
@@ -613,6 +661,10 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             <?php $solutionTagline = $localized($product, 'tagline'); ?>
                             <?php if (trim($solutionTagline) !== ''): ?><div class="solution-tagline"><?= h($solutionTagline) ?></div><?php endif; ?>
                             <p><?= h($localized($product, 'description')) ?></p>
+                            <div class="solution-fit-note">
+                                <span><?= $lang === 'es' ? 'Ideal para' : 'Best for' ?></span>
+                                <strong><?= h($fitCopy) ?></strong>
+                            </div>
                             <?php if ($features): ?>
                                 <div class="solution-feature-list">
                                     <?php foreach (array_slice($features, 0, 4) as $feature): ?><span><?= h($feature) ?></span><?php endforeach; ?>
@@ -733,13 +785,22 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
     <section class="section section-soft" id="projects">
         <div class="shell">
-            <div class="section-heading reveal">
-                <span class="eyebrow"><?= $lang === 'es' ? 'PROYECTOS' : 'PROJECTS' ?></span>
+            <div class="section-heading centered project-section-heading reveal">
+                <span class="eyebrow"><?= $lang === 'es' ? 'PROYECTOS A LA MEDIDA' : 'CUSTOM PROJECTS' ?></span>
                 <h2><?= h($text('projects_title')) ?></h2>
+                <p><?= $lang === 'es'
+                    ? 'Además de nuestras soluciones propias, en ES MULTISERVICIOS diseñamos y construimos plataformas, sitios web y sistemas adaptados a la operación real de cada cliente.'
+                    : 'Beyond our own products, ES MULTISERVICIOS designs and builds platforms, websites and systems around each client’s real operation.' ?></p>
             </div>
 
-            <div class="projects-grid">
-                <?php foreach ($projects as $project): ?>
+            <div class="project-capability-strip reveal" aria-label="<?= $lang === 'es' ? 'Capacidades de desarrollo' : 'Development capabilities' ?>">
+                <span><b>01</b><?= $lang === 'es' ? 'Diseño y desarrollo a la medida' : 'Custom design and development' ?></span>
+                <span><b>02</b><?= $lang === 'es' ? 'CMS y administración propia' : 'Custom CMS and administration' ?></span>
+                <span><b>03</b><?= $lang === 'es' ? 'Responsive, soporte y evolución' : 'Responsive, support and evolution' ?></span>
+            </div>
+
+            <div class="projects-grid projects-showcase-grid">
+                <?php foreach ($projects as $loopIndex => $project): ?>
                     <?php
                         $projectImage = trim((string)($project['image_path'] ?? ''));
                         $projectImageAvailable = false;
@@ -751,28 +812,47 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             }
                         }
                     ?>
-                    <article class="project-card reveal">
-                        <?php if ($projectImageAvailable): ?>
-                            <img
-                                src="<?= h($projectImage) ?>"
-                                alt="<?= h($project['title']) ?>"
-                                loading="lazy"
-                            >
-                        <?php else: ?>
-                            <div class="project-placeholder"><span><?php
-                                $projectWords = preg_split('/\s+/u', trim((string)$project['title'])) ?: [];
-                                $projectInitials = '';
-                                foreach (array_slice($projectWords, 0, 2) as $word) {
-                                    $projectInitials .= function_exists('mb_substr') ? mb_substr($word, 0, 1, 'UTF-8') : substr($word, 0, 1);
-                                }
-                                echo h(strtoupper($projectInitials !== '' ? $projectInitials : 'PR'));
-                            ?></span></div>
-                        <?php endif; ?>
+                    <article class="project-card project-showcase-card reveal">
+                        <div class="project-visual-panel">
+                            <div class="project-visual-meta">
+                                <span><?= $lang === 'es' ? 'Proyecto ES MULTISERVICIOS' : 'ES MULTISERVICIOS project' ?></span>
+                                <b><?= str_pad((string)($loopIndex + 1), 2, '0', STR_PAD_LEFT) ?></b>
+                            </div>
+                            <?php if ($projectImageAvailable): ?>
+                                <img
+                                    src="<?= h($projectImage) ?>"
+                                    alt="<?= h($project['title']) ?>"
+                                    loading="lazy"
+                                >
+                            <?php else: ?>
+                                <div class="project-placeholder"><span><?php
+                                    $projectWords = preg_split('/\s+/u', trim((string)$project['title'])) ?: [];
+                                    $projectInitials = '';
+                                    foreach (array_slice($projectWords, 0, 2) as $word) {
+                                        $projectInitials .= function_exists('mb_substr') ? mb_substr($word, 0, 1, 'UTF-8') : substr($word, 0, 1);
+                                    }
+                                    echo h(strtoupper($projectInitials !== '' ? $projectInitials : 'PR'));
+                                ?></span></div>
+                            <?php endif; ?>
+                            <div class="project-visual-caption">
+                                <span><?= $lang === 'es' ? 'Hecho a la medida' : 'Built to fit' ?></span>
+                                <strong><?= $lang === 'es' ? 'Diseñado, desarrollado y acompañado por nuestro equipo.' : 'Designed, developed and supported by our team.' ?></strong>
+                            </div>
+                        </div>
 
-                        <div>
-                            <small><?= h($localized($project, 'category')) ?></small>
+                        <div class="project-content-panel">
+                            <div class="project-kicker-row">
+                                <small><?= h($localized($project, 'category')) ?></small>
+                                <span class="project-live-dot"><?= $lang === 'es' ? 'Caso real' : 'Real project' ?></span>
+                            </div>
                             <h3><?= h($project['title']) ?></h3>
                             <p><?= h($localized($project, 'description')) ?></p>
+                            <div class="project-value-note">
+                                <span><?= $lang === 'es' ? 'Qué demuestra' : 'What it shows' ?></span>
+                                <strong><?= $lang === 'es'
+                                    ? 'Podemos adaptar diseño, contenido, administración y funcionalidades a las necesidades específicas de cada negocio.'
+                                    : 'We can adapt design, content, administration and functionality to the specific needs of each business.' ?></strong>
+                            </div>
                             <div class="project-card-actions">
                                 <a class="project-action project-action-info" href="#contact">
                                     <?= $lang === 'es' ? 'Consultar proyecto' : 'Ask about project' ?> <span aria-hidden="true">→</span>
@@ -1295,6 +1375,9 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
 
 <script src="<?=h(versioned_asset('assets/vendor/jquery/jquery.min.js', 'assets/vendor/jquery/jquery.min.js'))?>"></script>
 <script src="<?=h(versioned_asset('assets/vendor/select2/select2.local.js', 'assets/vendor/select2/select2.local.js'))?>"></script>
+<script src="<?=h(versioned_asset('assets/vendor/sweetalert2/sweetalert2.all.min.js', 'assets/vendor/sweetalert2/sweetalert2.all.min.js'))?>"></script>
+<script src="<?=h(versioned_asset('assets/vendor/show-notify/showNotify.js', 'assets/vendor/show-notify/showNotify.js'))?>"></script>
+<script src="<?=h(versioned_asset('assets/action-icons.js', 'assets/action-icons.js'))?>"></script>
 <script src="<?=h(versioned_asset('assets/es-site.js', 'assets/es-site.js'))?>"></script>
 </body>
 </html>
