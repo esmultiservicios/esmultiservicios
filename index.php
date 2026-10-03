@@ -1347,14 +1347,21 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         $visibility = (!$showDesktop ? ' floating-hide-desktop' : '') . (!$showMobile ? ' floating-hide-mobile' : '');
         $content = '';
         if ($kind === 'embed' && $snippet !== '') {
-            $content = $snippet; // trusted administrator-provided integration code
+            // Keep third-party installation code inert during PHP rendering and let the
+            // public widget loader recreate its <script> nodes. Scripts inserted through
+            // innerHTML/template cloning do not execute reliably across all browsers,
+            // while explicit script recreation does. This also gives us load/error
+            // diagnostics without exposing anything to visitors.
+            $content = '<template class="external-widget-template" data-external-widget-template>'.
+                $snippet.
+                '</template><span class="external-widget-runtime-status" data-external-widget-status hidden></span>';
         } elseif ($kind === 'url' && $url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
             $content = '<iframe class="nivo-widget-frame" src="'.h($url).'" title="'.h($name).'" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
         }
         if ($content === '') continue;
         $managedFloating[$position][] = [
             'order' => max(0, (int)($widget['order'] ?? 20)),
-            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($name).'">'.$content.'</div>',
+            'html' => '<div class="external-floating-widget managed-floating-control'.$visibility.'" aria-label="'.h($name).'" data-external-widget="1" data-widget-name="'.h($name).'" data-widget-position="'.h($position).'">'.$content.'</div>',
         ];
     }
 

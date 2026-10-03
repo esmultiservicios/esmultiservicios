@@ -5748,3 +5748,7 @@ body {
   .project-content-panel{padding:24px!important}
   .project-showcase-card .project-card-actions{grid-template-columns:1fr!important}
 }
+
+/* External widget runtime loader: installation snippets stay hidden until executed. */
+.external-widget-template,
+.external-widget-runtime-status { display: none !important; }

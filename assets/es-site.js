@@ -301,3 +301,94 @@
     window.addEventListener('orientationchange', syncFloatingCollisions, { passive: true });
     document.addEventListener('DOMContentLoaded', syncFloatingCollisions, { once: true });
 })();
+
+
+(() => {
+    const copyScriptAttributes = (source, target) => {
+        Array.from(source.attributes || []).forEach(attribute => {
+            target.setAttribute(attribute.name, attribute.value);
+        });
+    };
+
+    const describeWidget = host => host?.dataset?.widgetName || host?.getAttribute('aria-label') || 'Widget externo';
+
+    const reportWidgetError = (host, detail) => {
+        const name = describeWidget(host);
+        host?.setAttribute('data-widget-runtime', 'error');
+        console.error(
+            `[ES MULTISERVICIOS] No se pudo cargar ${name}. ${detail} ` +
+            'Si el proveedor utiliza autorización por dominio, confirma que esmultiservicios.com esté autorizado para esta clave.'
+        );
+    };
+
+    const runExternalWidgetTemplate = template => {
+        if (!(template instanceof HTMLTemplateElement) || template.dataset.widgetExecuted === '1') return;
+        template.dataset.widgetExecuted = '1';
+
+        const host = template.closest('[data-external-widget]');
+        if (!host) return;
+
+        const fragment = template.content.cloneNode(true);
+        const scripts = Array.from(fragment.querySelectorAll('script'));
+
+        scripts.forEach(script => script.remove());
+        host.insertBefore(fragment, template);
+
+        if (!scripts.length) {
+            host.setAttribute('data-widget-runtime', 'loaded');
+            template.remove();
+            return;
+        }
+
+        let pending = scripts.length;
+        let failed = false;
+        const completeOne = () => {
+            pending -= 1;
+            if (pending <= 0 && !failed) {
+                host.setAttribute('data-widget-runtime', 'loaded');
+                console.info(`[ES MULTISERVICIOS] ${describeWidget(host)} cargado correctamente.`);
+            }
+        };
+
+        scripts.forEach(sourceScript => {
+            const runtimeScript = document.createElement('script');
+            copyScriptAttributes(sourceScript, runtimeScript);
+
+            if (sourceScript.src) {
+                runtimeScript.addEventListener('load', completeOne, { once: true });
+                runtimeScript.addEventListener('error', () => {
+                    failed = true;
+                    reportWidgetError(host, `El navegador no pudo cargar ${sourceScript.src}.`);
+                    completeOne();
+                }, { once: true });
+            } else {
+                runtimeScript.textContent = sourceScript.textContent || '';
+            }
+
+            try {
+                // Append the recreated script to body so document.currentScript and
+                // data-* attributes remain available to integrations such as NIVO.
+                document.body.appendChild(runtimeScript);
+                if (!sourceScript.src) completeOne();
+            } catch (error) {
+                failed = true;
+                reportWidgetError(host, error instanceof Error ? error.message : 'Error ejecutando el código de instalación.');
+                completeOne();
+            }
+        });
+
+        template.remove();
+    };
+
+    const initExternalWidgets = () => {
+        document.querySelectorAll('[data-external-widget-template]').forEach(runExternalWidgetTemplate);
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExternalWidgets, { once: true });
+    } else {
+        initExternalWidgets();
+    }
+
+    window.addEventListener('pageshow', initExternalWidgets);
+})();
