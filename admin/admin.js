@@ -885,15 +885,15 @@ window.CMSDialog = (() => {
     });
   };
 
-  const applyDocument = (parsedDocument, finalUrl, historyMode = 'push') => {
+  const applyDocument = (parsedDocument, finalUrl, historyMode = 'push', preserveWindowScroll = false) => {
     const currentMain = q('.admin-main');
     const incomingMain = q('.admin-main', parsedDocument);
 
     if (!currentMain || !incomingMain) {
-      window.location.href = finalUrl;
-      return;
+      throw new Error('La respuesta recibida no contiene el panel administrativo esperado.');
     }
 
+    const previousWindowScroll = window.scrollY;
     saveSidebarScroll();
 
     currentMain.innerHTML = incomingMain.innerHTML;
@@ -911,15 +911,19 @@ window.CMSDialog = (() => {
     enhanceMain(currentMain);
     runInlineScripts(incomingMain);
 
-    currentMain.scrollTop = 0;
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    if (preserveWindowScroll) {
+      window.scrollTo({ top: previousWindowScroll, behavior: 'auto' });
+    } else {
+      currentMain.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
 
     document.dispatchEvent(new CustomEvent('esadmin:contentloaded', {
       detail: { url: finalUrl },
     }));
   };
 
-  const renderResponse = async (response, historyMode = 'replace') => {
+  const renderResponse = async (response, historyMode = 'replace', preserveWindowScroll = false) => {
     const disposition = response.headers.get('content-disposition') || '';
     const contentType = response.headers.get('content-type') || '';
 
@@ -940,12 +944,16 @@ window.CMSDialog = (() => {
     const html = await response.text();
     const parsed = new DOMParser().parseFromString(html, 'text/html');
 
-    if (!q('.admin-main', parsed)) {
-      window.location.href = response.url;
+    if (response.redirected && /\/admin\/login\.php(?:$|[?#])/i.test(response.url)) {
+      window.location.assign(response.url);
       return;
     }
 
-    applyDocument(parsed, response.url, historyMode);
+    if (!q('.admin-main', parsed)) {
+      throw new Error(`Respuesta administrativa inválida (${response.status}).`);
+    }
+
+    applyDocument(parsed, response.url, historyMode, preserveWindowScroll);
   };
 
   const fetchPage = async (url, options = {}, historyMode = 'push') => {
@@ -964,11 +972,11 @@ window.CMSDialog = (() => {
         },
       });
 
-      if (!response.ok && response.status >= 500) {
+      if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      await renderResponse(response, historyMode);
+      await renderResponse(response, historyMode, options.method === 'POST');
     } catch (error) {
       console.error('Admin async navigation failed:', error);
       if (window.showNotify) {
@@ -1049,8 +1057,22 @@ window.CMSDialog = (() => {
     const data = new FormData(form);
     if (submitter?.name) data.append(submitter.name, submitter.value || '');
 
-    const action = form.action || window.location.href;
-    await fetchPage(action, {
+    const rawAction = (form.getAttribute('action') || '').trim();
+    const currentUrl = new URL(window.location.href);
+    const actionUrl = rawAction
+      ? new URL(rawAction, currentUrl)
+      : new URL(currentUrl.pathname + currentUrl.search, currentUrl.origin);
+
+    // Fragments are UI-only and must never become part of the POST endpoint.
+    actionUrl.hash = '';
+
+    // Never allow the generic async handler to POST outside the current admin area.
+    if (actionUrl.origin !== currentUrl.origin || !actionUrl.pathname.includes('/admin/')) {
+      window.showNotify?.('La acción solicitada no pertenece al administrador.', 'error');
+      return;
+    }
+
+    await fetchPage(actionUrl.href, {
       method: 'POST',
       body: data,
     }, 'replace');

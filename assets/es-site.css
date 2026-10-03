@@ -4446,23 +4446,28 @@ body {
 
 @media (max-width:767px) {
     .social-hide-mobile { display:none !important; }
+
+    /* Keep the floating social dock on mobile exactly like desktop:
+       a vertical branded stack on the configured side. This avoids the
+       old horizontal row at the bottom competing with WhatsApp / NIVO. */
     .social-network-dock {
-        top:auto;
-        bottom:calc(92px + env(safe-area-inset-bottom));
-        transform:none;
-        flex-direction:row;
-        flex-wrap:wrap;
-        max-width:calc(100vw - 24px);
-        gap:8px;
+        top:50%;
+        bottom:auto;
+        transform:translateY(-50%);
+        flex-direction:column;
+        flex-wrap:nowrap;
+        width:auto;
+        max-width:none;
+        gap:10px;
         padding:0;
         border:0;
         border-radius:0;
         background:transparent;
         box-shadow:none;
     }
-    .social-network-dock--left { left:12px; right:auto; }
-    .social-network-dock--right { right:12px; left:auto; }
-    .social-network-dock.social-style-icon_name { flex-direction:column; }
+    .social-network-dock--left { left:14px; right:auto; }
+    .social-network-dock--right { right:14px; left:auto; }
+    .social-network-dock.social-style-icon_name { align-items:stretch; }
     .social-network-links--hero { width:calc(100% - 24px); gap:8px; }
 }
 @media (min-width:768px) {

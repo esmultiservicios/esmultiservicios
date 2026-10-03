@@ -11700,3 +11700,173 @@ body.admin-async-busy .admin-main {
         animation-duration: 1.4s;
     }
 }
+
+
+/* ==========================================================
+   Dashboard alignment + solution URL discoverability v1.71
+   ========================================================== */
+.dashboard-page-heading{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+    gap:24px!important;
+}
+.dashboard-page-heading>div:first-child{
+    max-width:860px!important;
+    min-width:0!important;
+    margin:0!important;
+}
+.dashboard-page-heading>.ui-icon,
+.dashboard-page-heading>.action-icon{
+    display:none!important;
+}
+.dashboard-heading-actions{
+    justify-self:end!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    gap:10px!important;
+    flex-wrap:wrap!important;
+    max-width:none!important;
+}
+.dashboard-heading-actions .button{
+    margin:0!important;
+    white-space:nowrap!important;
+}
+.dashboard-kpi-grid{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    align-items:stretch!important;
+    gap:14px!important;
+}
+.dashboard-kpi-grid>.stat{
+    width:100%!important;
+    min-width:0!important;
+    min-height:126px!important;
+    margin:0!important;
+}
+.dashboard-kpi-grid>.ui-icon,
+.dashboard-kpi-grid>.action-icon{
+    display:none!important;
+}
+.solution-url-help{
+    display:grid;
+    grid-template-columns:48px minmax(0,1fr);
+    gap:14px;
+    align-items:start;
+    margin:0 0 18px;
+    padding:16px 18px;
+    border:1px solid #cfe3ee;
+    border-radius:16px;
+    background:#eef8fc;
+    color:#0b355a;
+}
+.solution-url-help__icon{
+    width:48px;
+    height:48px;
+    display:grid;
+    place-items:center;
+    border-radius:14px;
+    background:#d9f0f8;
+    color:#0b78a6;
+}
+.solution-url-help__icon .ui-icon{width:22px;height:22px}
+.solution-url-help strong{display:block;font-size:14px;font-weight:900;color:#082f57;margin:1px 0 4px}
+.solution-url-help p{margin:0!important;color:#587087!important;line-height:1.55}
+@media(max-width:1200px){
+    .dashboard-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:900px){
+    .dashboard-page-heading{grid-template-columns:1fr!important;align-items:start!important}
+    .dashboard-heading-actions{justify-self:stretch!important;justify-content:flex-start!important}
+}
+@media(max-width:620px){
+    .dashboard-kpi-grid{grid-template-columns:1fr!important}
+    .dashboard-heading-actions{display:grid!important;grid-template-columns:1fr!important;width:100%!important}
+    .dashboard-heading-actions .button{width:100%!important}
+    .solution-url-help{grid-template-columns:40px minmax(0,1fr);padding:14px}
+    .solution-url-help__icon{width:40px;height:40px;border-radius:12px}
+}
+
+
+/* ==========================================================
+   ADMIN LAYOUT CONSISTENCY PASS v1.72
+   Final guardrails for aligned cards, full-width editors and
+   stable responsive spacing across the administration area.
+   ========================================================== */
+.admin-main{
+    min-width:0!important;
+}
+
+.content-section-switcher{
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:12px!important;
+    align-items:stretch!important;
+}
+.content-section-switcher .content-section-tab{
+    width:100%!important;
+    min-width:0!important;
+    height:100%!important;
+    margin:0!important;
+}
+
+/* Page Content is intentionally stacked: editor first, preview second.
+   This prevents the large empty column/gap produced by the older
+   two-column composition on wide screens. */
+.section-focused-editor{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:18px!important;
+    width:100%!important;
+}
+.section-edit-column,
+.section-content-form,
+.section-editor-card,
+.section-module-card,
+.section-preview-panel{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    justify-self:stretch!important;
+}
+.section-editor-card,
+.section-module-card{
+    min-height:0!important;
+}
+.section-preview-panel{
+    position:relative!important;
+    top:auto!important;
+}
+.preview-device-stage{
+    min-height:520px!important;
+}
+.preview-device-stage iframe{
+    height:500px!important;
+}
+
+/* Common grids should always align from the top-left and never leave
+   visually detached cards because of legacy sizing rules. */
+.stat-grid,
+.manage-grid,
+.request-grid,
+.list-grid,
+.email-grid,
+.integration-grid,
+.marketing-card-grid,
+.card-list{
+    align-items:stretch!important;
+}
+
+@media(max-width:1450px){
+    .content-section-switcher{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:1120px){
+    .content-section-switcher{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:760px){
+    .content-section-switcher{grid-template-columns:1fr!important}
+    .section-focused-editor{gap:14px!important}
+    .preview-device-stage{min-height:460px!important;padding:8px!important}
+    .preview-device-stage iframe{height:440px!important}
+}

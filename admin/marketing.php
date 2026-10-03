@@ -329,7 +329,15 @@ require __DIR__ . '/_header.php';
         <div>
             <span class="eyebrow">SOLUTIONS</span>
             <h2>Corporate solutions directory</h2>
-            <p>Create, edit, order and publish the solutions shown on the public website. Each solution can point to its own dedicated website.</p>
+            <p>Create, edit, order and publish the solutions shown on the public website. This is also where you update the destination URL for IZZY, CAMI, ZYNKO or any future solution.</p>
+        </div>
+    </div>
+
+    <div class="solution-url-help" role="note">
+        <div class="solution-url-help__icon"><?= icon('link') ?></div>
+        <div>
+            <strong>¿Dónde cambio la ruta de IZZY, CAMI o ZYNKO?</strong>
+            <p>En cada tarjeta de solución modifica el campo <b>Dedicated website / system URL</b>. Esa misma dirección se usa en la tarjeta del inicio y en el botón público “Visitar sitio”.</p>
         </div>
     </div>
 
@@ -362,7 +370,7 @@ require __DIR__ . '/_header.php';
             <label>CTA text ES<input name="cta_label_es" maxlength="100" placeholder="Conocer IZZY"></label>
             <label>CTA text EN<input name="cta_label_en" maxlength="100" placeholder="Explore IZZY"></label>
         </div>
-        <label>Dedicated website / CTA URL<input type="url" name="cta_url" placeholder="https://..."><small>This is the single website URL used by the solution everywhere: the IZZY / CAMI / ZYNKO card in the home hero and the public “Visit site” action. Leave it empty until the dedicated website is ready.</small></label>
+        <label>Dedicated website / system URL<input type="url" name="cta_url" placeholder="https://..."><small>This is the single website URL used by the solution everywhere: the IZZY / CAMI / ZYNKO card in the home hero and the public “Visit site” action. Leave it empty until the dedicated website is ready.</small></label>
         <label class="toggle-line"><input type="checkbox" name="active" checked><span>Published</span></label>
         <button class="button" type="submit">Add solution</button>
     </form>
@@ -370,7 +378,7 @@ require __DIR__ . '/_header.php';
     <div class="marketing-card-grid">
         <?php foreach ($products as $product): ?>
             <div class="project-editor-shell">
-                <form class="marketing-card" method="post" enctype="multipart/form-data">
+                <form class="marketing-card" method="post" action="marketing.php" enctype="multipart/form-data">
                     <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                     <input type="hidden" name="action" value="product_save">
                     <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
@@ -411,11 +419,11 @@ require __DIR__ . '/_header.php';
                         <label>CTA text ES<input name="cta_label_es" maxlength="100" value="<?= h($product['cta_label_es'] ?? '') ?>" placeholder="Conocer la solución"></label>
                         <label>CTA text EN<input name="cta_label_en" maxlength="100" value="<?= h($product['cta_label_en'] ?? '') ?>" placeholder="Explore solution"></label>
                     </div>
-                    <label>Dedicated website / CTA URL<input type="url" name="cta_url" value="<?= h($product['cta_url']) ?>" placeholder="https://..."><small>Single URL for this solution. It powers both the clickable home hero card and the public “Visit site” action. Change it here whenever the dedicated website changes.</small></label>
+                    <label>Dedicated website / system URL<input type="url" name="cta_url" value="<?= h($product['cta_url']) ?>" placeholder="https://..."><small>Single URL for this solution. It powers both the clickable home hero card and the public “Visit site” action. Change it here whenever the dedicated website changes.</small></label>
                     <label class="toggle-line"><input type="checkbox" name="active" <?= $product['active'] ? 'checked' : '' ?>><span>Published</span></label>
                     <button class="button" type="submit">Save <?= h($product['name']) ?></button>
                 </form>
-                <form method="post" class="project-delete-form" data-swal-confirm="Delete this solution?" data-swal-text="It will be removed from the public website and contact selector.">
+                <form method="post" action="marketing.php" class="project-delete-form" data-swal-confirm="Delete this solution?" data-swal-text="It will be removed from the public website and contact selector.">
                     <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><input type="hidden" name="action" value="product_delete"><input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
                     <button class="button danger" type="submit">Delete solution</button>
                 </form>
@@ -433,7 +441,7 @@ require __DIR__ . '/_header.php';
         </div>
     </div>
 
-    <form class="marketing-card testimonial-admin-create" method="post">
+    <form class="marketing-card testimonial-admin-create" method="post" action="marketing.php">
         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
         <input type="hidden" name="action" value="testimonial_save">
         <input type="hidden" name="id" value="0">
@@ -514,7 +522,7 @@ require __DIR__ . '/_header.php';
                         <label class="toggle-line"><input type="checkbox" name="active" <?= $testimonial['active'] ? 'checked' : '' ?>><span>Published</span></label>
                         <button class="button" type="submit">Save opinion</button>
                     </form>
-                    <form method="post" class="project-delete-form" data-swal-confirm="Delete this client opinion?" data-swal-text="It will disappear from the public website.">
+                    <form method="post" action="marketing.php" class="project-delete-form" data-swal-confirm="Delete this client opinion?" data-swal-text="It will disappear from the public website.">
                         <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
                         <input type="hidden" name="action" value="testimonial_delete">
                         <input type="hidden" name="id" value="<?= (int)$testimonial['id'] ?>">

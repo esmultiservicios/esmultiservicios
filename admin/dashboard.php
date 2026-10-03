@@ -135,7 +135,7 @@ $active='dashboard';
 require __DIR__.'/_header.php';
 ?>
 
-<div class="page-heading animate-in">
+<div class="page-heading dashboard-page-heading animate-in">
 <div>
 <p class="eyebrow">DASHBOARD</p>
 <h1>Website administration</h1>
@@ -143,14 +143,18 @@ require __DIR__.'/_header.php';
 . Your workspace shows only the tools available to your <?=h($me['role_name']?:'assigned')?>
  role.</p>
 </div>
-<div class="heading-actions"><?php
+<div class="heading-actions dashboard-heading-actions"><?php
 if(user_can('content.view')):
 ?>
 <a class="button" href="content.php"><?=icon('edit')?>
 Page content</a><?php
 endif;
 ?>
-<a class="button secondary" href="../?preview=1" target="_blank"><?=icon('eye')?>
+<?php if(user_can('marketing.manage')): ?>
+<a class="button secondary" href="marketing.php#products" data-no-action-icon><?=icon('link')?>
+Solution URLs</a>
+<?php endif; ?>
+<a class="button secondary" href="../?preview=1" target="_blank" data-no-action-icon><?=icon('eye')?>
 Preview site</a>
 </div>
 </div>
@@ -198,7 +202,7 @@ Preview site</a>
     </div>
 </section>
 
-<div class="stat-grid"><?php
+<div class="stat-grid dashboard-kpi-grid"><?php
 foreach($stats as $s):
 ?>
 <a class="stat animate-in" href="<?=$s[3]?>">
