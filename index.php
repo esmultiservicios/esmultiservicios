@@ -448,6 +448,14 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         name="description"
         content="<?= h($settings['seo_description'] ?? '') ?>"
     >
+    <meta name="robots" content="<?= h(trim((string)($settings['seo_robots'] ?? 'index,follow')) ?: 'index,follow') ?>">
+    <?php if (!empty($settings['seo_google_verification'])): ?>
+        <meta name="google-site-verification" content="<?= h($settings['seo_google_verification']) ?>">
+    <?php endif; ?>
+    <meta property="og:title" content="<?= h($settings['seo_title'] ?? 'ES MULTISERVICIOS') ?>">
+    <meta property="og:description" content="<?= h($settings['seo_description'] ?? '') ?>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<?= h(site_url() !== '' ? rtrim(site_url(), '/') . '/' : '') ?>">
     <meta name="theme-color" content="#0B2E59">
     <?php if (!empty($settings['seo_social_image'])): ?>
         <meta property="og:image" content="<?= h($settings['seo_social_image']) ?>">
