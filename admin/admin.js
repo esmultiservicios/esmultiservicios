@@ -1,6 +1,16 @@
 (()=> {
   const q=(s,r=document)=>r.querySelector(s),qa=(s,r=document)=>[...r.querySelectorAll(s)];
   const side=q('[data-sidebar]'),toggle=q('[data-sidebar-toggle]'),back=q('[data-sidebar-backdrop]');
+  const sidebarScrollKey='esms_admin_sidebar_scroll_v1';
+  if(side) {
+    try {
+      const savedScroll=Number(sessionStorage.getItem(sidebarScrollKey)||0);
+      if(savedScroll>0) requestAnimationFrame(()=>{ side.scrollTop=savedScroll; });
+      side.addEventListener('scroll',()=>{
+        try { sessionStorage.setItem(sidebarScrollKey,String(side.scrollTop)); } catch(_) {}
+      },{passive:true});
+    } catch(_) {}
+  }
 
   function closeTopbarMenus(except=null) {
     qa('.notification-bell[open],.profile-menu[open]').forEach(menu=> {
@@ -36,7 +46,7 @@
     back?.classList.toggle('show',o);
     toggle.setAttribute('aria-expanded',String(o));
   }
-  );back?.addEventListener('click',closeSide);qa('.admin-sidebar a').forEach(a=>a.addEventListener('click',closeSide)); qa('.profile-menu').forEach(d=>document.addEventListener('click',e=> {
+  );back?.addEventListener('click',closeSide);qa('.admin-sidebar a').forEach(a=>a.addEventListener('click',()=>{ try { if(side) sessionStorage.setItem(sidebarScrollKey,String(side.scrollTop)); } catch(_) {} closeSide(); })); qa('.profile-menu').forEach(d=>document.addEventListener('click',e=> {
     if(d.open&&!d.contains(e.target))d.open=false
   }
   )); qa('.action-menu').forEach(menu=> {
@@ -186,7 +196,7 @@
 )();
 // Premium custom select UI. The original <select> remains the submitted value.
 (()=> {
-  const all=[...document.querySelectorAll('select:not([multiple])')]; const closeAll=(except=null)=>document.querySelectorAll('.cr-select.open').forEach(w=> {
+  const all=[...document.querySelectorAll('select:not([multiple]):not(.select2-hidden-accessible)')]; const closeAll=(except=null)=>document.querySelectorAll('.cr-select.open').forEach(w=> {
     if(w!==except) {
       w.classList.remove('open');w.querySelector('.cr-select-button')?.setAttribute('aria-expanded','false')
     }
@@ -596,4 +606,479 @@ window.CMSDialog = (() => {
     new MutationObserver(m=>m.forEach(x=>x.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches?.('button,.button,a.button')) decorate(n.parentElement||document); else decorate(n);}}))).observe(document.body,{childList:true,subtree:true});
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+})();
+
+/* ========================================================================== 
+   ES MULTISERVICIOS ADMIN ASYNC NAVIGATION
+   - Prevents full browser reloads for internal admin navigation and actions.
+   - Preserves sidebar position.
+   - Supports POST forms (including multipart/file uploads), redirects and
+     server-rendered validation without changing existing PHP business logic.
+   ========================================================================== */
+(() => {
+  'use strict';
+
+  if (window.ESAdminAsyncNavigation) return;
+
+  const state = {
+    busy: false,
+    sidebarKey: 'esms_admin_sidebar_scroll_v1',
+  };
+
+  const q = (selector, root = document) => root.querySelector(selector);
+  const qa = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+  const saveSidebarScroll = () => {
+    const sidebar = q('[data-sidebar]');
+    if (!sidebar) return;
+    try {
+      sessionStorage.setItem(state.sidebarKey, String(sidebar.scrollTop || 0));
+    } catch (_) {}
+  };
+
+  const restoreSidebarScroll = () => {
+    const sidebar = q('[data-sidebar]');
+    if (!sidebar) return;
+    try {
+      const saved = Number(sessionStorage.getItem(state.sidebarKey) || 0);
+      if (Number.isFinite(saved)) {
+        requestAnimationFrame(() => {
+          sidebar.scrollTop = saved;
+        });
+      }
+    } catch (_) {}
+  };
+
+  const showBusy = (label = 'Cargando…') => {
+    let overlay = q('[data-admin-async-overlay]');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'admin-async-overlay';
+      overlay.dataset.adminAsyncOverlay = '1';
+      overlay.innerHTML = `
+        <div class="admin-async-card" role="status" aria-live="polite">
+          <span class="admin-async-spinner" aria-hidden="true"></span>
+          <strong data-admin-async-label>Cargando…</strong>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+    const labelNode = q('[data-admin-async-label]', overlay);
+    if (labelNode) labelNode.textContent = label;
+    overlay.classList.add('show');
+    document.body.classList.add('admin-async-busy');
+  };
+
+  const hideBusy = () => {
+    q('[data-admin-async-overlay]')?.classList.remove('show');
+    document.body.classList.remove('admin-async-busy');
+  };
+
+  const notifyFromMain = (root) => {
+    const flash = q('[data-flash-message]', root);
+    if (!flash || !window.showNotify) return;
+    const message = flash.dataset.flashMessage || '';
+    if (!message) return;
+    window.showNotify(message, flash.dataset.flashType || 'info');
+  };
+
+  const syncSidebarActiveState = (parsedDocument) => {
+    const currentLinks = qa('.admin-sidebar a[href]');
+    const incomingLinks = qa('.admin-sidebar a[href]', parsedDocument);
+    const incomingByHref = new Map(
+      incomingLinks.map((link) => [link.getAttribute('href'), link.className])
+    );
+
+    currentLinks.forEach((link) => {
+      const href = link.getAttribute('href');
+      if (!incomingByHref.has(href)) return;
+      link.className = incomingByHref.get(href) || '';
+    });
+  };
+
+  const syncHeaderCounters = (parsedDocument) => {
+    const pairs = [
+      ['.notification-bell .bell-button b', '.notification-bell .bell-button b'],
+      ['.top-shortcuts a[href="estimates.php"] b', '.top-shortcuts a[href="estimates.php"] b'],
+    ];
+
+    pairs.forEach(([currentSelector, incomingSelector]) => {
+      const current = q(currentSelector);
+      const incoming = q(incomingSelector, parsedDocument);
+      if (current && incoming) current.textContent = incoming.textContent;
+      if (current && !incoming) current.remove();
+      if (!current && incoming) {
+        const incomingParent = q(incomingSelector, parsedDocument)?.parentElement;
+        const currentParent = incomingParent
+          ? q(`${incomingParent.tagName.toLowerCase()}[href="${incomingParent.getAttribute('href') || ''}"]`)
+          : null;
+        if (currentParent) currentParent.appendChild(incoming.cloneNode(true));
+      }
+    });
+  };
+
+  const initSelect2 = (root) => {
+    if (!window.jQuery || !window.jQuery.fn || typeof window.jQuery.fn.select2 !== 'function') return;
+    window.jQuery(root)
+      .find('select:not([data-native-select])')
+      .each(function () {
+        const $el = window.jQuery(this);
+        if (!$el.hasClass('select2-hidden-accessible')) {
+          $el.select2({ width: '100%' });
+        }
+      });
+  };
+
+  const initUploadZones = (root) => {
+    qa('[data-upload-zone]', root).forEach((zone) => {
+      if (zone.dataset.asyncUploadReady === '1') return;
+      zone.dataset.asyncUploadReady = '1';
+
+      const input = q('input[type="file"]', zone);
+      const preview = q('[data-upload-preview]', zone);
+      const name = q('[data-upload-name]', zone);
+      if (!input) return;
+
+      let files = [];
+      const multiple = input.multiple;
+      const accepts = (input.getAttribute('accept') || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const allowed = (file) => {
+        if (!accepts.length) return true;
+        return accepts.some((rule) => (
+          rule.endsWith('/*') ? file.type.startsWith(rule.slice(0, -1)) : file.type === rule
+        ));
+      };
+
+      const render = () => {
+        if (preview) {
+          preview.innerHTML = '';
+          files.forEach((file, index) => {
+            const card = document.createElement('div');
+            card.className = 'upload-preview-item';
+            const objectUrl = URL.createObjectURL(file);
+
+            if (file.type.startsWith('image/')) {
+              card.innerHTML = '<img alt="Selected image"><button type="button" aria-label="Remove">×</button>';
+            } else if (file.type.startsWith('video/')) {
+              card.innerHTML = '<video muted playsinline preload="metadata"></video><button type="button" aria-label="Remove">×</button>';
+            } else {
+              card.innerHTML = '<div class="upload-file-badge">FILE</div><button type="button" aria-label="Remove">×</button>';
+            }
+
+            const media = q('img,video', card);
+            if (media) media.src = objectUrl;
+
+            q('button', card)?.addEventListener('click', () => {
+              files.splice(index, 1);
+              sync();
+            });
+            preview.appendChild(card);
+          });
+        }
+
+        if (name) {
+          name.textContent = files.length
+            ? `${files.length} file${files.length > 1 ? 's' : ''} selected`
+            : (input.dataset.emptyLabel || `Drop, paste or choose file${multiple ? 's' : ''}`);
+        }
+      };
+
+      const sync = () => {
+        const transfer = new DataTransfer();
+        files.forEach((file) => transfer.items.add(file));
+        input.files = transfer.files;
+        render();
+      };
+
+      const addFiles = (list) => {
+        const incoming = [...list].filter(allowed);
+        files = multiple
+          ? [...files, ...incoming].slice(0, 12)
+          : (incoming.length ? [incoming[0]] : files);
+        sync();
+      };
+
+      input.addEventListener('change', () => {
+        files = [...input.files].filter(allowed);
+        render();
+      });
+      zone.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        zone.classList.add('dragover');
+      });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', (event) => {
+        event.preventDefault();
+        zone.classList.remove('dragover');
+        addFiles(event.dataTransfer.files);
+      });
+      zone.addEventListener('paste', (event) => {
+        const pasted = [...event.clipboardData.items]
+          .filter((item) => item.kind === 'file')
+          .map((item) => item.getAsFile())
+          .filter(Boolean);
+        if (pasted.length) {
+          event.preventDefault();
+          addFiles(pasted);
+        }
+      });
+      zone.tabIndex = 0;
+      zone.addEventListener('click', (event) => {
+        if (event.target.closest('button')) return;
+        if (event.target !== input) input.click();
+      });
+      render();
+    });
+  };
+
+  const initMethodPanels = (root) => {
+    qa('[data-method-select]', root).forEach((select) => {
+      if (select.dataset.asyncMethodReady === '1') return;
+      select.dataset.asyncMethodReady = '1';
+      const form = select.closest('form');
+      const sync = () => {
+        qa('[data-method]', form).forEach((panel) => {
+          panel.hidden = panel.dataset.method !== select.value;
+        });
+      };
+      select.addEventListener('change', sync);
+      sync();
+    });
+  };
+
+  const runInlineScripts = (parsedMain) => {
+    qa('script:not([src])', parsedMain).forEach((script) => {
+      const type = (script.getAttribute('type') || '').trim();
+      if (type && !['text/javascript', 'application/javascript', 'module'].includes(type)) return;
+      const code = script.textContent || '';
+      if (!code.trim()) return;
+      try {
+        if (type === 'module') {
+          const moduleScript = document.createElement('script');
+          moduleScript.type = 'module';
+          moduleScript.textContent = code;
+          document.body.appendChild(moduleScript);
+          moduleScript.remove();
+        } else {
+          (0, eval)(code);
+        }
+      } catch (error) {
+        console.error('Admin dynamic script error:', error);
+      }
+    });
+  };
+
+  const enhanceMain = (root) => {
+    initSelect2(root);
+    initUploadZones(root);
+    initMethodPanels(root);
+    window.ESActionIcons?.scan(root);
+    notifyFromMain(root);
+
+    qa('[data-stat]', root).forEach((node) => {
+      const target = parseInt(node.dataset.stat || node.textContent, 10) || 0;
+      node.textContent = String(target);
+    });
+  };
+
+  const applyDocument = (parsedDocument, finalUrl, historyMode = 'push') => {
+    const currentMain = q('.admin-main');
+    const incomingMain = q('.admin-main', parsedDocument);
+
+    if (!currentMain || !incomingMain) {
+      window.location.href = finalUrl;
+      return;
+    }
+
+    saveSidebarScroll();
+
+    currentMain.innerHTML = incomingMain.innerHTML;
+    document.title = parsedDocument.title || document.title;
+    syncSidebarActiveState(parsedDocument);
+    syncHeaderCounters(parsedDocument);
+
+    if (historyMode === 'push') {
+      history.pushState({ esAdminAsync: true }, '', finalUrl);
+    } else if (historyMode === 'replace') {
+      history.replaceState({ esAdminAsync: true }, '', finalUrl);
+    }
+
+    restoreSidebarScroll();
+    enhanceMain(currentMain);
+    runInlineScripts(incomingMain);
+
+    currentMain.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    document.dispatchEvent(new CustomEvent('esadmin:contentloaded', {
+      detail: { url: finalUrl },
+    }));
+  };
+
+  const renderResponse = async (response, historyMode = 'replace') => {
+    const disposition = response.headers.get('content-disposition') || '';
+    const contentType = response.headers.get('content-type') || '';
+
+    if (/attachment/i.test(disposition) || (!contentType.includes('text/html') && !contentType.includes('application/xhtml+xml'))) {
+      const blob = await response.blob();
+      const href = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = href;
+      const fileMatch = disposition.match(/filename\*?=(?:UTF-8''|\")?([^\";]+)/i);
+      if (fileMatch) anchor.download = decodeURIComponent(fileMatch[1].replace(/\"/g, ''));
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(href);
+      return;
+    }
+
+    const html = await response.text();
+    const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+    if (!q('.admin-main', parsed)) {
+      window.location.href = response.url;
+      return;
+    }
+
+    applyDocument(parsed, response.url, historyMode);
+  };
+
+  const fetchPage = async (url, options = {}, historyMode = 'push') => {
+    if (state.busy) return;
+    state.busy = true;
+    showBusy(options.method === 'POST' ? 'Guardando cambios…' : 'Cargando…');
+
+    try {
+      const response = await fetch(url, {
+        credentials: 'same-origin',
+        redirect: 'follow',
+        ...options,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          ...(options.headers || {}),
+        },
+      });
+
+      if (!response.ok && response.status >= 500) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      await renderResponse(response, historyMode);
+    } catch (error) {
+      console.error('Admin async navigation failed:', error);
+      if (window.showNotify) {
+        window.showNotify('No se pudo completar la acción sin recargar. Intenta nuevamente.', 'error');
+      }
+    } finally {
+      state.busy = false;
+      hideBusy();
+    }
+  };
+
+  const shouldHandleLink = (link, event) => {
+    if (!link || event.defaultPrevented) return false;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
+    if (link.target && link.target !== '_self') return false;
+    if (link.hasAttribute('download') || link.dataset.hardNavigation === '1') return false;
+    if (link.matches('[data-logout-confirm]')) return false;
+
+    const rawHref = link.getAttribute('href') || '';
+    if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('javascript:') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:')) return false;
+
+    const url = new URL(link.href, window.location.href);
+    if (url.origin !== window.location.origin) return false;
+    if (!url.pathname.includes('/admin/')) return false;
+
+    const current = new URL(window.location.href);
+    if (url.pathname === current.pathname && url.search === current.search && url.hash) return false;
+
+    return true;
+  };
+
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href]');
+    if (!shouldHandleLink(link, event)) return;
+    event.preventDefault();
+    saveSidebarScroll();
+    fetchPage(link.href, {}, 'push');
+  }, true);
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    if (!form.closest('.admin-main')) return;
+    if ((form.method || 'get').toLowerCase() !== 'post') return;
+    if (form.dataset.hardSubmit === '1' || form.target) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    const expected = form.dataset.confirmText;
+    if (expected) {
+      const confirmation = q('[name="confirmation"]', form);
+      if (confirmation && confirmation.value.trim() !== expected) {
+        confirmation.focus();
+        window.showNotify?.(`Escribe ${expected} exactamente para continuar.`, 'warning');
+        return;
+      }
+    }
+
+    if (form.dataset.swalConfirm && form.dataset.swalApproved !== '1') {
+      const result = window.Swal
+        ? await window.Swal.fire({
+          icon: 'warning',
+          title: form.dataset.swalConfirm || 'Confirmar acción',
+          text: form.dataset.swalText || 'Confirma para continuar.',
+          showCancelButton: true,
+          confirmButtonText: form.dataset.swalConfirmText || 'Sí, continuar',
+          cancelButtonText: 'Cancelar',
+          allowOutsideClick: false,
+        })
+        : { isConfirmed: false };
+
+      if (!result.isConfirmed) return;
+      form.dataset.swalApproved = '1';
+    }
+
+    const submitter = event.submitter;
+    const data = new FormData(form);
+    if (submitter?.name) data.append(submitter.name, submitter.value || '');
+
+    const action = form.action || window.location.href;
+    await fetchPage(action, {
+      method: 'POST',
+      body: data,
+    }, 'replace');
+  }, true);
+
+  document.addEventListener('click', (event) => {
+    const previewButton = event.target.closest('[data-preview-src]');
+    if (!previewButton) return;
+    const modal = q('[data-image-modal]');
+    const image = q('[data-modal-image]');
+    const caption = q('[data-modal-caption]');
+    if (!modal || !image) return;
+    image.src = previewButton.dataset.previewSrc || '';
+    if (caption) caption.textContent = previewButton.dataset.previewCaption || '';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  window.addEventListener('popstate', () => {
+    fetchPage(window.location.href, {}, 'none');
+  });
+
+  restoreSidebarScroll();
+
+  window.ESAdminAsyncNavigation = {
+    fetchPage,
+    enhanceMain,
+    saveSidebarScroll,
+    restoreSidebarScroll,
+  };
 })();

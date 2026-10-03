@@ -23,6 +23,13 @@ function normalize_external_widget(array $row, int $fallbackOrder = 20): array {
         $url = '';
         $kind = 'embed';
     }
+    // Installation snippets always win over the selector value. This prevents
+    // an enabled widget from being silently disabled when a script was pasted
+    // but the UI still held the URL option.
+    if ($snippet !== '') {
+        $kind = 'embed';
+        $url = '';
+    }
     $position = in_array((string)($row['position'] ?? 'right'), $validPositions, true) ? (string)$row['position'] : 'right';
     return [
         'id' => $id,
@@ -111,10 +118,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             save_setting('floating_external_enabled', '0');
         }
 
-        $message = 'Floating widgets saved.';
+        $message = 'Widgets guardados correctamente.';
     } catch (Throwable $e) {
         $message = $e->getMessage();
         $type = 'error';
+    }
+
+    if (isset($_POST['ajax']) && $_POST['ajax'] === '1') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'ok' => $type !== 'error',
+            'message' => $message,
+            'type' => $type,
+            'widgets' => $type !== 'error' ? external_widgets_from_settings(settings()) : [],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        exit;
     }
 }
 
@@ -136,7 +154,7 @@ require __DIR__ . '/_header.php';
     <div hidden data-flash-message="<?= h($message) ?>" data-flash-type="<?= h($type) ?>"></div>
 <?php endif; ?>
 
-<form class="panel form-stack widget-manager" method="post" id="floating-widget-form">
+<form class="panel form-stack widget-manager" method="post" id="floating-widget-form" data-ajax-widget-form>
     <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
 
     <section class="settings-block widget-config-card">
@@ -263,29 +281,64 @@ require __DIR__ . '/_header.php';
 
 <script>
 (() => {
+    const form = document.getElementById('floating-widget-form');
     const list = document.getElementById('external-widget-list');
     const template = document.getElementById('external-widget-template');
     const addButton = document.getElementById('add-external-widget');
     let nextIndex = <?= count($externalWidgets) ?>;
 
+    const setNativeSelectValue = (select, value) => {
+        if (!select || select.value === value) return;
+        select.value = value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        if (window.jQuery) {
+            const $select = window.jQuery(select);
+            if ($select.data('select2-local')) $select.trigger('change.select2');
+        }
+    };
+
     const bindEditor = (editor) => {
+        if (editor.dataset.widgetBound === '1') return;
+        editor.dataset.widgetBound = '1';
+
         const kind = editor.querySelector('[data-widget-kind]');
         const urlField = editor.querySelector('[data-url-field]');
         const embedField = editor.querySelector('[data-embed-field]');
+        const snippet = embedField?.querySelector('textarea');
+        const urlInput = urlField?.querySelector('input');
+        const enabled = editor.querySelector('input[name$="[enabled]"]');
         const name = editor.querySelector('[data-widget-name]');
         const title = editor.querySelector('[data-widget-title]');
+
         const syncKind = () => {
+            const hasSnippet = !!snippet?.value.trim();
+            if (hasSnippet && kind?.value !== 'embed') setNativeSelectValue(kind, 'embed');
             const isUrl = kind && kind.value === 'url';
             if (urlField) urlField.hidden = !isUrl;
             if (embedField) embedField.hidden = isUrl;
         };
+
         kind?.addEventListener('change', syncKind);
-        name?.addEventListener('input', () => { if (title) title.textContent = name.value.trim() || 'Widget externo'; });
+        snippet?.addEventListener('input', () => {
+            if (snippet.value.trim()) {
+                setNativeSelectValue(kind, 'embed');
+                if (urlInput) urlInput.value = '';
+            }
+            syncKind();
+        });
+        snippet?.addEventListener('paste', () => window.setTimeout(syncKind, 0));
+        name?.addEventListener('input', () => {
+            if (title) title.textContent = name.value.trim() || 'Widget externo';
+        });
         editor.querySelector('[data-remove-widget]')?.addEventListener('click', () => editor.remove());
+
+        // If a saved installation code exists, the editor must open in embed mode.
+        if (snippet?.value.trim()) setNativeSelectValue(kind, 'embed');
         syncKind();
     };
 
-    list.querySelectorAll('[data-widget-editor]').forEach(bindEditor);
+    list?.querySelectorAll('[data-widget-editor]').forEach(bindEditor);
+
     addButton?.addEventListener('click', () => {
         const html = template.innerHTML.replaceAll('__INDEX__', String(nextIndex++));
         const holder = document.createElement('div');
@@ -295,6 +348,39 @@ require __DIR__ . '/_header.php';
         list.appendChild(editor);
         bindEditor(editor);
         editor.querySelector('[data-widget-name]')?.focus();
+    });
+
+    form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalText = submitButton?.textContent || 'Guardar widgets';
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.add('is-saving');
+            submitButton.textContent = 'Guardando…';
+        }
+
+        try {
+            const data = new FormData(form);
+            data.set('ajax', '1');
+            const response = await fetch(form.action || window.location.href, {
+                method: 'POST',
+                body: data,
+                credentials: 'same-origin',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(result.message || 'No se pudieron guardar los widgets.');
+            if (window.showNotify) showNotify(result.message || 'Widgets guardados correctamente.', 'success');
+        } catch (error) {
+            if (window.showNotify) showNotify(error.message || 'No se pudieron guardar los widgets.', 'error');
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.classList.remove('is-saving');
+                submitButton.textContent = originalText;
+            }
+        }
     });
 })();
 </script>
