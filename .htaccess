@@ -1,19 +1,11 @@
 Options -Indexes
 DirectoryIndex index.php
 
-# Canonical production URL: never expose the physical Git/domain folder.
-# Works even when mod_rewrite rules are not reached.
-<IfModule mod_alias.c>
-  RedirectMatch 301 ^/esmultiservicios\.com/?$ /
-  RedirectMatch 301 ^/esmultiservicios\.com/(.*)$ /$1
-</IfModule>
-
+# Production is deployed directly to the domain DocumentRoot (public_html).
+# Do not redirect between / and /esmultiservicios.com/ here: doing so can
+# conflict with a hosting-level redirect and create ERR_TOO_MANY_REDIRECTS.
 <IfModule mod_rewrite.c>
   RewriteEngine On
-
-  # Fallback canonicalization for Apache installations using mod_rewrite.
-  RewriteCond %{HTTP_HOST} ^(?:www\.)?esmultiservicios\.com$ [NC]
-  RewriteRule ^esmultiservicios\.com(?:/(.*))?$ /$1 [R=301,L,NE]
 </IfModule>
 
 <FilesMatch "^(database\.sql|database-update\.sql|\.gitignore|\.cpanel\.yml)$">

@@ -1,21 +1,9 @@
 <?php
 declare(strict_types=1);
 
-// Production canonical URL guard. cPanel may keep the Git checkout inside a
-// physical folder called esmultiservicios.com, but that folder must never be
-// visible in public URLs. Any legacy/duplicate admin URL is redirected to
-// https://esmultiservicios.com/admin/... before sessions or HTML output.
-(function (): void {
-    $host = strtolower(preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')) ?? '');
-    if (!in_array($host, ['esmultiservicios.com', 'www.esmultiservicios.com'], true)) return;
-    $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
-    if (preg_match('~^/esmultiservicios\.com(?=/|$)(.*)$~i', $uri, $m)) {
-        $target = $m[1] !== '' ? $m[1] : '/';
-        if ($target[0] !== '/') $target = '/' . $target;
-        header('Location: ' . $target, true, 301);
-        exit;
-    }
-})();
+// Public/admin URLs are already rooted at the domain DocumentRoot.
+// Canonicalization is intentionally not performed here to avoid fighting
+// hosting-level redirects and causing redirect loops.
 
 session_start();
 require_once __DIR__ . '/../config/bootstrap.php';
