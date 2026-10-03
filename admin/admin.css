@@ -11540,3 +11540,79 @@ body{
     .content-section-switcher .content-section-tab-copy strong{font-size:13.5px!important}
     .content-section-switcher .content-section-tab-copy small{font-size:11.5px!important}
 }
+
+/* ==========================================================
+   ES MULTISERVICIOS ADMIN — NO-WHITE-HOVER POLICY v1.66
+   Interactive controls keep readable contrast on hover/focus.
+   ========================================================== */
+.profile-menu>summary,
+.profile-menu>summary:hover,
+.profile-menu>summary:focus-visible,
+.profile-menu[open]>summary{
+    background:#eef6fb!important;
+    color:var(--iz-admin-navy,#082f57)!important;
+    border-color:#bcd6e6!important;
+    box-shadow:0 4px 12px rgba(8,46,87,.055)!important;
+    opacity:1!important;
+    filter:none!important;
+    transform:none!important;
+}
+.profile-menu>summary:hover,
+.profile-menu>summary:focus-visible,
+.profile-menu[open]>summary{
+    background:#dfeff8!important;
+    color:var(--iz-admin-navy,#082f57)!important;
+    border-color:#8fbed6!important;
+}
+.profile-menu>summary .profile-copy strong,
+.profile-menu>summary:hover .profile-copy strong,
+.profile-menu>summary:focus-visible .profile-copy strong,
+.profile-menu[open]>summary .profile-copy strong{
+    color:var(--iz-admin-navy,#082f57)!important;
+}
+.profile-menu>summary .profile-copy small,
+.profile-menu>summary:hover .profile-copy small,
+.profile-menu>summary:focus-visible .profile-copy small,
+.profile-menu[open]>summary .profile-copy small,
+.profile-menu>summary .chev,
+.profile-menu>summary:hover .chev,
+.profile-menu>summary:focus-visible .chev,
+.profile-menu[open]>summary .chev{
+    color:#5d7489!important;
+}
+.profile-dropdown a:hover,
+.profile-dropdown a:focus-visible{
+    background:#e8f3f9!important;
+    color:#0b3d67!important;
+    opacity:1!important;
+    filter:none!important;
+}
+
+/* Header and navigation actions never fade or switch to a white hover state. */
+.admin-header a:hover,
+.admin-header button:hover,
+.admin-header summary:hover,
+.admin-sidebar a:hover,
+.quick-link:hover,
+.icon-btn:hover,
+.action-menu>summary:hover,
+.action-menu nav a:hover,
+.action-menu nav button:hover,
+.button:hover,
+button:hover{
+    opacity:1!important;
+    filter:none!important;
+}
+
+/* Secondary controls always retain a tinted/colored surface on hover. */
+.button.secondary:hover,
+.button.ghost:hover,
+a.button.secondary:hover,
+a.button.ghost:hover,
+.icon-btn:hover,
+.mobile-view:hover,
+.mobile-status:hover{
+    background:#dcecf7!important;
+    color:#082f57!important;
+    border-color:#b7d3e3!important;
+}
