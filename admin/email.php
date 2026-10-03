@@ -255,7 +255,7 @@ foreach($rows as $r):
 <button class="button small">Send test</button>
 </form>
 <details class="action-menu">
-<summary>Actions ▾</summary>
+<summary>Actions</summary>
 <nav>
 <a href="?edit=<?=$r['correo_id']?>">Edit</a>
 <form method="post">

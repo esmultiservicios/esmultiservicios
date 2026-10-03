@@ -57,9 +57,11 @@ require __DIR__.'/_header.php';
 <label>Subservices / details<textarea name="details" required><?=h($edit['details']??'')?>
 </textarea>
 </label>
-<label class="check-row status-switch">
-<input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>
-> Publish on website</label>
+<label class="premium-switch ">
+<input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Publish service</b><small>Show this service in the public services catalog.</small></span>
+</label>
 <div class="form-actions">
 <button>Save service</button><?php
 if($edit):
@@ -87,10 +89,10 @@ foreach($rows as $r):
 <p><?=h($r['details'])?>
 </p>
 <div class="actions">
-<a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a>
 <details class="action-menu">
-<summary>Actions ▾</summary>
+<summary>Actions</summary>
 <nav>
+<a href="?edit=<?=$r['id']?>">Edit</a>
 <form method="post" data-swal-confirm="Delete this service?" data-swal-text="This action cannot be undone.">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
 <input type="hidden" name="action" value="delete">

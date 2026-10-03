@@ -125,13 +125,10 @@ require __DIR__ . '/_header.php';
         </div>
 
         <div class="service-map-controls">
-            <label class="check-row status-switch service-map-switch">
-                <input
-                    type="checkbox"
-                    name="service_map_enabled"
-                    <?= $mapEnabled ? 'checked' : '' ?>
-                >
-                <span>Show map on website</span>
+            <label class="premium-switch service-map-switch">
+                <input type="checkbox" name="service_map_enabled" <?= $mapEnabled ? 'checked' : '' ?>>
+                <span class="switch-ui" aria-hidden="true"></span>
+                <span><b>Show map on website</b><small>Display the service-area map for public visitors.</small></span>
             </label>
 
             <button type="submit">Save map settings</button>
@@ -192,14 +189,11 @@ require __DIR__ . '/_header.php';
                 >
             </label>
 
-            <label class="check-row status-switch service-area-visible-switch">
-                <input
-                    type="checkbox"
-                    name="active"
-                    <?= !$edit || !empty($edit['active']) ? 'checked' : '' ?>
-                >
-                <span>Visible</span>
-            </label>
+            <label class="premium-switch service-area-visible-switch">
+<input type="checkbox" name="active" <?= !$edit || !empty($edit['active']) ? 'checked' : '' ?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Visible on website</b><small>Show this service area to public visitors.</small></span>
+</label>
         </div>
 
         <div class="form-actions">
@@ -225,22 +219,7 @@ require __DIR__ . '/_header.php';
                 </span>
             </div>
 
-            <div class="actions">
-                <a class="button secondary small" href="?edit=<?= (int)$row['id'] ?>">
-                    Edit
-                </a>
-
-                <form
-                    method="post"
-                    data-swal-confirm="Delete this service area?"
-                    data-swal-text="This location will no longer appear on the website."
-                >
-                    <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                    <button class="button danger small" type="submit">Delete</button>
-                </form>
-            </div>
+            <div class="actions"><details class="action-menu"><summary>Actions</summary><nav><a href="?edit=<?= (int)$row['id'] ?>">Edit</a><form method="post" data-swal-confirm="Delete this service area?" data-swal-text="This location will no longer appear on the website."><input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$row['id'] ?>"><button class="danger-text" type="submit">Delete</button></form></nav></details></div>
         </article>
     <?php endforeach; ?>
 </div>

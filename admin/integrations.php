@@ -221,15 +221,7 @@ foreach($rows as $r):
 <p class="muted"><?=h($r['base_url']?:'No base URL configured yet.')?>
 
 </p>
-<div class="actions">
-<a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a>
-<form method="post" data-swal-confirm="Delete this integration?" data-swal-text="Stored integration settings for this provider will be removed.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['id']?>">
-<button class="button danger small">Delete</button>
-</form>
-</div>
+<div class="actions"><details class="action-menu"><summary>Actions</summary><nav><a href="?edit=<?=$r['id']?>">Edit</a><form method="post" data-swal-confirm="Delete this integration?" data-swal-text="Stored integration settings for this provider will be removed."><input type="hidden" name="csrf" value="<?=h(csrf_token())?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$r['id']?>"><button class="danger-text">Delete</button></form></nav></details></div>
 </article><?php
 endforeach;
 ?>

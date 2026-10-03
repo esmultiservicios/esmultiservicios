@@ -55,9 +55,11 @@ require __DIR__.'/_header.php';
 <label>Order<input type="number" name="sort_order" value="<?=h((string)($edit['sort_order']??0))?>">
 </label>
 </div>
-<label class="check-row status-switch">
-<input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>
-> Publish</label>
+<label class="premium-switch ">
+<input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Publish tip</b><small>Show this educational tip on the public website.</small></span>
+</label>
 <div class="form-actions">
 <button>Save tip</button><?php
 if($edit):
@@ -82,15 +84,7 @@ foreach($rows as $r):
 <span class="badge <?=$r['active']?'contacted':'closed'?>"><?=$r['active']?'Published':'Hidden'?>
 </span>
 </div>
-<div class="actions">
-<a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a>
-<form method="post" data-swal-confirm="Delete this tip?" data-swal-text="This educational item will be removed.">
-<input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$r['id']?>">
-<button class="button danger small">Delete</button>
-</form>
-</div>
+<div class="actions"><details class="action-menu"><summary>Actions</summary><nav><a href="?edit=<?=$r['id']?>">Edit</a><form method="post" data-swal-confirm="Delete this tip?" data-swal-text="This educational item will be removed."><input type="hidden" name="csrf" value="<?=h(csrf_token())?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$r['id']?>"><button class="danger-text">Delete</button></form></nav></details></div>
 </article><?php
 endforeach;
 ?>

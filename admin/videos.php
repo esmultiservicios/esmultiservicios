@@ -170,7 +170,7 @@ $pageTitle='Videos'; $active='videos'; require __DIR__.'/_header.php';
         <?php endif; ?>
     </div>
 
-    <div class="video-poster-editor premium-poster-editor">
+    <div class="video-poster-editor premium-poster-editor video-poster-fullwidth">
         <div class="poster-upload-column">
             <div class="field-heading">
                 <div>
@@ -196,7 +196,11 @@ $pageTitle='Videos'; $active='videos'; require __DIR__.'/_header.php';
             </div>
         <?php endif; ?>
     </div>
-    <label class="check-row status-switch"><input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>> Publish on website</label>
+    <label class="premium-switch ">
+<input type="checkbox" name="active" <?=!$edit||!empty($edit['active'])?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Publish video</b><small>Show this video on the public website.</small></span>
+</label>
     <div class="form-actions"><button>Save video</button><?php if($edit): ?><a class="button secondary" href="videos.php">Cancel</a><?php endif; ?></div>
 </form>
 </section>
@@ -208,7 +212,7 @@ $pageTitle='Videos'; $active='videos'; require __DIR__.'/_header.php';
     <div class="video-admin-card-meta">
         <div class="list-head"><div><strong><?=h($r['title'])?></strong><small><?=h(ucfirst($r['video_type']))?> · order <?=$r['sort_order']?></small></div></div>
         <?php if(trim((string)$r['description'])!==''): ?><p><?=h($r['description'])?></p><?php endif; ?>
-        <div class="actions"><a class="button secondary small" href="?edit=<?=$r['id']?>">Edit</a><details class="action-menu"><summary>Actions ▾</summary><nav><form method="post" data-swal-confirm="Delete this video?" data-swal-text="This action cannot be undone."><input type="hidden" name="csrf" value="<?=h(csrf_token())?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$r['id']?>"><button class="danger-text">Delete</button></form></nav></details></div>
+        <div class="actions"><details class="action-menu"><summary>Actions</summary><nav><a href="?edit=<?=$r['id']?>">Edit</a><form method="post" data-swal-confirm="Delete this video?" data-swal-text="This action cannot be undone."><input type="hidden" name="csrf" value="<?=h(csrf_token())?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?=$r['id']?>"><button class="danger-text">Delete</button></form></nav></details></div>
     </div>
 </article>
 <?php endforeach; ?>

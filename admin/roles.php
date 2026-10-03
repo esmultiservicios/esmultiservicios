@@ -238,29 +238,7 @@ require __DIR__ . '/_header.php';
                     </div>
                 </div>
 
-                <div class="actions role-card-actions">
-                    <?php if ($role['role_key'] !== 'owner'): ?>
-                        <a
-                            class="button secondary small"
-                            href="?edit=<?= (int)$role['id'] ?>&amp;view=<?= h($roleView) ?>"
-                        >
-                            Permissions
-                        </a>
-                    <?php endif; ?>
-
-                    <?php if (!$role['is_system']): ?>
-                        <form
-                            method="post"
-                            data-swal-confirm="Delete this role?"
-                            data-swal-text="Only unused custom roles can be removed."
-                        >
-                            <input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<?= (int)$role['id'] ?>">
-                            <button class="button danger-lite small" type="submit">Delete</button>
-                        </form>
-                    <?php endif; ?>
-                </div>
+                <div class="actions role-card-actions"><?php if ($role['role_key'] !== 'owner' || !$role['is_system']): ?><details class="action-menu"><summary>Actions</summary><nav><?php if ($role['role_key'] !== 'owner'): ?><a href="?edit=<?= (int)$role['id'] ?>&amp;view=<?= h($roleView) ?>">Permissions</a><?php endif; ?><?php if (!$role['is_system']): ?><form method="post" data-swal-confirm="Delete this role?" data-swal-text="Only unused custom roles can be removed."><input type="hidden" name="csrf" value="<?= h(csrf_token()) ?>"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$role['id'] ?>"><button class="danger-text" type="submit">Delete</button></form><?php endif; ?></nav></details><?php endif; ?></div>
             </article>
         <?php endforeach; ?>
     </section>

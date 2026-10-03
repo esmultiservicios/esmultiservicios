@@ -141,7 +141,7 @@ endif;
 </small>
 </div>
 <details class="action-menu">
-<summary>Actions ▾</summary>
+<summary>Actions</summary>
 <nav>
 <a href="?edit=<?=$r['id']?>">Edit</a>
 <form method="post" data-swal-confirm="Delete this image?" data-swal-text="The gallery record will be removed.">

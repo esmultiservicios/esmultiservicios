@@ -12027,3 +12027,156 @@ body.admin-async-busy .admin-main {
         padding: 8px 11px;
     }
 }
+
+
+/* ==============================================================
+   v1.75 — FINAL UI CONSISTENCY PASS
+   Unified publish controls, action menus, SEO workspace and media.
+   ============================================================== */
+
+/* All primary publish/visibility controls use the same premium switch standard. */
+.premium-switch,
+.admin-main .premium-switch {
+    width:100%;
+    min-height:72px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 16px;
+    border:1px solid #c9ddd7;
+    border-radius:16px;
+    background:#f5faf8;
+    box-sizing:border-box;
+    cursor:pointer;
+}
+.premium-switch:hover { border-color:#95c4b9; background:#f0f8f5; }
+.premium-switch .switch-ui { flex:0 0 48px; width:48px; height:28px; }
+.premium-switch>span:last-child { display:grid; gap:2px; min-width:0; }
+.premium-switch b { color:#062f54; font-size:14px; line-height:1.25; }
+.premium-switch small { color:#62778a; font-size:12px; line-height:1.35; }
+
+/* Legacy status-switch remains safe if any older module still uses it. */
+.status-switch:not(.premium-switch) {
+    width:100%; min-height:64px; display:flex; align-items:center; gap:12px;
+    padding:13px 15px; border:1px solid #c9ddd7; border-radius:15px; background:#f5faf8;
+}
+.status-switch:not(.premium-switch) input[type="checkbox"] {
+    appearance:none!important; -webkit-appearance:none!important;
+    width:44px!important; height:26px!important; min-width:44px!important; flex:0 0 44px!important;
+    margin:0!important; padding:0!important; border:0!important; border-radius:999px!important;
+    background:#aabdb8!important; position:relative!important; box-shadow:none!important;
+}
+.status-switch:not(.premium-switch) input[type="checkbox"]:before {
+    content:""!important; position:absolute!important; width:20px!important; height:20px!important;
+    top:3px!important; left:3px!important; border-radius:50%!important; background:#fff!important;
+    transform:none!important; transition:transform .18s ease!important;
+}
+.status-switch:not(.premium-switch) input[type="checkbox"]:checked { background:#0e7b76!important; }
+.status-switch:not(.premium-switch) input[type="checkbox"]:checked:before { transform:translateX(18px)!important; }
+
+/* Video file and poster areas always occupy the full editor width. */
+.video-upload-field,
+.video-poster-editor,
+.video-poster-fullwidth,
+.video-poster-editor .poster-upload-column,
+.video-poster-editor .premium-media-zone {
+    width:100%!important;
+    max-width:none!important;
+    box-sizing:border-box;
+}
+.video-poster-editor.video-poster-fullwidth { display:block!important; }
+.video-poster-editor .poster-upload-column { display:block!important; }
+.video-poster-editor .premium-media-zone { min-height:250px; }
+.video-poster-editor .current-poster-card { margin-top:16px; width:100%; }
+
+/* One consistent compact Actions control. No permanent Edit/Delete buttons beside it. */
+.actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
+.action-menu { position:relative; z-index:40; display:inline-block; }
+.action-menu>summary {
+    list-style:none; min-height:38px; padding:8px 13px; border:1px solid #0b416a!important;
+    border-radius:10px; background:#0b416a!important; color:#fff!important; font-size:12px;
+    font-weight:800; line-height:1; cursor:pointer; box-shadow:0 5px 14px rgba(4,47,82,.13)!important;
+}
+.action-menu>summary:after { content:""; width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid currentColor; margin-left:7px; }
+.action-menu>summary:hover,.action-menu[open]>summary { background:#0a3657!important; border-color:#0a3657!important; color:#fff!important; }
+.action-menu nav {
+    position:fixed!important;
+    top:var(--action-menu-top,auto)!important;
+    left:var(--action-menu-left,auto)!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:max-content; min-width:190px; max-width:min(280px,calc(100vw - 24px));
+    padding:7px; border:1px solid #d7e2e8; border-radius:12px; background:#fff!important;
+    box-shadow:0 18px 44px rgba(6,40,65,.18); z-index:10050!important;
+}
+.action-menu nav a,.action-menu nav button {
+    width:100%; min-height:38px; display:flex!important; align-items:center; justify-content:flex-start;
+    gap:9px; padding:9px 10px!important; margin:0!important; border:0!important; border-radius:8px!important;
+    background:transparent!important; color:#173b56!important; box-shadow:none!important; text-decoration:none;
+    font-size:13px; font-weight:750; white-space:nowrap; text-align:left; cursor:pointer;
+}
+.action-menu nav form { margin:0; padding:0; width:100%; }
+.action-menu nav a:hover,.action-menu nav button:hover { background:#edf5f9!important; color:#073d67!important; }
+.action-menu nav .danger-text { color:#a72e35!important; background:transparent!important; }
+.action-menu nav .danger-text:hover { color:#8f2027!important; background:#fff0f1!important; }
+.action-menu nav .action-icon { width:17px; height:17px; flex:0 0 17px; }
+.action-menu.drop-up nav,.action-menu.drop-left nav,.action-menu.drop-right nav { top:var(--action-menu-top,auto)!important; left:var(--action-menu-left,auto)!important; bottom:auto!important; right:auto!important; }
+
+/* SEO Manager: clear hierarchy, technical status and explainable controls. */
+.seo-page-heading { align-items:center; }
+.seo-health-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+.seo-health-card { min-width:0; display:flex; gap:12px; align-items:flex-start; padding:16px; border:1px solid #d6e3e9; border-radius:16px; background:#fff; box-shadow:0 6px 18px rgba(7,54,83,.04); }
+.seo-health-icon { width:40px; height:40px; display:grid; place-items:center; border-radius:12px; background:#eef7fa; color:#087c9d; flex:0 0 40px; }
+.seo-health-icon .ui-icon { width:20px; height:20px; }
+.seo-health-card>div { display:grid; gap:3px; min-width:0; }
+.seo-health-card small { color:#718397; font-size:10px; font-weight:900; letter-spacing:.08em; }
+.seo-health-card strong { color:#062f54; font-size:14px; }
+.seo-health-card p { margin:0; color:#60758a; font-size:11px; line-height:1.35; }
+.seo-health-card.is-ready { border-color:#bfe1d6; background:#f7fcfa; }
+.seo-health-card.is-warning,.seo-health-card.needs-attention { border-color:#eed8ad; background:#fffaf1; }
+.seo-workspace { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(340px,.85fr); gap:18px; align-items:start; }
+.seo-editor-panel { min-width:0; }
+.seo-form { display:grid; gap:20px; }
+.seo-section-title { display:flex; gap:12px; align-items:flex-start; margin-bottom:18px; }
+.seo-section-title>span { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; border-radius:13px; background:#eaf7fa; color:#087ca0; }
+.seo-section-title .ui-icon { width:21px; height:21px; }
+.seo-section-title h2,.seo-section-title h3 { margin:2px 0 3px; color:#062f54; }
+.seo-section-title p { margin:0; }
+.seo-section-title.compact { margin-bottom:12px; }
+.seo-section-title.compact>span { width:38px; height:38px; flex-basis:38px; }
+.field-help { display:flex!important; justify-content:space-between; gap:12px; align-items:flex-start; margin-top:7px; color:#687d90!important; font-size:11px!important; }
+.field-help b { color:#0c5774; white-space:nowrap; }
+.seo-indexing-card,.seo-social-card { padding:18px; border:1px solid #dbe7eb; border-radius:16px; background:#fbfdfd; }
+.seo-social-upload { width:100%; min-height:200px; box-sizing:border-box; }
+.seo-current-image { display:grid; grid-template-columns:88px minmax(0,1fr) auto; gap:13px; align-items:center; margin-top:14px; padding:12px; border:1px solid #d7e4e6; border-radius:14px; background:#fff; }
+.seo-current-image img { width:88px; height:58px; object-fit:cover; border-radius:9px; }
+.seo-current-image>div { display:grid; gap:3px; min-width:0; }
+.seo-current-image small { color:#6b7e90; overflow-wrap:anywhere; }
+.seo-preview-column { display:grid; gap:18px; position:sticky; top:94px; }
+.premium-search-preview { border:1px solid #d5e1e7; border-radius:18px; background:#fff; box-shadow:0 7px 22px rgba(7,54,83,.05); }
+.seo-files-panel { padding:20px!important; }
+.seo-file-list { display:grid; gap:8px; }
+.seo-file-row { display:grid; grid-template-columns:10px minmax(0,1fr) auto; gap:10px; align-items:center; padding:11px 0; border-bottom:1px solid #edf1f3; }
+.seo-file-row:last-child { border-bottom:0; }
+.seo-file-row>div { display:grid; gap:2px; }
+.seo-file-row strong { color:#092f50; font-size:13px; }
+.seo-file-row small { color:#6f8090; font-size:11px; }
+.seo-file-row a { color:#08779b; font-size:12px; font-weight:800; text-decoration:none; }
+.seo-file-state { width:9px; height:9px; border-radius:50%; background:#c5cdd4; }
+.seo-file-state.ok { background:#1ba978; box-shadow:0 0 0 4px #e7f8f2; }
+.seo-file-state.bad { background:#cf6a53; box-shadow:0 0 0 4px #fff0ec; }
+.seo-note { margin-top:14px; padding:13px 14px; border-radius:12px; background:#eef7f8; border:1px solid #d2e8e8; }
+.seo-note strong { color:#075f69; }
+.seo-note p { margin:4px 0 0; color:#5f7585; font-size:11px; line-height:1.5; }
+
+@media (max-width:1180px) {
+    .seo-health-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .seo-workspace { grid-template-columns:1fr; }
+    .seo-preview-column { position:static; grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:700px) {
+    .seo-health-grid,.seo-preview-column { grid-template-columns:1fr; }
+    .seo-current-image { grid-template-columns:72px minmax(0,1fr); }
+    .seo-current-image .compact-check { grid-column:1/-1; }
+    .action-menu nav { max-width:calc(100vw - 18px); }
+}
