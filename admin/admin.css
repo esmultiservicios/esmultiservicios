@@ -12201,3 +12201,164 @@ body.admin-async-busy .admin-main {
 .action-menu nav .action-icon,.action-menu-popover .action-icon{width:17px!important;height:17px!important;flex:0 0 17px!important;display:inline-grid!important;place-items:center!important;color:currentColor!important;}
 .action-menu nav .action-icon svg,.action-menu-popover .action-icon svg{width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
 .gallery-item:has(.action-menu[open]),.list-card:has(.action-menu[open]),.email-card:has(.action-menu[open]),.integration-card:has(.action-menu[open]),.role-card:has(.action-menu[open]),.user-card:has(.action-menu[open]){transform:none!important;margin:0!important;}
+
+/* ==============================================================
+   v1.77 — ACTION MENUS: STABLE, INTELLIGENT AND UNIFORM
+   ============================================================== */
+.action-menu {
+    position: relative !important;
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+}
+
+.action-menu > summary {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    min-height: 38px !important;
+    padding: 8px 13px !important;
+    list-style: none !important;
+    cursor: pointer !important;
+    user-select: none !important;
+}
+
+.action-menu.is-open > summary,
+.action-menu > summary[aria-expanded="true"] {
+    background: #0a3657 !important;
+    border-color: #0a3657 !important;
+    color: #fff !important;
+}
+
+/* The menu is portaled to body, so it can never move or clip a card/grid. */
+body > .action-menu-popover {
+    position: fixed !important;
+    top: var(--action-menu-top, -9999px) !important;
+    left: var(--action-menu-left, -9999px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 2px !important;
+    width: max-content !important;
+    min-width: 190px !important;
+    max-width: min(290px, calc(100vw - 20px)) !important;
+    margin: 0 !important;
+    padding: 7px !important;
+    border: 1px solid #d7e3eb !important;
+    border-radius: 13px !important;
+    background: #fff !important;
+    box-shadow: 0 18px 48px rgba(5, 40, 68, .20) !important;
+    overflow: visible !important;
+    z-index: 2147483600 !important;
+    box-sizing: border-box !important;
+}
+
+body > .action-menu-popover form {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+body > .action-menu-popover a,
+body > .action-menu-popover button,
+body > .action-menu-popover form button,
+body > .action-menu-popover .danger-text {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 9px 10px !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    background-image: none !important;
+    color: #173b56 !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+    text-align: left !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+    opacity: 1 !important;
+    transform: none !important;
+    cursor: pointer !important;
+}
+
+body > .action-menu-popover a:hover,
+body > .action-menu-popover button:hover,
+body > .action-menu-popover a:focus-visible,
+body > .action-menu-popover button:focus-visible {
+    background: transparent !important;
+    background-image: none !important;
+    color: #0879a8 !important;
+    box-shadow: inset 3px 0 0 #0b8db8 !important;
+    outline: none !important;
+}
+
+body > .action-menu-popover .danger-text,
+body > .action-menu-popover button.danger-text,
+body > .action-menu-popover a.danger-text {
+    background: transparent !important;
+    background-image: none !important;
+    color: #a72e35 !important;
+    box-shadow: none !important;
+}
+
+body > .action-menu-popover .danger-text:hover,
+body > .action-menu-popover .danger-text:focus-visible {
+    background: transparent !important;
+    background-image: none !important;
+    color: #c12f39 !important;
+    box-shadow: inset 3px 0 0 #c12f39 !important;
+}
+
+body > .action-menu-popover .action-icon {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px !important;
+    flex: 0 0 17px !important;
+    color: currentColor !important;
+}
+
+body > .action-menu-popover .action-icon svg {
+    display: block !important;
+    width: 17px !important;
+    height: 17px !important;
+    stroke: currentColor !important;
+    fill: none !important;
+}
+
+/* No card or grid may move when Actions opens. */
+.gallery-item,
+.list-card,
+.email-card,
+.integration-card,
+.role-card,
+.user-card,
+.service-card,
+.video-card,
+.tip-card,
+.area-card {
+    contain: layout style;
+}
+
+.gallery-item:has(.action-menu.is-open),
+.list-card:has(.action-menu.is-open),
+.email-card:has(.action-menu.is-open),
+.integration-card:has(.action-menu.is-open),
+.role-card:has(.action-menu.is-open),
+.user-card:has(.action-menu.is-open) {
+    transform: none !important;
+    translate: none !important;
+}

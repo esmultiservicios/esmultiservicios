@@ -49,64 +49,8 @@
   );back?.addEventListener('click',closeSide);qa('.admin-sidebar a').forEach(a=>a.addEventListener('click',()=>{ try { if(side) sessionStorage.setItem(sidebarScrollKey,String(side.scrollTop)); } catch(_) {} closeSide(); })); qa('.profile-menu').forEach(d=>document.addEventListener('click',e=> {
     if(d.open&&!d.contains(e.target))d.open=false
   }
-  )); qa('.action-menu').forEach(menu=> {
-    const summary=q('summary',menu),nav=q('nav',menu);
-    if(!summary||!nav)return;
-    const placeholder=document.createComment('action-menu-origin');
-    let portaled=false;
-    const closeOthers=()=>qa('.action-menu[open]').forEach(other=>{ if(other!==menu) other.open=false; });
-    const portal=()=>{
-      if(portaled)return;
-      nav.parentNode?.insertBefore(placeholder,nav);
-      nav.classList.add('action-menu-popover');
-      document.body.appendChild(nav);
-      portaled=true;
-      window.ESActionIcons?.scan?.(nav);
-    };
-    const restore=()=>{
-      if(!portaled)return;
-      if(placeholder.parentNode) placeholder.parentNode.insertBefore(nav,placeholder);
-      placeholder.remove();
-      nav.classList.remove('action-menu-popover');
-      nav.style.removeProperty('--action-menu-top');
-      nav.style.removeProperty('--action-menu-left');
-      portaled=false;
-    };
-    const place=()=>{
-      if(!menu.open||!portaled)return;
-      const trigger=summary.getBoundingClientRect();
-      const navRect=nav.getBoundingClientRect();
-      const gap=8,margin=10;
-      const below=window.innerHeight-trigger.bottom-margin;
-      const above=trigger.top-margin;
-      let top;
-      if(below>=navRect.height || below>=above){
-        top=Math.min(window.innerHeight-navRect.height-margin,trigger.bottom+gap);
-      }else{
-        top=Math.max(margin,trigger.top-navRect.height-gap);
-      }
-      let left=trigger.left;
-      if(left+navRect.width>window.innerWidth-margin) left=trigger.right-navRect.width;
-      left=Math.max(margin,Math.min(left,window.innerWidth-navRect.width-margin));
-      nav.style.setProperty('--action-menu-top',Math.round(top)+'px');
-      nav.style.setProperty('--action-menu-left',Math.round(left)+'px');
-    };
-    menu.addEventListener('toggle',()=>{
-      if(menu.open){
-        closeOthers();
-        portal();
-        requestAnimationFrame(()=>requestAnimationFrame(place));
-      }else{
-        restore();
-      }
-    });
-    nav.addEventListener('click',e=>{ if(e.target.closest('a,button'))menu.open=false; });
-    document.addEventListener('pointerdown',e=>{
-      if(menu.open && !menu.contains(e.target) && !nav.contains(e.target)) menu.open=false;
-    });
-    window.addEventListener('resize',()=>{ if(menu.open)place(); },{passive:true});
-    window.addEventListener('scroll',()=>{ if(menu.open)place(); },{passive:true,capture:true});
-  }); qa('[data-stat]').forEach(el=> {
+  )); qa('.action-menu').forEach(()=>{}); // action menus are handled by the delegated controller below
+ qa('[data-stat]').forEach(el=> {
     const target=parseInt(el.dataset.stat||el.textContent,10)||0;let start=0;const dur=500,t0=performance.now();function tick(t) {
       const p=Math.min(1,(t-t0)/dur);el.textContent=Math.round(target*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(tick)
     }
@@ -1146,4 +1090,161 @@ window.CMSDialog = (() => {
     saveSidebarScroll,
     restoreSidebarScroll,
   };
+})();
+
+/* ========================================================================== 
+   ES MULTISERVICIOS ACTION MENU CONTROLLER v1.77
+   - Delegated: works on initial load and after AJAX navigation.
+   - Portals the dropdown to <body>, so cards/grids never move or clip it.
+   - Chooses the best side around the trigger based on real viewport space.
+   ========================================================================== */
+(() => {
+  'use strict';
+
+  if (window.ESActionMenusV177) return;
+
+  let active = null;
+  const GAP = 8;
+  const MARGIN = 10;
+
+  const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+
+  const restoreActive = () => {
+    if (!active) return;
+    const { menu, summary, nav, placeholder } = active;
+
+    nav.classList.remove('action-menu-popover', 'is-positioned');
+    nav.removeAttribute('data-action-placement');
+    nav.style.removeProperty('--action-menu-top');
+    nav.style.removeProperty('--action-menu-left');
+    nav.style.removeProperty('visibility');
+    nav.style.removeProperty('pointer-events');
+
+    if (placeholder?.parentNode) {
+      placeholder.parentNode.insertBefore(nav, placeholder);
+      placeholder.remove();
+    } else {
+      nav.remove();
+    }
+
+    menu?.classList.remove('is-open');
+    if (menu) menu.open = false;
+    summary?.setAttribute('aria-expanded', 'false');
+    active = null;
+  };
+
+  const overflowScore = (left, top, width, height) => {
+    const right = left + width;
+    const bottom = top + height;
+    return (
+      Math.max(0, MARGIN - left) +
+      Math.max(0, right - (window.innerWidth - MARGIN)) +
+      Math.max(0, MARGIN - top) +
+      Math.max(0, bottom - (window.innerHeight - MARGIN))
+    );
+  };
+
+  const positionActive = () => {
+    if (!active) return;
+    const { summary, nav } = active;
+    if (!summary?.isConnected || !nav?.isConnected) {
+      restoreActive();
+      return;
+    }
+
+    const trigger = summary.getBoundingClientRect();
+    const box = nav.getBoundingClientRect();
+    const width = box.width;
+    const height = box.height;
+
+    const candidates = [
+      { placement: 'bottom-start', left: trigger.left, top: trigger.bottom + GAP },
+      { placement: 'bottom-end', left: trigger.right - width, top: trigger.bottom + GAP },
+      { placement: 'top-start', left: trigger.left, top: trigger.top - height - GAP },
+      { placement: 'top-end', left: trigger.right - width, top: trigger.top - height - GAP },
+      { placement: 'right', left: trigger.right + GAP, top: trigger.top + (trigger.height - height) / 2 },
+      { placement: 'left', left: trigger.left - width - GAP, top: trigger.top + (trigger.height - height) / 2 },
+    ];
+
+    candidates.forEach((candidate, index) => {
+      candidate.score = overflowScore(candidate.left, candidate.top, width, height) + index * 0.001;
+    });
+    candidates.sort((a, b) => a.score - b.score);
+    const best = candidates[0];
+
+    const left = clamp(best.left, MARGIN, Math.max(MARGIN, window.innerWidth - width - MARGIN));
+    const top = clamp(best.top, MARGIN, Math.max(MARGIN, window.innerHeight - height - MARGIN));
+
+    nav.style.setProperty('--action-menu-left', `${Math.round(left)}px`);
+    nav.style.setProperty('--action-menu-top', `${Math.round(top)}px`);
+    nav.dataset.actionPlacement = best.placement;
+    nav.style.visibility = 'visible';
+    nav.style.pointerEvents = 'auto';
+    nav.classList.add('is-positioned');
+  };
+
+  const openMenu = (menu, summary) => {
+    const nav = menu.querySelector(':scope > nav');
+    if (!nav) return;
+
+    restoreActive();
+
+    const placeholder = document.createComment('esms-action-menu-origin');
+    nav.parentNode.insertBefore(placeholder, nav);
+    document.body.appendChild(nav);
+
+    menu.open = false; // native <details> must not control visibility or layout
+    menu.classList.add('is-open');
+    summary.setAttribute('aria-expanded', 'true');
+
+    nav.classList.add('action-menu-popover');
+    nav.style.visibility = 'hidden';
+    nav.style.pointerEvents = 'none';
+    nav.style.setProperty('--action-menu-left', '-9999px');
+    nav.style.setProperty('--action-menu-top', '-9999px');
+
+    active = { menu, summary, nav, placeholder };
+    window.ESActionIcons?.scan?.(nav);
+
+    requestAnimationFrame(() => {
+      positionActive();
+      requestAnimationFrame(positionActive);
+    });
+  };
+
+  document.addEventListener('click', (event) => {
+    const summary = event.target.closest('.action-menu > summary');
+    if (summary) {
+      event.preventDefault();
+      event.stopPropagation();
+      const menu = summary.parentElement;
+      if (active?.menu === menu) restoreActive();
+      else openMenu(menu, summary);
+      return;
+    }
+
+    if (!active) return;
+    if (active.nav.contains(event.target)) {
+      const action = event.target.closest('a,button');
+      if (action) setTimeout(restoreActive, 0);
+      return;
+    }
+
+    if (!active.menu.contains(event.target)) restoreActive();
+  }, true);
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && active) {
+      event.preventDefault();
+      const summary = active.summary;
+      restoreActive();
+      summary?.focus?.({ preventScroll: true });
+    }
+  });
+
+  window.addEventListener('resize', positionActive, { passive: true });
+  window.addEventListener('scroll', positionActive, { passive: true, capture: true });
+  document.addEventListener('esadmin:contentloaded', restoreActive);
+
+  window.ESActionMenusV177 = { close: restoreActive, reposition: positionActive };
 })();
