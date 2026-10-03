@@ -63,7 +63,7 @@
     if(/archive|archivar/.test(s))return'archive';
     if(/publish|publicar/.test(s))return'publish';
     if(/approve|aprobar|verify|verificar|confirm|confirmar|sí,|yes,/.test(s))return'check';
-    if(/security|seguridad|2fa|authenticator/.test(s))return'shield';
+    if(/security|seguridad|2fa|authenticator|permissions|permisos|access|acceso/.test(s))return'shield';
     if(/settings|config|setup|ajustes/.test(s))return'settings';
     if(/activate|deactivate|activar|desactivar/.test(s))return'power';
     if(/choose file|choose files|seleccionar archivo|adjuntar|attach/.test(s))return'paperclip';
@@ -75,7 +75,7 @@
     return null;
   };
   const excluded=el=>el.matches('[data-no-action-icon],.icon-btn,.zoom-btn,.media-preview,[data-rich-command],.mobile-menu,.user-avatar,.current-avatar-preview,.notify-close') || el.closest('[data-no-action-icon],.notify-item,.notify-stack');
-  const ACTION_SELECTOR='button,a.btn,a.button,.swal2-confirm,.swal2-cancel';
+  const ACTION_SELECTOR='button,a.btn,a.button,.action-menu nav a,.action-menu-popover a,.action-menu-popover button,.swal2-confirm,.swal2-cancel';
 
   function isActionControl(el){
     return el instanceof Element && el.matches(ACTION_SELECTOR);

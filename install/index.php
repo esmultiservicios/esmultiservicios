@@ -2,7 +2,7 @@
 declare(strict_types=1);
 session_start();
 
-const INSTALLER_VERSION = '5.24.0';
+const INSTALLER_VERSION = '5.25.0';
 
 $root = dirname(__DIR__);
 $configDir = $root . '/config';

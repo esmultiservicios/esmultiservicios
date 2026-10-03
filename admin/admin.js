@@ -51,42 +51,59 @@
   }
   )); qa('.action-menu').forEach(menu=> {
     const summary=q('summary',menu),nav=q('nav',menu);
-    const place=()=> {
-      if(!menu.open||!summary||!nav)return;
-      menu.classList.remove('drop-up','drop-left','drop-right');
-      nav.style.setProperty('--action-menu-top','0px');
-      nav.style.setProperty('--action-menu-left','0px');
+    if(!summary||!nav)return;
+    const placeholder=document.createComment('action-menu-origin');
+    let portaled=false;
+    const closeOthers=()=>qa('.action-menu[open]').forEach(other=>{ if(other!==menu) other.open=false; });
+    const portal=()=>{
+      if(portaled)return;
+      nav.parentNode?.insertBefore(placeholder,nav);
+      nav.classList.add('action-menu-popover');
+      document.body.appendChild(nav);
+      portaled=true;
+      window.ESActionIcons?.scan?.(nav);
+    };
+    const restore=()=>{
+      if(!portaled)return;
+      if(placeholder.parentNode) placeholder.parentNode.insertBefore(nav,placeholder);
+      placeholder.remove();
+      nav.classList.remove('action-menu-popover');
+      nav.style.removeProperty('--action-menu-top');
+      nav.style.removeProperty('--action-menu-left');
+      portaled=false;
+    };
+    const place=()=>{
+      if(!menu.open||!portaled)return;
       const trigger=summary.getBoundingClientRect();
       const navRect=nav.getBoundingClientRect();
-      const gap=7, margin=10;
-      const spaceBelow=window.innerHeight-trigger.bottom-margin;
-      const spaceAbove=trigger.top-margin;
-      const spaceRight=window.innerWidth-trigger.left-margin;
-      const spaceLeft=trigger.right-margin;
-      let top,left;
-      if(spaceBelow>=navRect.height || spaceBelow>=spaceAbove){
+      const gap=8,margin=10;
+      const below=window.innerHeight-trigger.bottom-margin;
+      const above=trigger.top-margin;
+      let top;
+      if(below>=navRect.height || below>=above){
         top=Math.min(window.innerHeight-navRect.height-margin,trigger.bottom+gap);
       }else{
         top=Math.max(margin,trigger.top-navRect.height-gap);
-        menu.classList.add('drop-up');
       }
-      if(spaceRight>=navRect.width){
-        left=trigger.left;
-      }else if(spaceLeft>=navRect.width){
-        left=trigger.right-navRect.width;
-        menu.classList.add('drop-left');
-      }else{
-        left=Math.max(margin,Math.min(trigger.left,window.innerWidth-navRect.width-margin));
-      }
+      let left=trigger.left;
+      if(left+navRect.width>window.innerWidth-margin) left=trigger.right-navRect.width;
+      left=Math.max(margin,Math.min(left,window.innerWidth-navRect.width-margin));
       nav.style.setProperty('--action-menu-top',Math.round(top)+'px');
       nav.style.setProperty('--action-menu-left',Math.round(left)+'px');
     };
-    menu.addEventListener('toggle',()=> {
-      if(!menu.open)return;
-      qa('.action-menu[open]').forEach(other=> { if(other!==menu)other.open=false; });
-      requestAnimationFrame(place);
+    menu.addEventListener('toggle',()=>{
+      if(menu.open){
+        closeOthers();
+        portal();
+        requestAnimationFrame(()=>requestAnimationFrame(place));
+      }else{
+        restore();
+      }
     });
-    nav?.addEventListener('click',e=> { if(e.target.closest('a,button'))menu.open=false; });
+    nav.addEventListener('click',e=>{ if(e.target.closest('a,button'))menu.open=false; });
+    document.addEventListener('pointerdown',e=>{
+      if(menu.open && !menu.contains(e.target) && !nav.contains(e.target)) menu.open=false;
+    });
     window.addEventListener('resize',()=>{ if(menu.open)place(); },{passive:true});
     window.addEventListener('scroll',()=>{ if(menu.open)place(); },{passive:true,capture:true});
   }); qa('[data-stat]').forEach(el=> {

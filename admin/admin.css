@@ -12180,3 +12180,24 @@ body.admin-async-busy .admin-main {
     .seo-current-image .compact-check { grid-column:1/-1; }
     .action-menu nav { max-width:calc(100vw - 18px); }
 }
+
+
+/* ==============================================================
+   v1.76 — ACTION MENUS + MARKETING GRID FINALIZATION
+   ============================================================== */
+.marketing-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch!important;}
+.marketing-card-grid>*{min-width:0!important;width:100%!important;max-width:none!important;}
+.marketing-card-grid>:last-child:nth-child(odd){grid-column:1/-1!important;}
+@media(max-width:850px){.marketing-card-grid{grid-template-columns:1fr!important}.marketing-card-grid>:last-child:nth-child(odd){grid-column:auto!important}}
+
+.action-menu{position:relative!important;display:inline-block!important;width:auto!important;min-width:0!important;}
+.action-menu[open]{z-index:80!important;}
+.action-menu nav,.action-menu-popover{position:fixed!important;top:var(--action-menu-top,0)!important;left:var(--action-menu-left,0)!important;right:auto!important;bottom:auto!important;display:grid!important;gap:2px!important;width:max-content!important;min-width:188px!important;max-width:min(286px,calc(100vw - 20px))!important;margin:0!important;padding:7px!important;border:1px solid #d6e2eb!important;border-radius:13px!important;background:#fff!important;box-shadow:0 20px 48px rgba(7,42,70,.18)!important;z-index:2147483000!important;overflow:visible!important;box-sizing:border-box!important;}
+.action-menu nav form,.action-menu-popover form{display:block!important;width:100%!important;margin:0!important;padding:0!important;}
+.action-menu nav a,.action-menu nav button,.action-menu-popover a,.action-menu-popover button{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:10px!important;width:100%!important;min-height:40px!important;margin:0!important;padding:9px 10px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:#153a59!important;box-shadow:none!important;text-decoration:none!important;text-align:left!important;font-size:13px!important;font-weight:800!important;line-height:1.25!important;white-space:nowrap!important;transform:none!important;opacity:1!important;}
+.action-menu nav a:hover,.action-menu nav button:hover,.action-menu-popover a:hover,.action-menu-popover button:hover,.action-menu nav a:focus-visible,.action-menu nav button:focus-visible,.action-menu-popover a:focus-visible,.action-menu-popover button:focus-visible{background:transparent!important;color:#0878a8!important;box-shadow:inset 3px 0 0 #0b8db8!important;outline:none!important;transform:none!important;}
+.action-menu nav .danger-text,.action-menu-popover .danger-text{background:transparent!important;color:#a72e35!important;border:0!important;}
+.action-menu nav .danger-text:hover,.action-menu-popover .danger-text:hover,.action-menu nav .danger-text:focus-visible,.action-menu-popover .danger-text:focus-visible{background:transparent!important;color:#c12f39!important;box-shadow:inset 3px 0 0 #c12f39!important;}
+.action-menu nav .action-icon,.action-menu-popover .action-icon{width:17px!important;height:17px!important;flex:0 0 17px!important;display:inline-grid!important;place-items:center!important;color:currentColor!important;}
+.action-menu nav .action-icon svg,.action-menu-popover .action-icon svg{width:17px!important;height:17px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;stroke-linecap:round!important;stroke-linejoin:round!important;}
+.gallery-item:has(.action-menu[open]),.list-card:has(.action-menu[open]),.email-card:has(.action-menu[open]),.integration-card:has(.action-menu[open]),.role-card:has(.action-menu[open]),.user-card:has(.action-menu[open]){transform:none!important;margin:0!important;}
