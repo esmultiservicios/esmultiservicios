@@ -11870,3 +11870,160 @@ body.admin-async-busy .admin-main {
     .preview-device-stage{min-height:460px!important;padding:8px!important}
     .preview-device-stage iframe{height:440px!important}
 }
+
+/* ==========================================================
+   PREMIUM CHECKBOX STANDARD — GLOBAL ADMIN NORMALIZATION
+   Prevent native checkboxes from inheriting full-width input styles.
+   ========================================================== */
+.admin-main input[type="checkbox"]:not(.cr-native-select),
+.admin-sidebar input[type="checkbox"],
+.admin-head input[type="checkbox"],
+.panel input[type="checkbox"],
+.marketing-card input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #a9bfd3;
+    border-radius: 7px;
+    background: #ffffff;
+    accent-color: #0b63ce;
+    box-shadow: none;
+    flex: 0 0 22px;
+    vertical-align: middle;
+}
+
+/* Keep purpose-built switches isolated from the generic checkbox reset. */
+.premium-switch input[type="checkbox"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    pointer-events: none;
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.status-switch input[type="checkbox"] {
+    width: 48px !important;
+    height: 28px !important;
+    min-width: 48px !important;
+    min-height: 28px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+}
+
+/* Compact premium status line used by Marketing and similar editors. */
+.toggle-line {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 11px;
+    width: fit-content;
+    min-width: 0;
+    min-height: 46px;
+    padding: 8px 12px;
+    margin: 4px 0 2px;
+    border: 1px solid #c7d9e8;
+    border-radius: 14px;
+    background: #f5f9fd;
+    color: #17395f;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+
+.toggle-line:hover {
+    border-color: #9fc3df;
+    background: #eef6fc;
+}
+
+.toggle-line:focus-within {
+    border-color: #0b63ce;
+    box-shadow: 0 0 0 4px rgba(11, 99, 206, .10);
+}
+
+.toggle-line input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    width: 42px !important;
+    height: 24px !important;
+    min-width: 42px !important;
+    min-height: 24px !important;
+    flex: 0 0 42px;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #a8bacb !important;
+    border-radius: 999px !important;
+    background: #c7d2dc !important;
+    box-shadow: inset 0 0 0 1px rgba(11, 46, 89, .04) !important;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease;
+}
+
+.toggle-line input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(11, 46, 89, .20);
+    transition: transform .18s ease;
+}
+
+.toggle-line input[type="checkbox"]:checked {
+    background: #0b63ce !important;
+    border-color: #0b63ce !important;
+}
+
+.toggle-line input[type="checkbox"]:checked::before {
+    transform: translateX(18px);
+}
+
+.toggle-line:has(input[type="checkbox"]:checked) {
+    border-color: #b6d4ea;
+    background: #edf6fd;
+}
+
+.toggle-line > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    color: #17395f;
+}
+
+/* Plain checks elsewhere stay small, intentional and aligned. */
+.admin-main label:not(.premium-switch):not(.status-switch):not(.toggle-line) > input[type="checkbox"],
+.admin-main .check-row input[type="checkbox"],
+.admin-main .premium-check input[type="checkbox"],
+.admin-main .compact-check input[type="checkbox"],
+.admin-main .permission-check input[type="checkbox"] {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    min-height: 22px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 7px;
+    flex: 0 0 22px;
+}
+
+@media (max-width: 620px) {
+    .toggle-line {
+        min-height: 44px;
+        padding: 8px 11px;
+    }
+}

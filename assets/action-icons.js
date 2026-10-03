@@ -75,8 +75,27 @@
     return null;
   };
   const excluded=el=>el.matches('[data-no-action-icon],.icon-btn,.zoom-btn,.media-preview,[data-rich-command],.mobile-menu,.user-avatar,.current-avatar-preview,.notify-close') || el.closest('[data-no-action-icon],.notify-item,.notify-stack');
+  const ACTION_SELECTOR='button,a.btn,a.button,.swal2-confirm,.swal2-cancel';
+
+  function isActionControl(el){
+    return el instanceof Element && el.matches(ACTION_SELECTOR);
+  }
+
+  function cleanupMisplacedIcons(root=document){
+    root.querySelectorAll?.('.action-icon').forEach(iconNode=>{
+      const owner=iconNode.parentElement;
+      if(owner && !isActionControl(owner)) iconNode.remove();
+    });
+  }
+
   function decorate(el){
-    if(!(el instanceof Element)||excluded(el))return;
+    // Only decorate real action controls. Never decorate layout containers.
+    // The previous observer classified every newly inserted element by all of
+    // its descendant text, which could inject icons directly into page-heading,
+    // content-grid, appearance-layout, security-layout and other containers.
+    // In CSS grid/flex layouts those stray icons became extra children and
+    // pushed cards/headers out of alignment after AJAX navigation.
+    if(!isActionControl(el)||excluded(el))return;
     const type=classify(el); if(!type)return;
     if(el.querySelector(':scope > .ui-icon, :scope > svg')){el.dataset.actionIconReady='1';return;}
     const existing=el.querySelector(':scope > .btn-icon');
@@ -86,11 +105,17 @@
     el.insertBefore(span,el.firstChild);el.dataset.actionIconReady='1';
   }
   function scan(root=document){
-    root.querySelectorAll?.('button,a.btn,a.button,.swal2-confirm,.swal2-cancel').forEach(decorate);
+    cleanupMisplacedIcons(root);
+    if(isActionControl(root)) decorate(root);
+    root.querySelectorAll?.(ACTION_SELECTOR).forEach(decorate);
   }
   const start=()=>{
     scan();
-    new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType!==1)return;decorate(n);scan(n)}))).observe(document.documentElement,{childList:true,subtree:true});
+    new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{
+      if(n.nodeType!==1)return;
+      if(isActionControl(n)) decorate(n);
+      scan(n);
+    }))).observe(document.documentElement,{childList:true,subtree:true});
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.ESActionIcons={scan,decorate};
