@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__.'/../config/bootstrap.php';
 require_once __DIR__.'/emailTemplates.php';
+require_once __DIR__.'/EmailValidator.php';
 
 class EmailService
 {
@@ -124,31 +125,112 @@ class EmailService
 
     public function send(array $cfg, string $to, string $subject, string $html, array $options = []): array
     {
-        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
-            return ['success' => false, 'message' => 'Invalid destination email.'];
-        }
-
-        // The admin's optional copy is intentionally BCC so recipients never see
-        // the hidden copy addresses. Empty means no hidden copy is sent.
+        $toResult = $this->filterRecipients($this->normalizeEmails($to), 'to');
         $configuredBcc = $this->normalizeEmails($cfg['copia'] ?? '');
         $runtimeBcc = $this->normalizeEmails($options['bcc'] ?? []);
-        $bcc = array_values(array_unique(array_merge($configuredBcc, $runtimeBcc)));
+        $bccResult = $this->filterRecipients(
+            array_values(array_unique(array_merge($configuredBcc, $runtimeBcc))),
+            'bcc'
+        );
+        $ccResult = $this->filterRecipients($this->normalizeEmails($options['cc'] ?? []), 'cc');
 
-        // Keep explicit runtime CC support for callers that intentionally need a visible CC.
-        // The Email Configuration UI does not use this for its optional copy field.
-        $cc = $this->normalizeEmails($options['cc'] ?? []);
+        $toRecipients = $toResult['valid'];
+        $cc = array_values(array_diff($ccResult['valid'], $toRecipients));
+        $bcc = array_values(array_diff($bccResult['valid'], $toRecipients, $cc));
+        $rejected = array_merge($toResult['rejected'], $ccResult['rejected'], $bccResult['rejected']);
+
+        if ($toRecipients === []) {
+            return [
+                'success' => false,
+                'message' => 'No valid primary destination email remains after recipient validation.',
+                'rejected_recipients' => $rejected,
+                'accepted_recipients' => [
+                    'to' => [],
+                    'cc' => $cc,
+                    'bcc' => $bcc,
+                ],
+            ];
+        }
 
         $replyTo = trim((string)($options['reply_to'] ?? ''));
-        if ($replyTo !== '' && !filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $replyTo = '';
+        if ($replyTo !== '') {
+            $replyValidation = EmailValidator::validate($replyTo);
+            if (!$replyValidation['valid']) {
+                $this->logRejectedRecipient('reply_to', $replyTo, $replyValidation);
+                $replyTo = '';
+            } else {
+                $replyTo = $replyValidation['email'];
+            }
+        }
 
         $options['bcc'] = $bcc;
         $options['cc'] = $cc;
         $options['reply_to'] = $replyTo;
         $options['attachments'] = $this->normalizeAttachments(is_array($options['attachments'] ?? null) ? $options['attachments'] : []);
 
-        return strtoupper((string)$cfg['metodo_envio']) === 'GRAPH'
-            ? $this->graph($cfg, $to, $subject, $html, $options)
-            : $this->smtp($cfg, $to, $subject, $html, $options);
+        $result = strtoupper((string)$cfg['metodo_envio']) === 'GRAPH'
+            ? $this->graph($cfg, $toRecipients, $subject, $html, $options)
+            : $this->smtp($cfg, $toRecipients, $subject, $html, $options);
+
+        $result['rejected_recipients'] = $rejected;
+        $result['accepted_recipients'] = [
+            'to' => $toRecipients,
+            'cc' => $cc,
+            'bcc' => $bcc,
+        ];
+
+        return $result;
+    }
+
+    private function filterRecipients(array $emails, string $type): array
+    {
+        $valid = [];
+        $rejected = [];
+
+        foreach ($emails as $email) {
+            $validation = EmailValidator::validate((string)$email);
+            if ($validation['valid']) {
+                $normalized = (string)$validation['email'];
+                if (!in_array($normalized, $valid, true)) {
+                    $valid[] = $normalized;
+                }
+                continue;
+            }
+
+            $entry = [
+                'type' => $type,
+                'email' => (string)($validation['email'] ?? $email),
+                'reason' => (string)($validation['reason'] ?? 'invalid'),
+                'message' => (string)($validation['message'] ?? 'Recipient rejected.'),
+                'suggestion' => $validation['suggestion'] ?? null,
+            ];
+            $rejected[] = $entry;
+            $this->logRejectedRecipient($type, (string)$email, $validation);
+        }
+
+        return ['valid' => $valid, 'rejected' => $rejected];
+    }
+
+    private function logRejectedRecipient(string $type, string $email, array $validation): void
+    {
+        $payload = [
+            'recipient_type' => $type,
+            'email' => (string)($validation['email'] ?? $email),
+            'reason' => (string)($validation['reason'] ?? 'invalid'),
+            'message' => (string)($validation['message'] ?? 'Recipient rejected.'),
+            'suggestion' => $validation['suggestion'] ?? null,
+        ];
+
+        if (function_exists('log_activity')) {
+            try {
+                log_activity('email_recipient_rejected', 'Email recipient rejected before delivery attempt', $payload);
+                return;
+            } catch (Throwable $ignored) {
+                // Fall through to the PHP error log when activity logging is unavailable.
+            }
+        }
+
+        error_log('[ES MULTISERVICIOS][EMAIL_VALIDATION] '.json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
     public function normalizeEmails(string|array|null $value): array
@@ -156,7 +238,7 @@ class EmailService
         if (is_array($value)) {
             $items = $value;
         } else {
-            $items = preg_split('/[;,\s]+/', trim((string)$value), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            $items = preg_split('/[;,\r\n]+/', trim((string)$value), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         }
         $out = [];
         foreach ($items as $item) {
@@ -180,7 +262,7 @@ class EmailService
         return $out;
     }
 
-    private function graph(array $c, string $to, string $subject, string $html, array $options): array
+    private function graph(array $c, array $to, string $subject, string $html, array $options): array
     {
         if (!function_exists('curl_init')) return ['success' => false, 'message' => 'cURL is not enabled on this server.'];
 
@@ -219,7 +301,10 @@ class EmailService
         $message = [
             'subject' => $subject,
             'body' => ['contentType' => 'HTML', 'content' => $html],
-            'toRecipients' => [['emailAddress' => ['address' => $to]]],
+            'toRecipients' => array_map(
+                static fn(string $email): array => ['emailAddress' => ['address' => $email]],
+                $to
+            ),
         ];
 
         if (!empty($options['cc'])) {
@@ -280,7 +365,7 @@ class EmailService
             : ['success' => false, 'message' => 'Graph send error: '.($err ?: ('HTTP '.$code.' '.$resp))];
     }
 
-    private function smtp(array $c, string $to, string $subject, string $html, array $options): array
+    private function smtp(array $c, array $to, string $subject, string $html, array $options): array
     {
         $host = trim((string)$c['server']);
         $port = (int)($c['port'] ?: 587);
@@ -311,7 +396,9 @@ class EmailService
             $this->cmd($fp, base64_encode($user), [334]);
             $this->cmd($fp, base64_encode($pass), [235]);
             $this->cmd($fp, 'MAIL FROM:<'.$user.'>', [250]);
-            $this->cmd($fp, 'RCPT TO:<'.$to.'>', [250, 251]);
+            foreach ($to as $recipient) {
+                $this->cmd($fp, 'RCPT TO:<'.$recipient.'>', [250, 251]);
+            }
             foreach ($options['cc'] ?? [] as $cc) {
                 $this->cmd($fp, 'RCPT TO:<'.$cc.'>', [250, 251]);
             }
@@ -326,7 +413,7 @@ class EmailService
             $fromName = trim((string)($settings['company_name'] ?? 'ES MULTISERVICIOS')) ?: 'ES MULTISERVICIOS';
             $headers = [
                 'From: '.$this->headerText($fromName).' <'.$user.'>',
-                'To: <'.$to.'>',
+                'To: '.implode(', ', array_map(static fn(string $email): string => '<'.$email.'>', $to)),
                 'Subject: =?UTF-8?B?'.base64_encode($subject).'?=',
                 'MIME-Version: 1.0',
             ];
