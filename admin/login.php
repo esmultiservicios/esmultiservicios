@@ -9,6 +9,7 @@ if(is_logged_in()) {
     exit;
 }
 $error='';
+$rememberedLogin=remembered_login_hint();
 $set=settings();
 $favicon=trim((string)($set['favicon_path']??''))?:'assets/brand/favicon.png';
 $brand=$set['admin_brand_name']??"ES CMS Core Admin";
@@ -17,6 +18,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
     verify_csrf();
     $u=trim((string)($_POST['username']??''));
     $p=(string)($_POST['password']??'');
+    $rememberLogin=isset($_POST['remember_me']);
     $st=db()->prepare('SELECT id,username,password_hash,active,two_factor_enabled,two_factor_secret_enc FROM admin_users WHERE LOWER(username)=LOWER(?) OR LOWER(email)=LOWER(?) LIMIT 1');
     $st->execute([$u,$u]);
     $row=$st->fetch();
@@ -25,19 +27,24 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             session_regenerate_id(true);
             $_SESSION['escms_2fa_pending_id']=(int)$row['id'];
             $_SESSION['escms_2fa_pending_user']=$row['username'];
-            $_SESSION['escms_2fa_remember']=isset($_POST['remember_me'])?1:0;
+            $_SESSION['escms_2fa_remember']=$rememberLogin?1:0;
+            $_SESSION['escms_2fa_login_hint']=$u;
             header('Location: /admin/two-factor.php');
             exit;
         }
         session_regenerate_id(true);
         $_SESSION['escms_admin_id']=(int)$row['id'];
         $_SESSION['escms_admin_user']=$row['username'];
+        initialize_admin_session_lifetime();
         db()->prepare('UPDATE admin_users SET last_login_at=NOW(),last_login_ip=?,last_user_agent=? WHERE id=?')->execute([request_ip(),request_user_agent(),(int)$row['id']]);
         record_login_event((int)$row['id'],$u,true);
         log_activity('login','Administrator signed in');
         admin_notify('info','Administrator login',($row['username']??'Administrator').' signed in to the CMS.','security.php');
-        if(isset($_POST['remember_me'])) create_remember_token((int)$row['id']);
-        else clear_remember_cookie();
+        // "Remember me" remembers only the login identifier. It must never
+        // create a long-lived administrator authentication session.
+        clear_remember_cookie();
+        if($rememberLogin) set_login_hint_cookie($u);
+        else clear_login_hint_cookie();
         sync_admin_session();
         header('Location: /admin/dashboard.php');
         exit;
@@ -108,6 +115,13 @@ if(isset($_GET['disabled'])):
 endif;
 ?>
 <?php
+if(isset($_GET['expired'])):
+?>
+
+<div class="alert warning">Your administrator session expired. Sign in again to continue.</div><?php
+endif;
+?>
+<?php
 if($error):
 ?>
 
@@ -119,13 +133,13 @@ endif;
 
 <form method="post">
 <input type="hidden" name="csrf" value="<?=h(csrf_token())?>">
-<label>Username or email<input name="username" required autocomplete="username" autofocus placeholder="Username or email">
+<label>Username or email<input name="username" required autocomplete="username" autofocus placeholder="Username or email" value="<?=h($rememberedLogin)?>">
 </label>
 <label>Password<input type="password" name="password" required autocomplete="current-password">
 </label>
 <div class="auth-options">
 <label class="remember-check cr-check">
-<input type="checkbox" name="remember_me" value="1">
+<input type="checkbox" name="remember_me" value="1" <?=$rememberedLogin!==''?'checked':''?>>
 <span class="cr-check-box" aria-hidden="true">
 </span>
 <span class="cr-check-text">Remember me</span>

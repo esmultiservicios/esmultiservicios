@@ -5,6 +5,9 @@ declare(strict_types=1);
 // Canonicalization is intentionally not performed here to avoid fighting
 // hosting-level redirects and causing redirect loops.
 
+// Keep the server-side session available long enough for the application-level
+// inactivity (60 minutes) and absolute (12 hours) limits to be enforced here.
+ini_set('session.gc_maxlifetime', (string)(12 * 60 * 60));
 session_start();
 require_once __DIR__ . '/../config/bootstrap.php';
 if (!installation_locked()) {
@@ -17,6 +20,42 @@ if (!config_ready()) {
 }
 function remember_cookie_name(): string {
     return 'escms_admin_remember';
+}
+
+function login_hint_cookie_name(): string {
+    return 'escms_admin_login_hint';
+}
+
+function login_hint_cookie_options(int $expires): array {
+    return [
+        'expires' => $expires,
+        'path' => '/admin/',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ];
+}
+
+function remembered_login_hint(): string {
+    $value = trim((string)($_COOKIE[login_hint_cookie_name()] ?? ''));
+    return substr($value, 0, 190);
+}
+
+function set_login_hint_cookie(string $login): void {
+    $login = trim($login);
+    if ($login === '') {
+        clear_login_hint_cookie();
+        return;
+    }
+
+    $expires = time() + 60 * 60 * 24 * 30;
+    setcookie(login_hint_cookie_name(), substr($login, 0, 190), login_hint_cookie_options($expires));
+    $_COOKIE[login_hint_cookie_name()] = substr($login, 0, 190);
+}
+
+function clear_login_hint_cookie(): void {
+    setcookie(login_hint_cookie_name(), '', login_hint_cookie_options(time() - 3600));
+    unset($_COOKIE[login_hint_cookie_name()]);
 }
 function clear_remember_cookie(): void {
     $name=remember_cookie_name();
@@ -81,6 +120,68 @@ function request_user_agent(): string {
 }
 function session_fingerprint(): string {
     return hash('sha256',session_id());
+}
+
+function initialize_admin_session_lifetime(): void {
+    $now = time();
+    $_SESSION['escms_admin_started_at'] = $now;
+    $_SESSION['escms_admin_last_activity'] = $now;
+}
+
+function expire_admin_session(string $reason = 'expired'): void {
+    try {
+        if (!empty($_SESSION['escms_admin_id'])) {
+            db()->prepare('UPDATE admin_sessions SET revoked_at=NOW() WHERE session_hash=? AND revoked_at IS NULL')
+                ->execute([session_fingerprint()]);
+        }
+    } catch (Throwable $e) {
+    }
+
+    clear_remember_cookie();
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
+    }
+
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
+
+    header('Location: /admin/login.php?' . rawurlencode($reason) . '=1');
+    exit;
+}
+
+function enforce_admin_session_lifetime(): void {
+    if (empty($_SESSION['escms_admin_id']) || session_status() !== PHP_SESSION_ACTIVE) {
+        return;
+    }
+
+    $now = time();
+    $startedAt = (int)($_SESSION['escms_admin_started_at'] ?? $now);
+    $lastActivity = (int)($_SESSION['escms_admin_last_activity'] ?? $now);
+
+    // Existing sessions created before this control was deployed start their
+    // lifetime from the first request after deployment.
+    $_SESSION['escms_admin_started_at'] = $startedAt;
+
+    $idleLimit = 60 * 60;
+    $absoluteLimit = 12 * 60 * 60;
+
+    if (($now - $lastActivity) >= $idleLimit || ($now - $startedAt) >= $absoluteLimit) {
+        expire_admin_session('expired');
+    }
+
+    $_SESSION['escms_admin_last_activity'] = $now;
 }
 function sync_admin_session(): void {
     if(empty($_SESSION['escms_admin_id'])||session_status()!==PHP_SESSION_ACTIVE)return;
@@ -222,7 +323,12 @@ function mark_all_notifications_read(?int $adminId=null): void {
     } catch(Throwable $e) {
     }
 }
-try_remember_login();
+if (empty($_SESSION['escms_admin_id']) && !empty($_COOKIE[remember_cookie_name()])) {
+    // Legacy persistent-authentication cookies are no longer allowed to restore
+    // an administrator session. "Remember me" now stores only the login hint.
+    clear_remember_cookie();
+}
+enforce_admin_session_lifetime();
 sync_admin_session();
 function base32_encode_raw(string $data): string {
     $alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
