@@ -516,13 +516,15 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                 >EN</a>
             </div>
             <a
-                class="btn btn-compact btn-whatsapp desktop-cta"
+                class="btn btn-compact btn-whatsapp desktop-cta header-whatsapp-cta"
+                data-no-action-icon="1"
                 href="<?= h($whatsApp(
                     $lang === 'es'
                         ? 'Hola, quiero información sobre ES MULTISERVICIOS.'
                         : 'Hello, I would like information about ES MULTISERVICIOS.'
                 )) ?>"
-            >WhatsApp</a>
+                aria-label="WhatsApp"
+            ><span class="header-whatsapp-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M16.04 3C8.86 3 3.02 8.72 3.02 15.77c0 2.48.73 4.9 2.12 6.97L3 29l6.48-2.08a13.15 13.15 0 0 0 6.55 1.77h.01c7.18 0 13.02-5.72 13.02-12.77C29.06 8.72 23.22 3 16.04 3Zm0 23.55h-.01a11 11 0 0 1-5.6-1.52l-.4-.24-3.84 1.23 1.25-3.68-.26-.42a10.55 10.55 0 0 1-1.72-5.8c0-5.85 4.84-10.61 10.79-10.61 5.95 0 10.79 4.76 10.79 10.61 0 5.85-4.84 10.61-10.8 10.61Zm5.92-7.95c-.32-.16-1.93-.94-2.23-1.05-.3-.11-.52-.16-.74.16-.22.32-.86 1.05-1.05 1.27-.19.22-.39.24-.71.08-.32-.16-1.37-.5-2.61-1.58-.96-.84-1.61-1.88-1.8-2.2-.19-.32-.02-.49.14-.65.14-.14.32-.38.48-.57.16-.19.22-.32.32-.54.11-.22.05-.41-.03-.57-.08-.16-.74-1.75-1.01-2.4-.27-.64-.54-.55-.74-.56h-.63c-.22 0-.57.08-.87.41-.3.32-1.14 1.1-1.14 2.68s1.17 3.11 1.34 3.33c.16.22 2.3 3.45 5.58 4.84.78.33 1.39.53 1.87.68.78.24 1.5.21 2.06.13.63-.09 1.93-.78 2.2-1.53.27-.75.27-1.39.19-1.53-.08-.13-.3-.21-.63-.37Z"/></svg></span><span>WhatsApp</span></a>
         </div>
     </div>
 </header>
@@ -1322,7 +1324,7 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
         }
         $managedFloating[$waPosition][] = [
             'order' => (int)($settings['whatsapp_order'] ?? 10),
-            'html' => '<a class="floating-wa managed-floating-control'.$visibility.'" href="'.h($whatsApp($message)).'" aria-label="WhatsApp"><img src="assets/icons/whatsapp.svg" alt="" aria-hidden="true"></a>',
+            'html' => '<a class="floating-wa managed-floating-control'.$visibility.'" href="'.h($whatsApp($message)).'" aria-label="WhatsApp"><span class="floating-wa-icon" aria-hidden="true"><svg viewBox="0 0 32 32" focusable="false"><path d="M16.04 3C8.86 3 3.02 8.72 3.02 15.77c0 2.48.73 4.9 2.12 6.97L3 29l6.48-2.08a13.15 13.15 0 0 0 6.55 1.77h.01c7.18 0 13.02-5.72 13.02-12.77C29.06 8.72 23.22 3 16.04 3Zm0 23.55h-.01a11 11 0 0 1-5.6-1.52l-.4-.24-3.84 1.23 1.25-3.68-.26-.42a10.55 10.55 0 0 1-1.72-5.8c0-5.85 4.84-10.61 10.79-10.61 5.95 0 10.79 4.76 10.79 10.61 0 5.85-4.84 10.61-10.8 10.61Zm5.92-7.95c-.32-.16-1.93-.94-2.23-1.05-.3-.11-.52-.16-.74.16-.22.32-.86 1.05-1.05 1.27-.19.22-.39.24-.71.08-.32-.16-1.37-.5-2.61-1.58-.96-.84-1.61-1.88-1.8-2.2-.19-.32-.02-.49.14-.65.14-.14.32-.38.48-.57.16-.19.22-.32.32-.54.11-.22.05-.41-.03-.57-.08-.16-.74-1.75-1.01-2.4-.27-.64-.54-.55-.74-.56h-.63c-.22 0-.57.08-.87.41-.3.32-1.14 1.1-1.14 2.68s1.17 3.11 1.34 3.33c.16.22 2.3 3.45 5.58 4.84.78.33 1.39.53 1.87.68.78.24 1.5.21 2.06.13.63-.09 1.93-.78 2.2-1.53.27-.75.27-1.39.19-1.53-.08-.13-.3-.21-.63-.37Z"/></svg></span><span class="floating-wa-label">WhatsApp</span></a>',
         ];
     }
 
