@@ -141,6 +141,153 @@
     const contactStatus = document.querySelector('[data-contact-status]');
     if (contactForm && contactStatus) {
         const meaningfulMessage = contactForm.querySelector('[data-meaningful-message]');
+        const emailInput = contactForm.querySelector('[data-contact-email]');
+        const emailStatus = contactForm.querySelector('[data-email-validation-status]');
+        let emailValidationTimer = null;
+        let emailValidationRequest = null;
+        let lastValidatedEmail = '';
+        let lastEmailValidationOk = false;
+
+        const setEmailStatus = (state, message, suggestion = '') => {
+            if (!emailStatus) return;
+            emailStatus.className = 'email-validation-status';
+            emailStatus.replaceChildren();
+            if (!message) return;
+
+            emailStatus.classList.add(state);
+            const text = document.createElement('span');
+            text.textContent = message;
+            emailStatus.appendChild(text);
+
+            if (suggestion) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'email-suggestion-button';
+                button.textContent = document.documentElement.lang === 'es'
+                    ? `Usar ${suggestion}`
+                    : `Use ${suggestion}`;
+                button.addEventListener('click', () => {
+                    if (!emailInput) return;
+                    emailInput.value = suggestion;
+                    emailInput.setCustomValidity('');
+                    validateContactEmail(true);
+                    emailInput.focus();
+                });
+                emailStatus.appendChild(button);
+            }
+        };
+
+        const validateContactEmail = async (force = false) => {
+            if (!emailInput) return true;
+
+            const raw = emailInput.value.trim();
+            emailInput.setCustomValidity('');
+            if (raw === '') {
+                lastValidatedEmail = '';
+                lastEmailValidationOk = false;
+                setEmailStatus('', '');
+                return !emailInput.required;
+            }
+
+            if (!emailInput.validity.valid) {
+                lastValidatedEmail = raw;
+                lastEmailValidationOk = false;
+                const message = document.documentElement.lang === 'es'
+                    ? 'Ingresa un correo electrónico válido. Ejemplo: nombre@empresa.com'
+                    : 'Enter a valid email address. Example: name@company.com';
+                emailInput.setCustomValidity(message);
+                setEmailStatus('error', message);
+                return false;
+            }
+
+            if (!force && raw === lastValidatedEmail) {
+                return lastEmailValidationOk;
+            }
+
+            const endpoint = emailInput.dataset.emailValidationUrl || '';
+            if (!endpoint) {
+                return true;
+            }
+
+            if (emailValidationRequest) {
+                emailValidationRequest.abort();
+            }
+            emailValidationRequest = new AbortController();
+            setEmailStatus('checking', document.documentElement.lang === 'es' ? 'Validando correo…' : 'Checking email…');
+
+            try {
+                const body = new URLSearchParams({
+                    email: raw,
+                    lang: document.documentElement.lang === 'es' ? 'es' : 'en'
+                });
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body,
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    signal: emailValidationRequest.signal
+                });
+                const data = await response.json();
+                if (!response.ok || data.ok === false) {
+                    throw new Error(data.message || 'Email validation unavailable');
+                }
+
+                lastValidatedEmail = raw;
+                lastEmailValidationOk = data.valid === true;
+                if (lastEmailValidationOk) {
+                    emailInput.setCustomValidity('');
+                    setEmailStatus('success', data.message || (document.documentElement.lang === 'es' ? 'Correo válido' : 'Valid email'));
+                    return true;
+                }
+
+                const message = data.message || (document.documentElement.lang === 'es'
+                    ? 'Revisa el correo electrónico antes de continuar.'
+                    : 'Check the email address before continuing.');
+                emailInput.setCustomValidity(message);
+                setEmailStatus('error', message, data.suggestion || '');
+                return false;
+            } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    return false;
+                }
+                // The server repeats the validation on submit. A temporary real-time
+                // validation outage should not lock out a legitimate visitor.
+                lastValidatedEmail = '';
+                lastEmailValidationOk = false;
+                emailInput.setCustomValidity('');
+                setEmailStatus('warning', document.documentElement.lang === 'es'
+                    ? 'La validación en tiempo real está temporalmente indisponible; verificaremos el correo al enviar.'
+                    : 'Real-time validation is temporarily unavailable; the email will be checked on submit.');
+                return true;
+            } finally {
+                emailValidationRequest = null;
+            }
+        };
+
+        if (emailInput) {
+            emailInput.addEventListener('input', () => {
+                emailInput.setCustomValidity('');
+                lastEmailValidationOk = false;
+                clearTimeout(emailValidationTimer);
+                const raw = emailInput.value.trim();
+                if (raw === '') {
+                    setEmailStatus('', '');
+                    return;
+                }
+                emailValidationTimer = window.setTimeout(() => {
+                    if (raw.includes('@') && raw.split('@')[1]?.includes('.')) {
+                        validateContactEmail(false);
+                    }
+                }, 650);
+            });
+            emailInput.addEventListener('blur', () => {
+                clearTimeout(emailValidationTimer);
+                validateContactEmail(true);
+            });
+        }
+
         const turnstileWrap = contactForm.querySelector('[data-turnstile-wrap]');
         const turnstileContainer = contactForm.querySelector('[data-turnstile-container]');
         let turnstileWidgetId = null;
@@ -224,7 +371,8 @@
         contactForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             validateMeaningfulMessage();
-            if (!contactForm.checkValidity()) {
+            const emailOk = await validateContactEmail(true);
+            if (!emailOk || !contactForm.checkValidity()) {
                 contactForm.reportValidity();
                 return;
             }
@@ -246,6 +394,9 @@
                     ? 'Gracias. Recibimos tu consulta.'
                     : 'Thank you. We received your inquiry.';
                 contactForm.reset();
+                lastValidatedEmail = '';
+                lastEmailValidationOk = false;
+                setEmailStatus('', '');
                 resetTurnstile();
                 const startedAt = contactForm.querySelector('[data-form-started-at]');
                 if (startedAt) startedAt.value = String(Math.floor(Date.now() / 1000));

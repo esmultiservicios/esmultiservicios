@@ -5757,3 +5757,60 @@ body {
 /* External widget runtime loader: installation snippets stay hidden until executed. */
 .external-widget-template,
 .external-widget-runtime-status { display: none !important; }
+
+/* Contact email validation ------------------------------------------------- */
+.email-validation-status {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 20px;
+    margin-top: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.email-validation-status.success { color: #087a46; }
+.email-validation-status.error { color: #a12832; }
+.email-validation-status.warning { color: #8a6500; }
+.email-validation-status.checking { color: #47627b; }
+
+.email-validation-status.success::before,
+.email-validation-status.error::before,
+.email-validation-status.warning::before,
+.email-validation-status.checking::before {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    flex: 0 0 18px;
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.email-validation-status.success::before { content: '✓'; background: #e8f7ef; color: #087a46; }
+.email-validation-status.error::before { content: '!'; background: #fdecee; color: #a12832; }
+.email-validation-status.warning::before { content: '!'; background: #fff6da; color: #8a6500; }
+.email-validation-status.checking::before { content: '…'; background: #eaf2f7; color: #47627b; }
+
+.email-suggestion-button {
+    appearance: none;
+    border: 1px solid rgba(8, 122, 70, 0.24);
+    border-radius: 999px;
+    background: #eef9f3;
+    color: #075f39;
+    padding: 5px 10px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.email-suggestion-button:hover,
+.email-suggestion-button:focus-visible {
+    background: #e3f5ec;
+    border-color: rgba(8, 122, 70, 0.38);
+    outline: none;
+}

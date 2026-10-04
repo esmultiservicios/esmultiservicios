@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require __DIR__.'/config/bootstrap.php';
 require_once __DIR__.'/core/EmailService.php';
+require_once __DIR__.'/core/ContactEmailValidator.php';
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
@@ -79,6 +80,73 @@ function contact_turnstile_verify(string $token, string $secret): array
 
     $decoded = json_decode($raw, true);
     return is_array($decoded) ? $decoded : ['success' => false, 'error-codes' => ['invalid-siteverify-response']];
+}
+
+
+/**
+ * Cross-session rate limit keyed by a one-way HMAC of the visitor IP.
+ * If the database user cannot create/use the helper table, the existing
+ * session limiter remains active and the form keeps working.
+ */
+function contact_ip_rate_check(PDO $pdo, int $cooldownSeconds, int $hourlyLimit, string $lang): void
+{
+    $ip = trim((string)($_SERVER['REMOTE_ADDR'] ?? ''));
+    if ($ip === '') {
+        return;
+    }
+
+    try {
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS contact_rate_limits (
+                ip_hash CHAR(64) NOT NULL,
+                window_started_at DATETIME NOT NULL,
+                attempts INT UNSIGNED NOT NULL DEFAULT 0,
+                last_attempt_at DATETIME NOT NULL,
+                PRIMARY KEY (ip_hash),
+                KEY idx_contact_rate_last (last_attempt_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+        );
+
+        $hash = hash_hmac('sha256', $ip, app_key());
+        $pdo->prepare("DELETE FROM contact_rate_limits WHERE last_attempt_at < (NOW() - INTERVAL 2 HOUR)")->execute();
+
+        $st = $pdo->prepare("SELECT window_started_at, attempts, last_attempt_at FROM contact_rate_limits WHERE ip_hash=? LIMIT 1");
+        $st->execute([$hash]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+
+        $now = time();
+        if ($row) {
+            $last = strtotime((string)$row['last_attempt_at']) ?: 0;
+            $window = strtotime((string)$row['window_started_at']) ?: 0;
+            $attempts = (int)$row['attempts'];
+
+            if ($last > 0 && ($now - $last) < $cooldownSeconds) {
+                http_response_code(429);
+                throw new DomainException($lang === 'es'
+                    ? 'Espera un momento antes de enviar otra consulta.'
+                    : 'Please wait a moment before sending another inquiry.');
+            }
+
+            if ($window > 0 && ($now - $window) < 3600 && $attempts >= $hourlyLimit) {
+                http_response_code(429);
+                throw new DomainException($lang === 'es'
+                    ? 'Se alcanzó temporalmente el límite de consultas. Intenta nuevamente más tarde.'
+                    : 'The temporary inquiry limit has been reached. Please try again later.');
+            }
+
+            if ($window <= 0 || ($now - $window) >= 3600) {
+                $pdo->prepare("UPDATE contact_rate_limits SET window_started_at=NOW(), attempts=1, last_attempt_at=NOW() WHERE ip_hash=?")->execute([$hash]);
+            } else {
+                $pdo->prepare("UPDATE contact_rate_limits SET attempts=attempts+1, last_attempt_at=NOW() WHERE ip_hash=?")->execute([$hash]);
+            }
+        } else {
+            $pdo->prepare("INSERT INTO contact_rate_limits(ip_hash,window_started_at,attempts,last_attempt_at) VALUES(?,NOW(),1,NOW())")->execute([$hash]);
+        }
+    } catch (DomainException $e) {
+        throw $e;
+    } catch (Throwable $e) {
+        error_log('ES MULTISERVICIOS IP rate limiter fallback: '.$e->getMessage());
+    }
 }
 
 function contact_solicitation_score(string $text): int
@@ -171,6 +239,14 @@ try {
         }
         $_SESSION['contact_submit_times'] = $recent;
 
+        // Cross-session limiter using only a one-way HMAC of the visitor IP.
+        // The raw address is never stored.
+        try {
+            contact_ip_rate_check(db(), $antiSpamCooldownSeconds, $antiSpamHourlyLimit, $lang);
+        } catch (DomainException $e) {
+            throw $e;
+        }
+
         // Block only strongly-scored unsolicited commercial outreach.
         if ($antiSpamBlockSolicitation) {
             $solicitationText = trim($name.' '.$service.' '.$message.' '.$referralDetails);
@@ -209,9 +285,13 @@ try {
     if ($name === '' && $phone === '' && $email === '' && $service === '' && $message === '') {
         throw new DomainException($lang === 'es' ? 'Completa la información de tu consulta.' : 'Please provide your inquiry information.');
     }
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        throw new DomainException($lang === 'es' ? 'Ingresa un correo electrónico válido. El correo es obligatorio para poder responderte.' : 'Please enter a valid email address. Email is required so we can reply to you.');
+    $emailSettings = $set;
+    $emailSettings['lang'] = $lang;
+    $emailValidation = ContactEmailValidator::validate($email, $emailSettings, true);
+    if (!$emailValidation['valid']) {
+        throw new DomainException((string)$emailValidation['message']);
     }
+    $email = (string)$emailValidation['email'];
 
     $defaultReferralEs = "Búsqueda en Google u otro buscador\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecomendación de una persona o empresa\nYa conocía ES MULTISERVICIOS\nOtro";
     $defaultReferralEn = "Google or another search engine\nFacebook\nTikTok\nInstagram\nWhatsApp\nRecommendation from a person or company\nI already knew ES MULTISERVICIOS\nOther";

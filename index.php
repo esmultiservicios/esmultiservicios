@@ -1150,8 +1150,12 @@ $whyIconKeys = ['product','adapt','responsive','security','onboarding','custom']
                             </label>
                             <label>
                                 <span><?= $lang === 'es' ? 'Correo' : 'Email' ?><?= $contactRequired['email'] ? $requiredMark : '' ?></span>
-                                <input type="email" name="email" autocomplete="email" maxlength="190" required aria-describedby="contact-email-help">
-                                <small id="contact-email-help" class="field-requirement-hint"><?= $lang === 'es' ? 'Usaremos este correo para responderte.' : 'We will use this email to reply.' ?></small>
+                                <input type="email" name="email" autocomplete="email" maxlength="190" required
+                                    data-contact-email
+                                    data-email-validation-url="<?= h(site_url('contact-email-validate.php')) ?>"
+                                    aria-describedby="contact-email-help contact-email-status">
+                                <small id="contact-email-help" class="field-requirement-hint"><?= $lang === 'es' ? 'Validaremos formato, dominio y capacidad de recibir correo antes de enviar.' : 'We validate format, domain and mail capability before sending.' ?></small>
+                                <small id="contact-email-status" class="email-validation-status" data-email-validation-status aria-live="polite"></small>
                             </label>
                             <label>
                                 <span><?= $lang === 'es' ? 'Teléfono' : 'Phone' ?><?= $contactRequired['phone'] ? $requiredMark : '' ?></span>

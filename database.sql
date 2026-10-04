@@ -1102,3 +1102,23 @@ INSERT INTO settings(setting_key,setting_value) VALUES
 ('whatsapp_show_mobile','1'),
 ('floating_widget_gap','12')
 ON DUPLICATE KEY UPDATE setting_value=setting_value;
+
+-- ============================================================
+-- CONTACT FORM EMAIL VALIDATION & CROSS-SESSION RATE LIMITING
+-- ============================================================
+CREATE TABLE IF NOT EXISTS contact_rate_limits (
+  ip_hash CHAR(64) NOT NULL,
+  window_started_at DATETIME NOT NULL,
+  attempts INT UNSIGNED NOT NULL DEFAULT 0,
+  last_attempt_at DATETIME NOT NULL,
+  PRIMARY KEY (ip_hash),
+  KEY idx_contact_rate_last (last_attempt_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO settings(setting_key,setting_value) VALUES
+('contact_email_dns_validation','1'),
+('contact_email_block_disposable','1'),
+('contact_email_api_enabled','0'),
+('contact_email_api_url',''),
+('contact_email_api_key','')
+ON DUPLICATE KEY UPDATE setting_value=setting_value;

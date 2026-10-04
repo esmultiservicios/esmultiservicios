@@ -57,6 +57,33 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
             save_setting('contact_antispam_cooldown_seconds', (string)$antiSpamCooldownSeconds);
             save_setting('contact_antispam_hourly_limit', (string)$antiSpamHourlyLimit);
 
+            $emailDnsValidation = isset($_POST['contact_email_dns_validation']);
+            $emailBlockDisposable = isset($_POST['contact_email_block_disposable']);
+            $emailApiEnabled = isset($_POST['contact_email_api_enabled']);
+            $emailApiUrl = trim((string)($_POST['contact_email_api_url'] ?? ''));
+            $emailApiKeyInput = trim((string)($_POST['contact_email_api_key'] ?? ''));
+            $emailApiRemoveKey = isset($_POST['contact_email_api_remove_key']);
+
+            if ($emailApiUrl !== '' && !filter_var(str_replace('{email}', 'test@example.com', $emailApiUrl), FILTER_VALIDATE_URL)) {
+                throw new RuntimeException('Email verification API URL is not valid.');
+            }
+            if (strlen($emailApiUrl) > 500 || strlen($emailApiKeyInput) > 500) {
+                throw new RuntimeException('Email verification API settings exceed the allowed length.');
+            }
+
+            save_setting('contact_email_dns_validation', $emailDnsValidation ? '1' : '0');
+            save_setting('contact_email_block_disposable', $emailBlockDisposable ? '1' : '0');
+            save_setting('contact_email_api_enabled', $emailApiEnabled ? '1' : '0');
+            save_setting('contact_email_api_url', $emailApiUrl);
+            if ($emailApiRemoveKey) {
+                save_setting('contact_email_api_key', '');
+            } elseif ($emailApiKeyInput !== '') {
+                save_setting('contact_email_api_key', secret_encrypt($emailApiKeyInput));
+            }
+            if ($emailApiEnabled && $emailApiUrl === '') {
+                throw new RuntimeException('Email verification API cannot be enabled without an API URL.');
+            }
+
             $turnstileEnabled = isset($_POST['contact_turnstile_enabled']);
             $turnstileSiteKey = trim((string)($_POST['contact_turnstile_site_key'] ?? ''));
             $turnstileSecretInput = trim((string)($_POST['contact_turnstile_secret'] ?? ''));
@@ -358,7 +385,7 @@ endif;
 <label class="premium-switch">
 <input type="checkbox" name="contact_antispam_enabled" <?=($set['contact_antispam_enabled']??'1')==='1'?'checked':''?>>
 <span class="switch-ui" aria-hidden="true"></span>
-<span><b>Enable form anti-spam</b><small>Uses a hidden honeypot, minimum fill time and session-based rate limits. No IP address is stored.</small></span>
+<span><b>Enable form anti-spam</b><small>Uses a hidden honeypot, minimum fill time and session + hashed-IP rate limits. The raw IP address is never stored.</small></span>
 </label>
 <label class="premium-switch">
 <input type="checkbox" name="contact_antispam_block_solicitation" <?=($set['contact_antispam_block_solicitation']??'1')==='1'?'checked':''?>>
@@ -373,12 +400,52 @@ endif;
 </label>
 <label>Cooldown between sends (seconds)
 <input type="number" name="contact_antispam_cooldown_seconds" min="15" max="600" step="1" value="<?=h((string)($set['contact_antispam_cooldown_seconds']??'60'))?>">
-<small>Prevents rapid repeated submissions in the same browser session. Recommended: 60.</small>
+<small>Prevents rapid repeated submissions from the same browser/IP. Recommended: 60.</small>
 </label>
 <label>Maximum sends per hour
 <input type="number" name="contact_antispam_hourly_limit" min="1" max="20" step="1" value="<?=h((string)($set['contact_antispam_hourly_limit']??'5'))?>">
-<small>Limits repeated form submissions in the same session. Recommended: 5.</small>
+<small>Limits repeated form submissions across browser sessions using a one-way IP hash. Recommended: 5.</small>
 </label>
+</div>
+<div class="panel-subsection" style="margin-top:18px">
+<h4 style="margin:0 0 8px">Email validation</h4>
+<p class="muted" style="margin:0 0 14px">Validate visitor email addresses before the inquiry is accepted. This reduces typos, disposable addresses and delivery failures without sending a confirmation email.</p>
+<div class="two-col">
+<label class="premium-switch">
+<input type="checkbox" name="contact_email_dns_validation" <?=($set['contact_email_dns_validation']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Validate email domain and MX records</b><small>Rejects domains that do not exist or cannot receive email. Validation runs server-side and in real time on the public form.</small></span>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_email_block_disposable" <?=($set['contact_email_block_disposable']??'1')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Block disposable email providers</b><small>Rejects known temporary inbox services commonly used for spam or throwaway submissions.</small></span>
+</label>
+</div>
+<div class="panel-subsection" style="margin-top:14px">
+<h5 style="margin:0 0 8px">Optional mailbox verification API</h5>
+<p class="muted" style="margin:0 0 14px">Prepared for a third-party deliverability service. If the provider is unavailable, the form falls back to local format, domain and MX validation instead of blocking a legitimate visitor.</p>
+<div class="two-col">
+<label class="premium-switch">
+<input type="checkbox" name="contact_email_api_enabled" <?=($set['contact_email_api_enabled']??'0')==='1'?'checked':''?>>
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Enable mailbox verification API</b><small>Use only after configuring the endpoint below.</small></span>
+</label>
+<label>Verification API URL
+<input type="url" name="contact_email_api_url" maxlength="500" value="<?=h((string)($set['contact_email_api_url']??''))?>" placeholder="https://provider.example/verify?email={email}">
+<small>Use <code>{email}</code> where the encoded email should be inserted. If omitted, <code>?email=...</code> is appended automatically.</small>
+</label>
+<label>API key
+<input type="password" name="contact_email_api_key" maxlength="500" autocomplete="new-password" value="" placeholder="<?=trim((string)($set['contact_email_api_key']??''))!==''?'API key already stored — leave blank to keep it':'Optional bearer API key'?>">
+<small>Stored encrypted. Leave blank to preserve the current key.</small>
+</label>
+<label class="premium-switch">
+<input type="checkbox" name="contact_email_api_remove_key">
+<span class="switch-ui" aria-hidden="true"></span>
+<span><b>Remove stored API key</b><small>Use when disabling or rotating the verification provider.</small></span>
+</label>
+</div>
+</div>
 </div>
 <div class="panel-subsection" style="margin-top:18px">
 <h4 style="margin:0 0 8px">Cloudflare Turnstile</h4>
@@ -404,7 +471,7 @@ endif;
 </label>
 </div>
 </div>
-<p class="secret-hint">Protection layers work together: honeypot, timing, session rate limits, unsolicited-sales scoring and optional Cloudflare Turnstile. No visitor IP is sent by this application to Siteverify.</p>
+<p class="secret-hint">Protection layers work together: honeypot, timing, session + hashed-IP rate limits, email validation, unsolicited-sales scoring and optional Cloudflare Turnstile. The raw visitor IP is not stored and is not sent by this application to Siteverify.</p>
 </div>
 <div class="two-col">
 <label class="premium-switch">
