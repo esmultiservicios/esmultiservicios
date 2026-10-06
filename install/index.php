@@ -2,7 +2,7 @@
 declare(strict_types=1);
 session_start();
 
-const INSTALLER_VERSION = '5.31.0';
+const INSTALLER_VERSION = '5.32.0';
 
 $root = dirname(__DIR__);
 $configDir = $root . '/config';
@@ -188,7 +188,6 @@ function install_validate_db_input(?array $passwordSource, bool $reinstallMode):
 {
     $host = trim((string)($_POST['host'] ?? 'localhost'));
     $port = (int)($_POST['port'] ?? 3306);
-    $prefixRaw = trim((string)($_POST['db_prefix'] ?? ''));
     $baseName = trim((string)($_POST['db_name'] ?? ($_POST['dbname'] ?? '')));
     $username = trim((string)($_POST['username'] ?? ''));
     $postedPassword = (string)($_POST['password'] ?? '');
@@ -200,19 +199,11 @@ function install_validate_db_input(?array $passwordSource, bool $reinstallMode):
     if ($port < 1 || $port > 65535) {
         throw new RuntimeException('Ingresa un puerto MySQL válido.');
     }
-    if ($prefixRaw !== '' && !preg_match('/^[A-Za-z0-9_\-]+$/', $prefixRaw)) {
-        throw new RuntimeException('El prefijo solo puede contener letras, números, guion y guion bajo.');
-    }
     if (!preg_match('/^[A-Za-z0-9_\-]+$/', $baseName)) {
         throw new RuntimeException('El nombre de la base de datos solo puede contener letras, números, guion y guion bajo.');
     }
 
-    $prefix = trim($prefixRaw, '_');
-    $prefix = $prefix !== '' ? $prefix . '_' : '';
     $dbname = $baseName;
-    if ($prefix !== '' && !str_starts_with(strtolower($baseName), strtolower($prefix))) {
-        $dbname = $prefix . $baseName;
-    }
     if (strlen($dbname) > 64) {
         throw new RuntimeException('El nombre final de la base de datos no puede superar 64 caracteres.');
     }
@@ -220,7 +211,6 @@ function install_validate_db_input(?array $passwordSource, bool $reinstallMode):
     return [
         'host' => $host,
         'port' => $port,
-        'db_prefix' => $prefix,
         'db_name' => $baseName,
         'dbname' => $dbname,
         'username' => $username,
@@ -738,7 +728,6 @@ $dbSuggestion = trim($dbSuggestionStem, '_') . '_cms';
 $dbDefaults = $_SESSION['install_db'] ?? [
     'host' => $reinstallConfig['host'] ?? 'localhost',
     'port' => $reinstallConfig['port'] ?? 3306,
-    'db_prefix' => '',
     'db_name' => $reinstallConfig['dbname'] ?? '',
     'dbname' => $reinstallConfig['dbname'] ?? '',
     'username' => $reinstallConfig['username'] ?? '',
@@ -1711,6 +1700,487 @@ html,body{height:100%;overflow:hidden}
 .btn.ghost{background:#195578!important;color:#fff!important;border-color:#195578!important;box-shadow:0 7px 16px rgba(25,85,120,.16)!important}
 .btn.ghost:hover,.btn.ghost:focus{background:#123f5c!important;color:#fff!important;border-color:#123f5c!important;opacity:1!important;filter:none!important}
 
+/* ==========================================================
+   INSTALLER v5.32 — RESPONSIVE ARCHITECTURE
+   Desktop keeps the full assistant shell. Tablet and phone use
+   natural document scrolling with compact progress/navigation.
+   ========================================================== */
+@media (max-width: 900px) {
+  html, body {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  body {
+    min-width: 0;
+  }
+
+  .page {
+    width: 100%;
+    height: auto !important;
+    min-height: 100dvh !important;
+    padding: 10px 10px calc(18px + env(safe-area-inset-bottom)) !important;
+    overflow: visible !important;
+  }
+
+  .installer-topbar {
+    width: 100% !important;
+    min-height: 0 !important;
+    margin-bottom: 8px !important;
+    padding: 10px 12px !important;
+    border-radius: 16px;
+    gap: 10px;
+  }
+
+  .installer-brand {
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .installer-brand img {
+    width: 72px;
+    height: 42px;
+    object-fit: contain;
+    flex: 0 0 auto;
+  }
+
+  .installer-brand span {
+    font-size: 8.5px;
+  }
+
+  .installer-brand strong {
+    font-size: 16px;
+    line-height: 1.05;
+  }
+
+  .installer-brand small {
+    font-size: 10.5px;
+    line-height: 1.25;
+  }
+
+  .install-mode-pill {
+    flex: 0 0 auto;
+    max-width: 38%;
+    padding: 7px 9px;
+    font-size: 10px;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .wizard {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 8px !important;
+    overflow: visible !important;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .aside {
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 16px;
+    gap: 8px !important;
+  }
+
+  .aside-progress {
+    padding: 0 !important;
+  }
+
+  .aside-progress strong {
+    font-size: 13px;
+  }
+
+  .aside-progress span {
+    font-size: 10px;
+  }
+
+  .aside-progress-bar {
+    height: 4px;
+    margin-top: 6px;
+  }
+
+  .aside-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+    margin: 0;
+  }
+
+  .aside-step {
+    min-height: 38px;
+    padding: 4px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .aside-step-num {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    font-size: 11px;
+  }
+
+  .aside-step > div:last-child,
+  .installer-version {
+    display: none !important;
+  }
+
+  .content {
+    width: 100%;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 18px 16px 0 !important;
+    border-radius: 16px;
+    overflow: visible !important;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 14px 36px rgba(16, 42, 67, .08);
+  }
+
+  .top {
+    gap: 10px;
+  }
+
+  .content h2 {
+    margin: 4px 0 5px;
+    font-size: clamp(28px, 6vw, 34px);
+  }
+
+  .muted {
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  .counter {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .progress {
+    height: 4px;
+    margin: 12px 0 14px;
+  }
+
+  .step-scroll {
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  .step-scroll > form {
+    min-height: 0 !important;
+    display: block !important;
+  }
+
+  .grid, .admin-grid, .choice-grid, .purpose-grid, .review-grid, .test-row, .email-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .grid > *, .admin-grid > *, .choice-grid > *, .purpose-grid > *, .review-grid > *, .test-row > *, .email-grid-2 > * {
+    grid-column: auto !important;
+    min-width: 0;
+  }
+
+  .grid > .full, .admin-grid > .full, .full, .email-grid-2 > .full {
+    grid-column: 1 / -1 !important;
+  }
+
+  .field input, .field select {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .intro, .email-panel, .box, .step-support, .db-final-preview, .site-url-premium {
+    max-width: 100%;
+  }
+
+  .actions {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 40;
+    margin: 16px -16px 0 !important;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom)) !important;
+    background: rgba(255, 255, 255, .98) !important;
+    border-top: 1px solid #e2eaf1;
+    box-shadow: 0 -8px 20px rgba(16, 42, 67, .06);
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 6px 6px calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .installer-topbar {
+    padding: 8px 9px !important;
+    border-radius: 14px;
+  }
+
+  .installer-brand img {
+    width: 54px;
+    height: 36px;
+  }
+
+  .installer-brand span,
+  .installer-brand small {
+    display: none;
+  }
+
+  .installer-brand strong {
+    font-size: 15px;
+  }
+
+  .install-mode-pill {
+    max-width: 42%;
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+
+  .wizard {
+    gap: 6px !important;
+  }
+
+  .aside {
+    padding: 8px 9px !important;
+    border-radius: 14px;
+  }
+
+  .aside-progress {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 8px;
+    align-items: center;
+  }
+
+  .aside-progress strong {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .aside-progress span {
+    display: none;
+  }
+
+  .aside-progress-bar {
+    margin: 0;
+  }
+
+  .aside-steps {
+    display: none !important;
+  }
+
+  .content {
+    padding: 14px 12px 0 !important;
+    border-radius: 14px;
+  }
+
+  .top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .eyebrow {
+    font-size: 9.5px;
+  }
+
+  .content h2 {
+    font-size: clamp(25px, 8vw, 31px);
+  }
+
+  .muted {
+    font-size: 11.5px;
+  }
+
+  .counter {
+    align-self: start;
+    font-size: 9px;
+  }
+
+  .intro {
+    gap: 9px;
+    padding: 10px 11px;
+    margin-bottom: 12px;
+    border-radius: 13px;
+  }
+
+  .intro-icon, .panel-icon {
+    width: 30px;
+    height: 30px;
+    flex-basis: 30px;
+    border-radius: 9px;
+  }
+
+  .grid, .admin-grid, .choice-grid, .purpose-grid, .review-grid, .test-row, .email-grid-2 {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .grid > *, .admin-grid > *, .choice-grid > *, .purpose-grid > *, .review-grid > *, .test-row > *, .email-grid-2 > *,
+  .grid > .full, .admin-grid > .full, .full, .email-grid-2 > .full {
+    grid-column: 1 / -1 !important;
+  }
+
+  .field {
+    gap: 5px;
+    font-size: 12.5px;
+  }
+
+  .field input, .field select {
+    min-height: 43px;
+    padding: 9px 11px;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+
+  .helper {
+    font-size: 10.5px;
+  }
+
+  .choice, .email-panel, .box {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .choice-symbol {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+  }
+
+  .step-support {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    padding: 10px 11px;
+  }
+
+  .site-url-premium {
+    padding: 10px 11px 10px 48px;
+  }
+
+  .site-url-premium:before {
+    left: 10px;
+    top: 10px;
+    width: 29px;
+    height: 29px;
+  }
+
+  .actions {
+    margin: 14px -12px 0 !important;
+    padding: 9px 12px calc(9px + env(safe-area-inset-bottom)) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+  }
+
+  .actions > span:empty {
+    display: none !important;
+  }
+
+  .actions .btn, .actions > a.btn, .actions > button.btn {
+    width: auto !important;
+    min-width: 0;
+    min-height: 43px;
+    flex: 1 1 0;
+    padding: 9px 12px;
+    font-size: 12.5px;
+  }
+
+  .test-row .btn {
+    width: 100%;
+    min-height: 43px;
+  }
+}
+
+@media (max-width: 380px) {
+  .page {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .installer-topbar {
+    padding-left: 7px !important;
+    padding-right: 7px !important;
+  }
+
+  .installer-brand img {
+    width: 46px;
+    height: 32px;
+  }
+
+  .installer-brand strong {
+    font-size: 13.5px;
+  }
+
+  .install-mode-pill {
+    max-width: 44%;
+    font-size: 8.5px;
+  }
+
+  .content {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .content h2 {
+    font-size: 24px;
+  }
+
+  .counter {
+    padding: 5px 7px;
+  }
+
+  .actions {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+@media (max-width: 700px) and (max-height: 620px) {
+  .page {
+    padding-top: 4px !important;
+  }
+
+  .installer-topbar {
+    margin-bottom: 4px !important;
+  }
+
+  .aside {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .content {
+    padding-top: 11px !important;
+  }
+
+  .progress {
+    margin: 8px 0 10px;
+  }
+
+  .intro {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    margin-bottom: 9px;
+  }
+}
+
 /* INSTALLER TYPOGRAPHY v5.10 */
 html,body{font-synthesis:none}
 .content,.aside,.installer-topbar{letter-spacing:0}
@@ -1758,9 +2228,8 @@ html,body{font-synthesis:none}
         <label class="field"><span class="field-label">Servidor MySQL</span><input name="host" required value="<?= ih((string)$dbDefaults['host']) ?>"></label>
         <label class="field"><span class="field-label">Puerto</span><input type="number" min="1" max="65535" name="port" required value="<?= (int)$dbDefaults['port'] ?>"></label>
         <label class="field"><span class="field-label">Usuario</span><input name="username" required value="<?= ih((string)$dbDefaults['username']) ?>"></label>
-        <label class="field"><span class="field-label">Prefijo de hosting <span class="optional-tag">Opcional</span></span><input id="dbPrefix" name="db_prefix" value="<?= ih((string)($dbDefaults['db_prefix'] ?? '')) ?>" placeholder="ej. cuenta_" autocomplete="off"><span class="helper">Úsalo solo si tu hosting antepone un prefijo al nombre de la base.</span></label>
-        <label class="field"><span class="field-label">Base de datos</span><input id="dbName" name="db_name" required value="<?= ih((string)($dbDefaults['db_name'] ?? $dbDefaults['dbname'] ?? '')) ?>" placeholder="Sugerencia: <?= ih($dbSuggestion) ?>" autocomplete="off"><span class="helper">Puedes usar la sugerencia mostrada o escribir el nombre que prefieras.</span></label>
-        <div class="db-final-preview" aria-live="polite"><span>Nombre final de la base de datos</span><strong id="dbFinalName">—</strong><small>Se combina automáticamente: prefijo + base de datos. Si no usas prefijo, queda solo el nombre indicado.</small></div>
+        <label class="field"><span class="field-label">Base de datos</span><input id="dbName" name="db_name" required value="<?= ih((string)($dbDefaults['db_name'] ?? $dbDefaults['dbname'] ?? '')) ?>" placeholder="Sugerencia: <?= ih($dbSuggestion) ?>" autocomplete="off"><span class="helper">Escribe el nombre completo exactamente como existe o debe crearse en el servidor, por ejemplo <strong>esmultiservicios_izzyweb</strong>.</span></label>
+        <div class="db-final-preview" aria-live="polite"><span>Base de datos que se utilizará</span><strong id="dbFinalName">—</strong><small>El instalador usará exactamente este nombre, sin agregar prefijos automáticamente.</small></div>
         <label class="field full"><span class="field-label">Contraseña MySQL</span><input type="password" name="password" autocomplete="new-password" placeholder="<?= $reinstallMode ? 'Déjala vacía para reutilizar la contraseña almacenada' : 'Contraseña de la base de datos' ?>"><span class="helper"><?= $reinstallMode ? 'Por seguridad nunca mostramos la contraseña existente.' : 'Se guardará únicamente dentro de config/config.php, protegido por el servidor.' ?></span></label>
         <div class="auto-db-note full"><span class="auto-db-note-icon" aria-hidden="true">⚙</span><div><strong>Creación automática de la base de datos</strong><span class="helper">No necesitas activar nada. Si la base ya existe, el asistente la usa. Si no existe, intentará crearla automáticamente al finalizar.</span></div></div>
       </div>
@@ -1916,23 +2385,12 @@ html,body{font-synthesis:none}
 <?php if ($currentStep === 1): ?>
 <script>
 (() => {
-  const prefix = document.getElementById('dbPrefix');
   const name = document.getElementById('dbName');
   const finalName = document.getElementById('dbFinalName');
-  const normalizePrefix = value => {
-    const clean = (value || '').trim().replace(/^_+|_+$/g, '');
-    return clean ? clean + '_' : '';
-  };
   const sync = () => {
-    const p = normalizePrefix(prefix?.value || '');
-    const n = (name?.value || '').trim();
-    let combined = n;
-    if (p && n && !n.toLowerCase().startsWith(p.toLowerCase())) combined = p + n;
-    finalName.textContent = combined || '—';
+    finalName.textContent = (name?.value || '').trim() || '—';
   };
-  prefix?.addEventListener('input', sync);
   name?.addEventListener('input', sync);
-  prefix?.addEventListener('blur', () => { if (prefix.value.trim()) prefix.value = normalizePrefix(prefix.value); sync(); });
   sync();
 })();
 </script>

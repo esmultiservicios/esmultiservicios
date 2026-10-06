@@ -18,7 +18,7 @@ $st=db()->prepare('SELECT id,username,two_factor_secret_enc,two_factor_enabled,a
 $st->execute([$id]);
 $row=$st->fetch();
 if(!$row||(int)$row['active']!==1||(int)$row['two_factor_enabled']!==1) {
-    unset($_SESSION['escms_2fa_pending_id'],$_SESSION['escms_2fa_pending_user'],$_SESSION['escms_2fa_remember']);
+    unset($_SESSION['escms_2fa_pending_id'],$_SESSION['escms_2fa_pending_user'],$_SESSION['escms_2fa_remember'],$_SESSION['escms_2fa_login_hint']);
     header('Location: /admin/login.php');
     exit;
 }
@@ -30,14 +30,17 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         session_regenerate_id(true);
         $_SESSION['escms_admin_id']=(int)$row['id'];
         $_SESSION['escms_admin_user']=$row['username'];
+        initialize_admin_session_lifetime();
         $remember=!empty($_SESSION['escms_2fa_remember']);
-        unset($_SESSION['escms_2fa_pending_id'],$_SESSION['escms_2fa_pending_user'],$_SESSION['escms_2fa_remember']);
+        $loginHint=trim((string)($_SESSION['escms_2fa_login_hint']??$row['username']));
+        unset($_SESSION['escms_2fa_pending_id'],$_SESSION['escms_2fa_pending_user'],$_SESSION['escms_2fa_remember'],$_SESSION['escms_2fa_login_hint']);
         db()->prepare('UPDATE admin_users SET last_login_at=NOW(),last_login_ip=?,last_user_agent=? WHERE id=?')->execute([request_ip(),request_user_agent(),(int)$row['id']]);
         record_login_event((int)$row['id'],$row['username'],true);
         log_activity('login_2fa','Administrator signed in with two-factor authentication');
         admin_notify('info','Secure administrator login',$row['username'].' signed in with two-factor authentication.','security.php');
-        if($remember)create_remember_token((int)$row['id']);
-        else clear_remember_cookie();
+        clear_remember_cookie();
+        if($remember) set_login_hint_cookie($loginHint);
+        else clear_login_hint_cookie();
         sync_admin_session();
         header('Location: /admin/dashboard.php');
         exit;
