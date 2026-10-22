@@ -273,56 +273,188 @@ document.querySelectorAll('.notification-bell,.profile-menu').forEach(menu=>menu
   ;form.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',update));update()
 }
 )();
-// Quick Find: helps non-technical users jump to the right admin area.
+// Quick Find: task-oriented navigation with tolerant matching.
 (() => {
   const overlay = document.querySelector('[data-admin-find]');
   const input = document.querySelector('[data-admin-find-input]');
   const results = document.querySelector('[data-admin-find-results]');
+
   if (!overlay || !input || !results) return;
-  const links = [...document.querySelectorAll('.admin-sidebar a[href]')].map((link) => ( {
-    href: link.getAttribute('href'), label: (link.textContent || '').replace(/\s+/g, ' ').trim(),
-  }
-  )); const aliases = {
-    appearance: 'theme colors typography fonts banner header navigation menu design', settings: 'logo favicon whatsapp maintenance contact branding', social: 'social networks instagram facebook tiktok youtube linkedin icons profiles footer floating', media: 'images videos files documents upload library', gallery: 'projects photos images portfolio', content: 'text titles paragraphs landing copy editor publish draft', users: 'accounts team staff administrators login', roles: 'permissions access security roles', estimates: 'requests quotes customers leads follow up', email: 'smtp graph messages mail', analytics: 'visits traffic statistics visitors metrics', widgets: 'floating whatsapp external chat widget',
-  }
-  ; const render = (query = '') => {
-    const term = query.trim().toLowerCase(); const matches = links.filter((item) => {
-      const key = (item.href || '').replace('.php', '').toLowerCase(); const searchable = `${item.label} ${key} ${aliases[key] || ''}`.toLowerCase(); return term === '' || searchable.includes(term);
+
+  const normalize = (value = '') => String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+  const navItems = [...document.querySelectorAll('.admin-sidebar a[href]')].map((link) => ({
+    href: link.getAttribute('href'),
+    label: (link.textContent || '').replace(/\s+/g, ' ').trim(),
+    description: 'Open this administration area.',
+    keywords: '',
+  }));
+
+  const taskItems = [
+    { href: 'dashboard.php', label: 'Dashboard', description: 'Overview, status and shortcuts.', keywords: 'inicio home resumen panel principal estado' },
+    { href: 'content.php', label: 'Page content', description: 'Edit public website text, headings and page content.', keywords: 'contenido texto textos titulo titulos parrafos pagina paginas copy editar web' },
+    { href: 'marketing.php#projects', label: 'Projects & case studies', description: 'Edit projects, customer cases and each public project website URL.', keywords: 'proyecto proyectos caso casos estudio castro castros ready sabrosisimo ruta url enlace link website sitio web cliente portfolio portafolio' },
+    { href: 'marketing.php#products', label: 'Corporate solutions', description: 'Manage IZZY, CAMI, ZYNKO and their dedicated website URLs.', keywords: 'solucion soluciones izzy cami zynko producto productos ruta url enlace link sitio sistema' },
+    { href: 'marketing.php#testimonials', label: 'Client opinions', description: 'Manage testimonials and customer opinions.', keywords: 'opinion opiniones testimonio testimonios cliente clientes review reviews' },
+    { href: 'marketing.php#copy', label: 'Marketing site copy ES/EN', description: 'Edit bilingual marketing website copy.', keywords: 'marketing espanol ingles es en texto contenido landing encabezado' },
+    { href: 'sections.php', label: 'Section manager', description: 'Show, hide and organize website sections.', keywords: 'seccion secciones ordenar mostrar ocultar activar desactivar pagina' },
+    { href: 'social.php', label: 'Social networks', description: 'Manage Facebook, Instagram, TikTok, YouTube and social links.', keywords: 'red redes social sociales facebook instagram tiktok youtube linkedin enlace link perfil icono' },
+    { href: 'media.php', label: 'Media Library', description: 'Upload and manage images, files and media.', keywords: 'imagen imagenes archivo archivos media multimedia subir upload documento documentos' },
+    { href: 'services.php', label: 'Services', description: 'Manage the services shown on the website.', keywords: 'servicio servicios catalogo oferta' },
+    { href: 'gallery.php', label: 'Gallery', description: 'Manage gallery images and visual portfolio content.', keywords: 'galeria fotos foto imagen imagenes portfolio portafolio' },
+    { href: 'videos.php', label: 'Videos', description: 'Manage public website videos.', keywords: 'video videos youtube multimedia' },
+    { href: 'areas.php', label: 'Service areas', description: 'Manage cities, coverage and service areas.', keywords: 'area areas cobertura ciudad ciudades ubicacion zona zonas servicio' },
+    { href: 'tips.php', label: 'Home tips', description: 'Manage tips displayed on the home page.', keywords: 'tips consejos home inicio recomendaciones' },
+    { href: 'estimates.php', label: 'Estimate requests', description: 'Review quote and estimate requests from visitors.', keywords: 'cotizacion cotizaciones solicitud solicitudes presupuesto presupuestos lead leads cliente contacto formulario' },
+    { href: 'email.php', label: 'Email configuration', description: 'Configure SMTP, Microsoft Graph and website email.', keywords: 'correo email mail smtp microsoft graph outlook envio mensajes configuracion' },
+    { href: 'integrations.php', label: 'Integrations & APIs', description: 'Configure external integrations and API connections.', keywords: 'integracion integraciones api apis cloudflare turnstile captcha siteverify clave key secret webhook' },
+    { href: 'widgets.php', label: 'Floating Widgets', description: 'Manage WhatsApp and floating website widgets.', keywords: 'widget widgets whatsapp chat nivo flotante boton botones contacto' },
+    { href: 'analytics.php', label: 'Analytics', description: 'Review visits and website traffic.', keywords: 'analitica analytics visita visitas trafico visitante visitantes estadistica metricas' },
+    { href: 'seo.php', label: 'SEO Manager', description: 'Manage search engine metadata and technical SEO.', keywords: 'seo google buscador meta metadata sitemap robots posicionamiento titulo descripcion' },
+    { href: 'health.php', label: 'Website Health', description: 'Review technical website health and diagnostics.', keywords: 'salud health diagnostico errores estado tecnico sistema' },
+    { href: 'notifications.php', label: 'Activity Center', description: 'Review activity and notifications.', keywords: 'actividad notificacion notificaciones alertas historial' },
+    { href: 'backups.php', label: 'Backup & Restore', description: 'Create, review and restore backups.', keywords: 'backup backups respaldo respaldos restaurar restore copia seguridad' },
+    { href: 'users.php', label: 'Users', description: 'Manage administrator accounts and users.', keywords: 'usuario usuarios cuenta cuentas administrador administradores login acceso' },
+    { href: 'roles.php', label: 'Roles & permissions', description: 'Manage roles and access permissions.', keywords: 'rol roles permiso permisos acceso privilegios seguridad' },
+    { href: 'approvals.php', label: 'Approval queue', description: 'Review content waiting for approval.', keywords: 'aprobacion aprobaciones aprobar pendiente pendientes contenido' },
+    { href: 'security.php', label: 'Security Center', description: 'Manage security controls and login protection.', keywords: 'seguridad security login sesion sesiones 2fa dos factores password contrasena acceso' },
+    { href: 'appearance.php', label: 'Appearance', description: 'Manage branding, colors, typography and visual appearance.', keywords: 'apariencia tema color colores fuente fuentes tipografia logo favicon diseno branding' },
+    { href: 'settings.php', label: 'Settings', description: 'Manage general website settings, contact data and status.', keywords: 'configuracion ajustes settings contacto telefono direccion mantenimiento live sitio estado logo favicon' },
+    { href: 'profile.php', label: 'Profile & security', description: 'Manage your own profile and account security.', keywords: 'perfil cuenta personal password contrasena seguridad avatar usuario' },
+  ];
+
+  const allowedRoutes = new Set(navItems.map((item) => (item.href || '').split('#')[0]));
+  const items = [];
+  const seen = new Set();
+
+  [...taskItems, ...navItems].forEach((item) => {
+    const baseRoute = (item.href || '').split('#')[0];
+    if (!baseRoute || !allowedRoutes.has(baseRoute)) return;
+    const signature = `${item.href}|${item.label}`;
+    if (seen.has(signature)) return;
+    seen.add(signature);
+    items.push(item);
+  });
+
+  const scoreItem = (item, rawQuery) => {
+    const query = normalize(rawQuery);
+    if (!query) return 1;
+
+    const words = query.split(/\s+/).filter(Boolean);
+    const label = normalize(item.label);
+    const href = normalize(item.href);
+    const description = normalize(item.description);
+    const keywords = normalize(item.keywords);
+    const searchable = `${label} ${href} ${description} ${keywords}`;
+
+    let score = 0;
+    if (label === query) score += 120;
+    if (label.startsWith(query)) score += 80;
+    if (label.includes(query)) score += 55;
+    if (keywords.includes(query)) score += 42;
+    if (description.includes(query)) score += 30;
+    if (href.includes(query)) score += 24;
+
+    for (const word of words) {
+      if (label.split(' ').some((part) => part === word)) score += 22;
+      else if (label.includes(word)) score += 15;
+      else if (keywords.includes(word)) score += 12;
+      else if (description.includes(word)) score += 8;
+      else if (href.includes(word)) score += 6;
+      else {
+        const approximate = searchable.split(' ').some((candidate) => {
+          if (word.length < 4 || candidate.length < 4) return false;
+          if (candidate.startsWith(word.slice(0, Math.max(3, word.length - 2)))) return true;
+          if (word.startsWith(candidate.slice(0, Math.max(3, candidate.length - 2)))) return true;
+          return false;
+        });
+        if (approximate) score += 4;
+      }
     }
-    ); results.innerHTML = ''; if (!matches.length) {
-      const empty = document.createElement('div'); empty.className = 'admin-find-empty'; empty.textContent = 'No matching admin area. Try a simpler word.'; results.appendChild(empty); return;
+
+    return score;
+  };
+
+  const render = (query = '') => {
+    const ranked = items
+      .map((item) => ({ ...item, score: scoreItem(item, query) }))
+      .filter((item) => query.trim() === '' || item.score > 0)
+      .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
+      .slice(0, 12);
+
+    results.innerHTML = '';
+
+    if (!ranked.length) {
+      const empty = document.createElement('div');
+      empty.className = 'admin-find-empty';
+      empty.innerHTML = '<strong>No match found.</strong><span>Try another word, for example: project, URL, WhatsApp, email, user or security.</span>';
+      results.appendChild(empty);
+      return;
     }
-    matches.slice(0, 10).forEach((item) => {
-      const link = document.createElement('a'); link.href = item.href; link.innerHTML = `<span>${item.label}</span><b>Open →</b>`; results.appendChild(link);
-    }
-    );
-  }
-  ; const open = () => {
-    const manager=window.AdminOverlayManager;
+
+    ranked.forEach((item) => {
+      const link = document.createElement('a');
+      link.href = item.href;
+
+      const copy = document.createElement('span');
+      copy.className = 'admin-find-result-copy';
+
+      const title = document.createElement('strong');
+      title.textContent = item.label;
+
+      const description = document.createElement('small');
+      description.textContent = item.description || 'Open this administration area.';
+
+      const action = document.createElement('b');
+      action.textContent = 'Open →';
+
+      copy.append(title, description);
+      link.append(copy, action);
+      results.appendChild(link);
+    });
+  };
+
+  const open = () => {
+    const manager = window.AdminOverlayManager;
     manager?.closeSide();
     manager?.closeTopbarMenus();
-    overlay.hidden = false; document.body.classList.add('admin-find-open'); render(''); window.setTimeout(() => input.focus(), 30);
-  }
-  ; const close = () => {
-    overlay.hidden = true; document.body.classList.remove('admin-find-open'); input.value = '';
-  }
-  ; document.querySelectorAll('[data-admin-find-open]').forEach((button) => {
+    overlay.hidden = false;
+    document.body.classList.add('admin-find-open');
+    render('');
+    window.setTimeout(() => input.focus(), 30);
+  };
+
+  const close = () => {
+    overlay.hidden = true;
+    document.body.classList.remove('admin-find-open');
+    input.value = '';
+  };
+
+  document.querySelectorAll('[data-admin-find-open]').forEach((button) => {
     button.addEventListener('click', open);
-  }
-  ); document.querySelectorAll('[data-admin-find-close]').forEach((button) => {
+  });
+
+  document.querySelectorAll('[data-admin-find-close]').forEach((button) => {
     button.addEventListener('click', close);
-  }
-  ); input.addEventListener('input', () => render(input.value)); document.addEventListener('keydown', (event) => {
-    const editable = event.target.matches('input, textarea, select, [contenteditable="true"]'); if (event.key === '/' && !editable) {
-      event.preventDefault(); open();
+  });
+
+  input.addEventListener('input', () => render(input.value));
+
+  document.addEventListener('keydown', (event) => {
+    const editable = event.target.matches('input, textarea, select, [contenteditable="true"]');
+    if (event.key === '/' && !editable) {
+      event.preventDefault();
+      open();
     }
-    if (event.key === 'Escape' && !overlay.hidden) {
-      close();
-    }
-  }
-  );
-}
-)();
+    if (event.key === 'Escape' && !overlay.hidden) close();
+  });
+})();
+
 // Warn users before leaving a form with unsaved changes.
 (() => {
   const forms = [...document.querySelectorAll('[data-unsaved-form]')]; if (!forms.length) return; let dirty = false; forms.forEach((form) => {

@@ -437,13 +437,13 @@ $favicon = trim((string) ($set['favicon_path'] ?? '')) ?: 'assets/brand/favicon.
                 <div class="admin-find-head">
                     <div>
                         <strong>Quick find</strong>
-                        <small>Type what you want to manage.</small>
+                        <small>Search by area or task. Example: project URL, WhatsApp, SMTP, users...</small>
                     </div>
                     <button type="button" class="icon-btn" data-admin-find-close aria-label="Close">×</button>
                 </div>
                 <label class="admin-find-input">
                     <span aria-hidden="true">⌕</span>
-                    <input type="search" placeholder="Try: banner, users, gallery, email..." data-admin-find-input>
+                    <input type="search" placeholder="Try: Castro, project URL, WhatsApp, SMTP, Turnstile..." data-admin-find-input>
                 </label>
                 <div class="admin-find-results" data-admin-find-results></div>
             </section>
